@@ -1,38 +1,48 @@
-# sv
+<div align="center">
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+# YOKD
 
-## Creating a project
+##### Strength Training Made Simple
 
-If you're seeing this, you've probably already done this step. Congrats!
+[![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?style=for-the-badge&logo=svelte&logoColor=white)](https://kit.svelte.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Turso](https://img.shields.io/badge/Turso-4D4D4D?style=for-the-badge&logo=sqlite&logoColor=white)](https://turso.tech/)
 
-```bash
-# create a new project in the current directory
-npx sv create
+</div>
 
-# create a new project in my-app
-npx sv create my-app
-```
+## ⇁ TOC
 
-## Developing
+- [About](#-about)
+- [Features](#-features)
+- [Getting Started](#-getting-started)
+- [Tech Stack](#-tech-stack)
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## ⇁ About
 
-```bash
-npm run dev
+YOKD is a progressive web app for tracking strength training workouts. Organize your training plans, track your sessions, and monitor your progress with a simple, intuitive interface.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## ⇁ Features
 
-## Building
+- Create and organize workout plans in folders
+- Track sets, reps, and weights during workouts
+- Built-in rest timer with notifications
+- View previous workout data
+- Works offline (PWA)
+- Responsive design for all devices
 
-To create a production version of your app:
+## ⇁ Getting Started
 
-```bash
-npm run build
-```
+1. Create an account or log in
+2. Create a folder for your workout plans
+3. Add exercises to your plan
+4. Start your workout session
+5. Track your progress
 
-You can preview the production build with `npm run preview`.
+## ⇁ Tech Stack
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- SvelteKit - Frontend framework
+- TypeScript - Language
+- Turso - Database
+- TailwindCSS - Styling
+- PWA - Offline capability
+
