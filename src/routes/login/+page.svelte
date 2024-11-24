@@ -5,19 +5,19 @@
   let { form }: { form: ActionData } = $props();
 </script>
 
-<main class="m-auto flex w-fit flex-col rounded-md bg-white p-4">
-  <h1 class="font-bold text-pink-700">Login/Register</h1>
-  <div class="flex bg-blue-500 p-4 text-red-500">Test</div>
-  <form class="flex" method="post" action="?/login" use:enhance>
-    <label>
+<main class="m-auto flex w-96 flex-col gap-2 rounded-md bg-white p-4">
+  <h1 class="text-center font-bold">Login/Register</h1>
+  <form class="flex flex-col gap-2" method="post" action="?/login" use:enhance>
+    <label class="flex justify-between gap-1 px-10">
       Username
-      <input name="username" />
+      <input class="rounded-sm border" name="username" />
     </label>
-    <label>
+    <label class="flex justify-between gap-1 px-10">
       Password
-      <input type="password" name="password" />
+      <input class="rounded-sm border" type="password" name="password" />
     </label>
     <button>Login</button>
+    <a href="/login/google">Sign in with Google</a>
     <button formaction="?/register">Register</button>
   </form>
   <p style="color: red">{form?.message ?? ''}</p>

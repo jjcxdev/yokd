@@ -8,6 +8,7 @@ import {
 // user
 export const users = sqliteTable('user', {
   id: text('id').primaryKey(),
+  googleId: text('googleId').unique(),
   age: integer('age'),
   username: text('username').notNull().unique(),
   passwordHash: text('password_hash').notNull()

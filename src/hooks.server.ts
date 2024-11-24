@@ -6,7 +6,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   const sessionToken = event.cookies.get(auth.sessionCookieName);
 
   // allow access to auth routes without session
-  if (event.url.pathname === '/login' || event.url.pathname === '/register') {
+  if (event.url.pathname === '/login') {
     if (sessionToken) {
       // if already logged in, redirect to home
       throw redirect(303, '/');

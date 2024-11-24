@@ -4,6 +4,14 @@ import { sha256 } from '@oslojs/crypto/sha2';
 import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db/index';
 import * as table from '$lib/server/db/schema';
+import { Google } from 'arctic';
+import {GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET} from "$env/static/private";
+
+export const google = new Google(
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  "http://localhost:5173/login/google/callback"
+);
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
