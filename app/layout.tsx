@@ -9,6 +9,12 @@ import {
 import localFont from "next/font/local";
 import "./globals.css";
 
+const helvObl = localFont({
+  src: "./fonts/Helv_Black_Ob.woff",
+  variable: "--font-helv-ob",
+  display: "swap",
+});
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -34,14 +40,8 @@ export default async function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} ${helvObl.variable} antialiased`}
         >
-          <SignedOut>
-            <SignInButton />
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
           {children}
         </body>
       </html>
