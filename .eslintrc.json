@@ -1,3 +1,86 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "root": true,
+  "ignorePatterns": [
+    ".next",
+    "node_modules",
+    ".yarn",
+    "eslint.config.mjs",
+    "next.config.mjs",
+    "postcss.config.mjs",
+    "coverage"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-type-checked",
+    "plugin:@typescript-eslint/strict",
+    "plugin:import-x/recommended",
+    "plugin:import-x/typescript",
+    "@eslint-community/eslint-plugin-eslint-comments/recommended",
+    "plugin:regexp/recommended",
+    "plugin:security/recommended",
+    "plugin:@next/next/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:@eslint-react/recommended-type-checked",
+    "plugin:tailwindcss/recommended",
+    "prettier"
+  ],
+  "plugins": [
+    "@typescript-eslint",
+    "import-x",
+    "regexp",
+    "security",
+    "react-compiler",
+    "tailwindcss"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "@typescript-eslint/parser",
+    "tsconfigRootDir": ".",
+    "ecmaVersion": 2017,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "settings": {
+    "tailwindcss": {
+      "callees": ["classnames", "clsx", "ctl", "cn", "cva"]
+    }
+  },
+  "reportUnusedDisableDirectives": true,
+  "rules": {
+    "@/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
+    "@typescript-eslint/consistent-type-imports": [
+      "warn",
+      { "prefer": "type-imports", "fixStyle": "separate-type-imports" }
+    ],
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      { "checksVoidReturn": { "attributes": false } }
+    ],
+    "@typescript-eslint/no-unnecessary-condition": [
+      "error",
+      {
+        "allowConstantLoopConditions": true
+      }
+    ],
+    "@typescript-eslint/consistent-type-exports": [
+      "error",
+      { "fixMixedExportsWithInlineTypeSpecifier": true }
+    ],
+    "import-x/no-unresolved": ["error", { "ignore": ["geist"] }],
+    "react-compiler/react-compiler": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.cjs", "**/*.cts"],
+      "parserOptions": {
+        "sourceType": "commonjs"
+      }
+    }
+  ]
 }
