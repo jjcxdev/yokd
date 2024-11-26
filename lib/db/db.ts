@@ -11,24 +11,24 @@ export const turso = createLibSQLClient({
 
 // client for managing database
 const tursoAdmin = createTursoClient({
-    token:process.env.TURSO_USER_API_TOKEN!,
-    org:process.env.TURSO_ORG_NAME!,
+  token: process.env.TURSO_USER_API_TOKEN!,
+  org: process.env.TURSO_ORG_NAME!,
 });
 
-export async function getDatabaseName(){
-    const {userId} = await auth();
-    if (!userId) return null;
-    return md5(userId);
+export async function getDatabaseName() {
+  const { userId } = await auth();
+  if (!userId) return null;
+  return md5(userId);
 }
 
-export async function checkDatabaseExists(){
-    const dbName = await getDatabaseName();
-    if (!dbName) return false;
-    
-    try {
-        await tursoAdmin.databases.get(dbName)
-        return true;
-    } catch {
-        return false;
-    }
+export async function checkDatabaseExists() {
+  const dbName = await getDatabaseName();
+  if (!dbName) return false;
+
+  try {
+    await tursoAdmin.databases.get(dbName);
+    return true;
+  } catch {
+    return false;
+  }
 }
