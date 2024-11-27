@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.cl-avatarBox {
+  width: 2.75rem;
+  height: 2.75rem;
+}

@@ -13,7 +13,7 @@ export default {
         'primary' : '#151A23',
         'background': '#03060A',
         'accent':'#663399',
-        'dimmed': '$CDCDCD',
+        'dimmed': '#CDCDCD',
       },
       fontFamily: {
         helvob: ['var(--font-helv-ob)'],
