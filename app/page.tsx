@@ -1,6 +1,7 @@
 "use client";
 
 import { SignIn, useUser, UserButton } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
 
 export default function Home() {
   const { user } = useUser();
@@ -14,13 +15,5 @@ export default function Home() {
       </main>
     );
   }
-
-  return (
-    <main className="flex h-screen flex-col justify-center bg-black">
-      <div className="text-white">THIS IS THE DASHBOARD</div>
-      <div>
-        <UserButton />
-      </div>
-    </main>
-  );
+  redirect("/dashboard");
 }
