@@ -8,6 +8,13 @@ export default {
   ],
   theme: {
     extend: {
+      colors:{
+        'border':'#3D454D',
+        'primary' : '#151A23',
+        'background': '#03060A',
+        'accent':'#663399',
+        'dimmed': '#CDCDCD',
+      },
       fontFamily: {
         helvob: ['var(--font-helv-ob)'],
       },
