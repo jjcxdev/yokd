@@ -1,0 +1,1 @@
+ALTER TABLE `exercises` ALTER COLUMN "created_by" TO "created_by" text DEFAULT 'justinchambers';

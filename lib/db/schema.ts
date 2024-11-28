@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { not, sql } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -33,11 +33,16 @@ export const plans = sqliteTable("plans", {
   description: text("description"),
 });
 
+const validTypes = ['machine', 'dumbbell', 'cable'] as const;
+type ValidType = typeof validTypes[number];
+
 export const exercises = sqliteTable("exercises", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  type: text("type").$type<ValidType>().notNull(),
+  muscleGroup:text("muscleGroup").notNull(),
   isCustom: integer("is_custom").notNull().default(0),
-  createdBy: text("created_by"),
+  createdBy: text("created_by").default('justinchambers'),
   createdAt: integer("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
