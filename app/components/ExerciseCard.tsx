@@ -6,11 +6,18 @@ interface ExerciseCardProps {
   title: string;
   muscleGroup: string;
   exerciseType: string;
+  isSelected: boolean;
+  onSelect: () => void;
 }
 
 export default function ExerciseCard({ ...props }: ExerciseCardProps) {
   const [borderColor, setBorderColor] = useState("border-border");
   const [borderWidth, setBorderWidth] = useState("border");
+
+  function handleClick() {
+    handleColorChange();
+    props.onSelect();
+  }
 
   function handleColorChange(): void {
     setBorderColor((prev) =>
@@ -20,7 +27,7 @@ export default function ExerciseCard({ ...props }: ExerciseCardProps) {
   }
 
   return (
-    <button onClick={handleColorChange} className="h-fit w-full">
+    <button onClick={handleClick} className="h-fit w-full">
       <div className={`rounded-lg border ${borderColor} ${borderWidth} p-4`}>
         <div className="flex justify-between">
           <div className="font-bold">{props.title}</div>
