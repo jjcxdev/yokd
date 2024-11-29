@@ -4,7 +4,6 @@ import ActionHeader from "@/app/components/ActionHeader";
 import ExerciseCard from "@/app/components/ExerciseCard";
 import { useState } from "react";
 import type { Exercise } from "@/types/exercises";
-import { db } from "@/lib/db";
 
 interface ExerciseListProps {
   initialData: Exercise[];

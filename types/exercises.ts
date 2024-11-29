@@ -12,7 +12,7 @@ export interface Exercise{
     createdAt: number,
 }
 
-export type ExerciseInput = {
+export interface ExerciseInput {
     id:string,
     planId:string,
     exerciseId:string,
