@@ -9,7 +9,7 @@ interface FolderToggleProps {
   menuIcon?: JSX.Element;
   count?: string;
   onClick?: () => void;
-  deletedFolder: (folderId: string) => void;
+  deletedFolder?: (folderId: string) => void;
 }
 
 export default function FolderToggle({
