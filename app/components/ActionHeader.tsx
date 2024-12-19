@@ -5,6 +5,7 @@ interface ActionHeaderProps {
   title?: string;
   button: string;
   count?: number;
+  onAction?: () => void;
 }
 
 export default function ActionHeader({ ...props }: ActionHeaderProps) {
@@ -16,6 +17,7 @@ export default function ActionHeader({ ...props }: ActionHeaderProps) {
       <div className="w-40">
         <SecondaryButton
           label={`Add ${props.count} exercise${props.count !== 1 ? "s" : ""}`}
+          onClick={props.onAction}
         />
       </div>
     </div>

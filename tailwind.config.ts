@@ -8,15 +8,19 @@ export default {
   ],
   theme: {
     extend: {
-      colors:{
-        'border':'#3D454D',
-        'primary' : '#151A23',
-        'background': '#03060A',
-        'accent':'#663399',
-        'dimmed': '#CDCDCD',
+      colors: {
+        border: "#38343E",
+        primary: "#201E24",
+        background: "#0B0911",
+        card: "#16121F",
+        accent: "#7233F3",
+        dimmed: "#92909E",
+        button: "#271C43",
+        buttonDark: "#211E2D",
+        remove: "#D78397",
       },
       fontFamily: {
-        helvob: ['var(--font-helv-ob)'],
+        helvob: ["var(--font-helv-ob)"],
       },
     },
   },
