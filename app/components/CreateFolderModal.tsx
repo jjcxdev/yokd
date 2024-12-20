@@ -3,7 +3,7 @@
 import React from "react";
 import SecondaryButton from "@/app/components/SecondaryButton";
 import { useAuth } from "@clerk/nextjs";
-import { createFolderAction } from "../actions/folders";
+import { createFolder } from "../actions/folders";
 
 interface CreateFolderModalProps {
   isOpen: boolean;
@@ -16,10 +16,10 @@ export default function CreateFolderModal({
 }: CreateFolderModalProps) {
   const { userId } = useAuth();
 
-  async function createFolder(formData: FormData) {
+  async function handleCreateFolder(formData: FormData) {
     if (!userId) return;
     const name = formData.get("name")?.toString() || "";
-    await createFolderAction(name, userId);
+    await createFolder(name, userId);
   }
 
   if (!isOpen) return null;
@@ -37,7 +37,7 @@ export default function CreateFolderModal({
           <div>
             <form
               action={async (formData) => {
-                await createFolder(formData);
+                await handleCreateFolder(formData);
                 onClose();
               }}
             >

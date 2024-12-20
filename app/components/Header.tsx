@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { Suspense } from "react";
 import { UserButton } from "@clerk/nextjs";
 
 export default function Header() {

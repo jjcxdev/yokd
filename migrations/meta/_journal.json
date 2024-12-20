@@ -15,6 +15,34 @@
       "when": 1732577009024,
       "tag": "0001_strong_colonel_america",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1732771730122,
+      "tag": "0002_classy_fallen_one",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1732772224778,
+      "tag": "0003_mixed_lifeguard",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1732772407310,
+      "tag": "0004_concerned_stryfe",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1732772459770,
+      "tag": "0005_eminent_maximus",
+      "breakpoints": true
     }
   ]
 }
