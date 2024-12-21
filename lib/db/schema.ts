@@ -27,22 +27,23 @@ export const plans = sqliteTable("plans", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   folderId: text("folder_id").notNull(),
+  userId: text("user_id").notNull().default(""),
   createdAt: integer("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
   description: text("description"),
 });
 
-const validTypes = ['machine', 'dumbbell', 'cable'] as const;
-type ValidType = typeof validTypes[number];
+const validTypes = ["machine", "dumbbell", "cable"] as const;
+type ValidType = (typeof validTypes)[number];
 
 export const exercises = sqliteTable("exercises", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   type: text("type").$type<ValidType>().notNull(),
-  muscleGroup:text("muscleGroup").notNull(),
+  muscleGroup: text("muscleGroup").notNull(),
   isCustom: integer("is_custom").notNull().default(0),
-  createdBy: text("created_by").default('justinchambers'),
+  createdBy: text("created_by").default("justinchambers"),
   createdAt: integer("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),

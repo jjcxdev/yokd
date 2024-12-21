@@ -1,7 +1,8 @@
 'use server'
 
-import { db } from "@/lib/db"
 import { asc } from "drizzle-orm"
+
+import { db } from "@/lib/db"
 import { exercises } from "@/lib/db/schema"
 
 export async function fetchExercises() {

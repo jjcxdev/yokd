@@ -1,18 +1,22 @@
 "use client";
 
-import React from "react";
-import SecondaryButton from "@/app/components/SecondaryButton";
 import { useAuth } from "@clerk/nextjs";
+import React from "react";
+
+import SecondaryButton from "@/app/components/SecondaryButton";
+
 import { createFolder } from "../actions/folders";
 
 interface CreateFolderModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 export default function CreateFolderModal({
   isOpen,
   onClose,
+  onSuccess,
 }: CreateFolderModalProps) {
   const { userId } = useAuth();
 
@@ -37,8 +41,17 @@ export default function CreateFolderModal({
           <div>
             <form
               action={async (formData) => {
-                await handleCreateFolder(formData);
-                onClose();
+                if (!userId) return;
+
+                try {
+                  const name = formData.get("name")?.toString() || "";
+                  await createFolder(name, userId);
+                  onSuccess?.();
+                  onClose();
+                } catch (error) {
+                  console.error("Error creating folder:", error);
+                  throw new Error("Error creating folder");
+                }
               }}
             >
               <input
@@ -46,6 +59,7 @@ export default function CreateFolderModal({
                 className="h-10 w-full rounded-lg border border-border bg-primary px-4"
                 type="text"
                 placeholder="New Folder"
+                required
               />
 
               <div className="pt-4">

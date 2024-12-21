@@ -1,13 +1,15 @@
 "use client";
 
-import React from "react";
 import { useAuth } from "@clerk/nextjs";
-import { Folders } from "@/types/folders";
-import FolderToggle from "./FolderToggle";
-import { TbLayoutNavbarExpandFilled } from "react-icons/tb";
+import { useRouter } from "next/navigation";
+import React from "react";
 import { FaRegFolderOpen } from "react-icons/fa";
 import { FaRegTrashAlt } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import { TbLayoutNavbarExpandFilled } from "react-icons/tb";
+
+import type { Folders } from "@/types/folders";
+
+import FolderToggle from "./FolderToggle";
 
 interface SelectFolderModalProps {
   isOpen: boolean;

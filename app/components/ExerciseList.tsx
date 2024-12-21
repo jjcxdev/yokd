@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+
 import ActionHeader from "@/app/components/ActionHeader";
 import ExerciseCard from "@/app/components/ExerciseCard";
-import { useState } from "react";
 import type { Exercise } from "@/types/exercises";
 
 interface ExerciseListProps {
