@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BsStopwatch } from "react-icons/bs";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdMore } from "react-icons/io";
@@ -31,6 +31,7 @@ export default function ExceriseRoutineCard({
 
   const [sets, setSets] = useState([{ id: 1, weight: "", reps: "" }]);
   const [notes, setNotes] = useState<string>("");
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Memoize the data transformation
   const currentData = useMemo(
@@ -86,6 +87,14 @@ export default function ExceriseRoutineCard({
     setSets(reindexedSets);
   }
 
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
+    }
+  }, [notes]);
+
   return (
     <div className="rounded-lg bg-card p-4">
       {/* Exercise Label */}
@@ -98,10 +107,11 @@ export default function ExceriseRoutineCard({
           </div>
         </div>
         <div>
-          <form>
-            <input
-              className="w-full bg-transparent text-sm"
-              type="text"
+          <form className="h-full w-full">
+            <textarea
+              ref={textareaRef}
+              className="h-auto min-h-[2.5rem] w-full resize-none bg-transparent text-sm"
+              rows={1}
               placeholder="Add routine notes here"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -133,7 +143,7 @@ export default function ExceriseRoutineCard({
         <div key={set.id} className="flex w-full">
           <div className="flex w-1/4 justify-start text-sm">{set.id}</div>
           <div className="flex w-1/4 justify-center">
-            <form className="w-1/4">
+            <form className="w-full">
               <input
                 className="w-full bg-transparent text-center text-sm"
                 type="text"
@@ -144,7 +154,7 @@ export default function ExceriseRoutineCard({
             </form>
           </div>
           <div className="flex w-1/4 justify-center">
-            <form className="">
+            <form className="w-full">
               <input
                 className="flex w-full bg-transparent text-center text-sm"
                 type="text"
@@ -156,7 +166,7 @@ export default function ExceriseRoutineCard({
           </div>
           <div className="flex w-1/4 justify-end">
             <button
-              className="text-remove text-sm"
+              className="text-sm text-remove"
               onClick={() => deleteSet(set.id)}
               disabled={sets.length <= 1}
             >
