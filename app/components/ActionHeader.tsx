@@ -7,13 +7,14 @@ interface ActionHeaderProps {
   button: string;
   count?: number;
   onAction?: () => void;
+  onCancel?: () => void;
 }
 
 export default function ActionHeader({ ...props }: ActionHeaderProps) {
   return (
     <div className="flex items-baseline justify-between bg-primary p-4">
       <div className="flex pt-8 text-sm text-accent">
-        <button>{props.button}</button>
+        <button onClick={props.onCancel}>{props.button}</button>
       </div>
       <div className="w-40">
         <SecondaryButton

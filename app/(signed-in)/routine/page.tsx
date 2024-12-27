@@ -25,8 +25,11 @@ export default function Routine() {
   const searchParams = useSearchParams();
   const folderId = searchParams.get("folderId");
   const selectedExercisesParam = searchParams.get("selectedExercises");
+  const routineNameParam = searchParams.get("routineName");
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [routineName, setRoutineName] = useState<string>("");
+  const [routineName, setRoutineName] = useState<string>(
+    routineNameParam || "",
+  );
   const [exerciseData, setExerciseData] = useState<
     Record<string, ExerciseData>
   >({});
@@ -50,13 +53,20 @@ export default function Routine() {
           return [...prevExercises, ...uniqueNewExercises];
         });
 
-        // Clean up URL after processing
-        router.replace(`/routine?folderId=${folderId}`);
+        // Clean up URL after processing but preserve Routine Name
+        const currentRoutineName = routineName || routineNameParam;
+        if (currentRoutineName) {
+          router.replace(
+            `/routine?folderId=${folderId}&routineName=${encodeURIComponent(currentRoutineName)}`,
+          );
+        } else {
+          router.replace(`/routine?folderId=${folderId}`);
+        }
       } catch (error) {
         console.error("Error parsing selected exercises:", error);
       }
     }
-  }, [selectedExercisesParam, router, folderId]);
+  }, [selectedExercisesParam, router, folderId, routineName, routineNameParam]);
 
   function handleExerciseUpdate(exerciseId: string, data: ExerciseData) {
     setExerciseData((prev) => {
@@ -74,8 +84,28 @@ export default function Routine() {
   const memoizedUpdate = useCallback(handleExerciseUpdate, []);
 
   function handleAddExercise() {
-    // Navigate to exercise selection page, preserving folderId
-    router.push(`/exercise?folderId=${folderId}`);
+    // Navigate to exercise selection page, preserving folderId and routine name
+    const currentRoutineName = routineName || routineNameParam;
+    if (currentRoutineName) {
+      router.push(
+        `/exercise?folderId=${folderId}&routineName=${encodeURIComponent(currentRoutineName)}`,
+      );
+    } else {
+      router.push(`/exercise?folderId=${folderId}`);
+    }
+  }
+
+  function handleRoutineNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const newName = e.target.value;
+    setRoutineName(newName);
+    // Update URL with new routine name
+    if (newName) {
+      router.replace(
+        `/routine?folderId=${folderId}&routineName=${encodeURIComponent(newName)}`,
+      );
+    } else {
+      router.replace(`/routine?folderId=${folderId}`);
+    }
   }
 
   function handleSave() {
@@ -142,7 +172,7 @@ export default function Routine() {
             type="text"
             placeholder="Routine Name"
             value={routineName}
-            onChange={(e) => setRoutineName(e.target.value)}
+            onChange={handleRoutineNameChange}
           />
         </form>
       </div>

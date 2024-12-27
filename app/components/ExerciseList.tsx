@@ -15,6 +15,7 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const folderId = searchParams.get("folderId");
+  const routineName = searchParams.get("routineName");
 
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(
     new Set(),
@@ -43,10 +44,23 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
       JSON.stringify(selectedExercisesData),
     );
 
-    // Navigate back to routine page with selected exercises
-    router.push(
-      `/routine?folderId=${folderId}&selectedExercises=${exercisesParam}`,
-    );
+    // Build URL with all parameters
+    let url = `/routine?folderId=${folderId}&selectedExercises=${exercisesParam}`;
+    if (routineName) {
+      url += `&routineName=${encodeURIComponent(routineName)}`;
+    }
+
+    // Navigate back to routine page with selected exercises and routine name
+    router.push(url);
+  }
+
+  function handleCancel() {
+    // Return to routine page preserving the routine name if it exists
+    let url = `/routine?folderId=${folderId}`;
+    if (routineName) {
+      url += `&routineName=${encodeURIComponent(routineName)}`;
+    }
+    router.push(url);
   }
 
   return (
@@ -57,6 +71,7 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
           button={"Cancel"}
           count={selectedExercises.size}
           onAction={handleAddExercises}
+          onCancel={handleCancel}
         />
       </div>
       <div>
