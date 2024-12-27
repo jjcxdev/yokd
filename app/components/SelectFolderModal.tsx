@@ -10,6 +10,7 @@ import { TbLayoutNavbarExpandFilled } from "react-icons/tb";
 import type { Folders } from "@/types/folders";
 
 import FolderToggle from "./FolderToggle";
+import { on } from "events";
 
 interface SelectFolderModalProps {
   isOpen: boolean;
@@ -50,13 +51,21 @@ export default function SelectFolderModal({
                   key={folder.id}
                   onClick={() => handleFolderSelect(folder.id)}
                 >
-                  <FolderToggle
-                    folder={folder}
-                    folderIcon={<FaRegFolderOpen />}
-                  />
+                  <div className="flex items-center gap-4">
+                    <FaRegFolderOpen className="h-4 w-4 text-accent" />
+                    <span>{folder.name}</span>
+                  </div>
                 </li>
               ))}
             </ul>
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={onClose}
+                className="rounded-lg bg-accent/10 px-4 py-2 transition-colors hover:bg-accent/20"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
