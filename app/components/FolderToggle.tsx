@@ -35,7 +35,9 @@ export default function FolderToggle({
             className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
           />
           <div>{folder.name}</div>
-          {props.count && <div className="text-sm">{props.count}</div>}
+          {props.count && (
+            <div className="text-sm text-accent">{props.count}</div>
+          )}
         </button>
         <div className="flex items-center">{props.menuIcon} </div>
       </div>

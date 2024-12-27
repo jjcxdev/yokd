@@ -7,7 +7,7 @@ import { TbLayoutNavbarExpandFilled } from "react-icons/tb";
 import { PlanWithExercises, type Plan } from "@/lib/db/schema";
 import type { Folders } from "@/types/folders";
 
-import { deleteFolder } from "../actions/folders";
+import { deleteFolder, deletePlan } from "../actions/folders";
 import FolderToggle from "./FolderToggle";
 import RoutineCard from "./RoutineCard";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,6 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -91,6 +90,10 @@ export default function FolderList({
                       key={plan.id}
                       label={plan.name}
                       exercises={plan.exercises || []}
+                      onDelete={() => {
+                        deletePlan(plan.id);
+                        onFolderDeleted?.();
+                      }}
                     />
                   ))}
                 </div>

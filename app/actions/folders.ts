@@ -45,16 +45,49 @@ export async function fetchFolders() {
 
 export async function deleteFolder(folderId: string) {
   try {
-    await db.delete(folders).where(eq(folders.id, folderId));
+    // First get all plans in this folder
+    const folderPlans = await db
+      .select({ id: plans.id })
+      .from(plans)
+      .where(eq(plans.folderId, folderId));
 
-    // Also delete associated plans
+    // Delete all plan_exercises for plans in this folder
+    if (folderPlans.length > 0) {
+      await db.delete(planExercises).where(
+        inArray(
+          planExercises.planId,
+          folderPlans.map((plan) => plan.id),
+        ),
+      );
+    }
+
+    // Delete associated plans
     await db.delete(plans).where(eq(plans.folderId, folderId));
+
+    // Then delete the folder
+    await db.delete(folders).where(eq(folders.id, folderId));
 
     // Revalidate after deletion
     revalidatePath("/dashboard");
   } catch (error) {
     console.error("Error deleting folder:", error);
     throw new Error("Failed to delete folder");
+  }
+}
+
+export async function deletePlan(planId: string) {
+  try {
+    // Firt delete associated plan_exercises
+    await db.delete(planExercises).where(eq(planExercises.planId, planId));
+
+    // Then delete the plan
+    await db.delete(plans).where(eq(plans.id, planId));
+
+    // Revalidate after delete
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("Error deleting plan:", error);
+    throw new Error("Failed to delete plan");
   }
 }
 
