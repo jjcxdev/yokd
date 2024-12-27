@@ -10,6 +10,19 @@ import type { Folders } from "@/types/folders";
 import { deleteFolder } from "../actions/folders";
 import FolderToggle from "./FolderToggle";
 import RoutineCard from "./RoutineCard";
+import { Button } from "@/components/ui/button";
+
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { BiDotsHorizontalRounded } from "react-icons/bi";
 
 interface FolderListProps {
   folders: Folders[];
@@ -35,12 +48,41 @@ export default function FolderList({
             <li className="pb-4" key={folder.id}>
               <FolderToggle
                 folder={folder}
-                deletedFolder={() => {
-                  deleteFolder(folder.id);
-                  onFolderDeleted?.();
-                }}
+                menuIcon={
+                  <Drawer>
+                    <DrawerTrigger asChild>
+                      <span className="cursor-pointer hover:text-accent">
+                        <BiDotsHorizontalRounded size={20} />
+                      </span>
+                    </DrawerTrigger>
+                    <DrawerContent>
+                      <DrawerHeader>
+                        <DrawerTitle>{folder.name}</DrawerTitle>
+                      </DrawerHeader>
+                      <div className="p-4">
+                        <Button
+                          variant="destructive"
+                          className="flex w-full items-center justify-center gap-2"
+                          onClick={() => {
+                            deleteFolder(folder.id);
+                            onFolderDeleted?.();
+                          }}
+                        >
+                          <FaRegTrashAlt />
+                          Delete Folder
+                        </Button>
+                      </div>
+                      <DrawerFooter>
+                        <DrawerClose asChild>
+                          <Button variant="outline" className="w-full">
+                            Cancel
+                          </Button>
+                        </DrawerClose>
+                      </DrawerFooter>
+                    </DrawerContent>
+                  </Drawer>
+                }
                 folderIcon={<TbLayoutNavbarExpandFilled />}
-                menuIcon={<FaRegTrashAlt />}
                 count={folderPlans.length.toString()}
               >
                 <div className="space-y-2">

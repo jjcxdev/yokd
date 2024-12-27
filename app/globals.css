@@ -6,3 +6,45 @@
   width: 2.75rem;
   height: 2.75rem;
 }
+
+@layer base {
+  :root {
+    /* Your custom colors in HSL */
+    --background: 264 31% 5%; /* #0B0911 */
+    --foreground: 0 0% 100%; /* White text */
+    --border: 282 10% 47%; /* #38343E */
+    --primary: 280 9% 13%; /* #201E24 */
+    --card: 264 25% 10%; /* #16121F */
+    --accent: 265 89% 58%; /* #7233F3 */
+    --dimmed: 252 4% 62%; /* #92909E */
+    --button: 264 41% 19%; /* #271C43 */
+    --button-dark: 252 19% 15%; /* #211E2D */
+    --remove: 348 53% 65%; /* #D78397 */
+
+    /* Required shadcn vars using your dark theme */
+    --primary-foreground: 0 0% 100%;
+    --card-foreground: 0 0% 100%;
+    --popover: 264 25% 10%;
+    --popover-foreground: 0 0% 100%;
+    --secondary: 264 41% 19%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 264 25% 10%;
+    --muted-foreground: 252 4% 62%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 348 53% 65%;
+    --destructive-foreground: 0 0% 100%;
+    --input: 282 10% 47%;
+    --ring: 265 89% 58%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply text-foreground bg-background;
+  }
+}

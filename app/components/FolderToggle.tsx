@@ -1,43 +1,25 @@
-import React, { startTransition, useState } from "react";
-import { useTransition } from "react";
+import React, { useState } from "react";
 import { BiChevronRight } from "react-icons/bi";
 
 import type { Folders } from "@/types/folders";
-
-import { deleteFolder } from "../actions/folders";
 
 interface FolderToggleProps {
   folder: Folders;
   folderIcon?: JSX.Element;
   menuIcon?: JSX.Element;
   count?: string;
-  onClick?: () => void;
   deletedFolder?: (folderId: string) => void;
+  onClick?: () => void;
   children?: React.ReactNode;
 }
 
 export default function FolderToggle({
   folder,
-  deletedFolder,
   children,
+  deletedFolder,
   ...props
 }: FolderToggleProps) {
-  const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
-
-  function handleDelete(e: React.MouseEvent) {
-    e.stopPropagation();
-    startTransition(async () => {
-      try {
-        await deleteFolder(folder.id);
-        deletedFolder?.(folder.id);
-        // handle success
-      } catch (error) {
-        // handle error
-        console.error("Failed to delete folder:", error);
-      }
-    });
-  }
 
   function handleToggle(e: React.MouseEvent) {
     e.stopPropagation();
@@ -55,7 +37,7 @@ export default function FolderToggle({
           <div>{folder.name}</div>
           {props.count && <div className="text-sm">{props.count}</div>}
         </button>
-        <button onClick={handleDelete}>{props.menuIcon}</button>
+        <div className="flex items-center">{props.menuIcon} </div>
       </div>
 
       {isExpanded && <div>{children}</div>}
