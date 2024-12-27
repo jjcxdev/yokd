@@ -1,26 +1,41 @@
 "use client";
 
+import dynamic from "next/dynamic";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { GoKebabHorizontal } from "react-icons/go";
+import { MdFormatListBulletedAdd } from "react-icons/md";
+import { VscNewFolder } from "react-icons/vsc";
+
+import CreateFolderModal from "@/app/components/CreateFolderModal";
 import PrimaryButton from "@/app/components/PrimaryButton";
 import RoutineCard from "@/app/components/RoutineCard";
-import CreateFolderModal from "@/app/components/CreateFolderModal";
-import SelectFolderModal from "./SelectFolderModal";
-import { VscNewFolder } from "react-icons/vsc";
-import { MdFormatListBulletedAdd } from "react-icons/md";
-import { GoKebabHorizontal } from "react-icons/go";
-import { useState } from "react";
-import { Folders } from "@/types/folders";
+import type { Plan, PlanWithExercises } from "@/lib/db/schema";
+import type { Folders } from "@/types/folders";
+
 import FolderList from "./FolderList";
-import dynamic from "next/dynamic";
+import SelectFolderModal from "./SelectFolderModal";
 
 const Header = dynamic(() => import("@/app/components/Header"), { ssr: false });
 
 interface DashboardClientProps {
   initialFolders: Folders[];
+  initialPlans: PlanWithExercises[];
 }
 
-export default function Dashboard({ initialFolders }: DashboardClientProps) {
+export default function Dashboard({
+  initialFolders,
+  initialPlans,
+}: DashboardClientProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
+  const router = useRouter();
+
+  // Handle successful folder creation
+  const handleFolderCreated = () => {
+    setIsCreateModalOpen(false);
+    router.refresh();
+  };
 
   return (
     <div className="flex min-h-screen w-96 flex-col gap-4 border border-red-500 p-4">
@@ -40,19 +55,17 @@ export default function Dashboard({ initialFolders }: DashboardClientProps) {
         />
       </div>
       <div>
-        <FolderList folders={initialFolders} />
-      </div>
-      <div>
-        <RoutineCard
-          icon={<GoKebabHorizontal />}
-          label="1/2 Back & Biceps"
-          desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vestibulum, ex eget gravida maximus, nulla odio condimentum magna, ac venenatis ex tellus vel diam"
+        <FolderList
+          folders={initialFolders}
+          plans={initialPlans}
+          onFolderDeleted={() => router.refresh()}
         />
       </div>
       {isCreateModalOpen && (
         <CreateFolderModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={handleFolderCreated}
         />
       )}
       {isSelectModalOpen && (

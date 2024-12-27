@@ -1,4 +1,4 @@
-import { not, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -26,23 +26,28 @@ export const folders = sqliteTable("folders", {
 export const plans = sqliteTable("plans", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  folderId: text("folder_id").notNull(),
+  folderId: text("folder_id")
+    .notNull()
+    .references(() => folders.id),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
   createdAt: integer("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
   description: text("description"),
 });
 
-const validTypes = ['machine', 'dumbbell', 'cable'] as const;
-type ValidType = typeof validTypes[number];
+const validTypes = ["machine", "dumbbell", "cable"] as const;
+type ValidType = (typeof validTypes)[number];
 
 export const exercises = sqliteTable("exercises", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  type: text("type").$type<ValidType>().notNull(),
-  muscleGroup:text("muscleGroup").notNull(),
+  type: text("type", { enum: validTypes }).$type<ValidType>().notNull(),
+  muscleGroup: text("muscleGroup").notNull(),
   isCustom: integer("is_custom").notNull().default(0),
-  createdBy: text("created_by").default('justinchambers'),
+  createdBy: text("created_by").default("justinchambers"),
   createdAt: integer("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
@@ -65,6 +70,9 @@ export const workoutSessions = sqliteTable("workout_sessions", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
   planId: text("plan_id").notNull(),
+  status: text("status", { enum: ["active", "completed", "cancelled"] })
+    .notNull()
+    .default("active"),
   startedAt: integer("started_at").notNull(),
   completedAt: integer("completed_at").notNull(),
 });
@@ -84,3 +92,6 @@ export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Plan = typeof plans.$inferSelect;
 export type Exercise = typeof exercises.$inferSelect;
+export interface PlanWithExercises extends Plan {
+  exercises: Array<{ name: string }>;
+}

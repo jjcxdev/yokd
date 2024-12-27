@@ -1,7 +1,8 @@
-import { db } from "@/lib/db";
 import { asc } from "drizzle-orm";
-import { exercises } from "@/lib/db/schema";
+
 import ExerciseList from "@/app/components/ExerciseList";
+import { db } from "@/lib/db";
+import { exercises } from "@/lib/db/schema";
 
 export default async function Exercise() {
   const data = await db

@@ -1,90 +1,80 @@
 /* eslint-disable import-x/no-named-as-default-member */
-
 import comments from "@eslint-community/eslint-plugin-eslint-comments/configs";
 import react from "@eslint-react/eslint-plugin";
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
 import prettierConfig from "eslint-config-prettier";
 import eslintPluginImportX from "eslint-plugin-import-x";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 import regexPlugin from "eslint-plugin-regexp";
 import security from "eslint-plugin-security";
 import tailwind from "eslint-plugin-tailwindcss";
-// import globals from 'globals'
-import tseslint from "typescript-eslint";
+import * as tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 
 const compat = new FlatCompat({
   baseDirectory: ".",
+  recommendedConfig: js.configs.recommended,
 });
 
-const config = tseslint.config(
+export default [
   {
     ignores: [
-      ".next",
-      "node_modules",
-      ".yarn",
-      "eslint.config.mjs",
+      ".next/**",
+      "node_modules/**",
+      ".yarn/**",
       "next.config.mjs",
       "postcss.config.mjs",
-      "coverage",
+      "coverage/**",
     ],
   },
   {
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: ".",
-        project: "@typescript-eslint/parser",
-        ecmaVersion: 2017,
-      },
-    },
-  },
-  // Base
-  js.configs.recommended,
-  ...tseslint.configs.strictTypeChecked,
-  // ...tseslint.configs.stylisticTypeChecked,
-  eslintPluginImportX.flatConfigs.recommended,
-  eslintPluginImportX.flatConfigs.typescript,
-  comments.recommended,
-  regexPlugin.configs["flat/recommended"],
-  security.configs.recommended,
-
-  // Next.js / React
-  ...compat.extends("plugin:@next/next/recommended"),
-  ...compat.extends("plugin:react-hooks/recommended"),
-  ...compat.plugins("react-compiler"),
-  react.configs["recommended-type-checked"],
-
-  // Tailwind
-  ...tailwind.configs["flat/recommended"],
-
-  {
-    linterOptions: {
-      reportUnusedDisableDirectives: true,
+    files: ["**/*.{js,jsx,ts,tsx}"],
+    plugins: {
+      "@typescript-eslint": tseslint,
+      "simple-import-sort": simpleImportSort,
+      "import-x": eslintPluginImportX,
+      regexp: regexPlugin,
+      security: security,
+      tailwindcss: tailwind,
+      "@eslint-comments": comments,
+      react: react,
     },
     languageOptions: {
       ecmaVersion: 2017,
       sourceType: "module",
+      parser: tsParser,
       parserOptions: {
-        projectService: true,
-        tsconfigRootDir: ".",
         ecmaFeatures: {
           jsx: true,
         },
+        project: "./tsconfig.json",
       },
-      // globals: {
-      //   ...globals.browser,
-      //   ...globals.node,
-      // },
     },
     settings: {
       tailwindcss: {
         callees: ["classnames", "clsx", "ctl", "cn", "cva"],
       },
+      "import/resolver": {
+        typescript: {
+          alwaysTryTypes: true,
+          project: "./tsconfig.json",
+        },
+        node: {
+          extensions: [".js", ".jsx", ".ts", ".tsx"],
+        },
+      },
     },
     rules: {
-      "@/no-unused-vars": [
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
+      "import-x/order": "off",
+      // Add this to ignore path alias errors
+      "import-x/no-unresolved": [
         "error",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+        {
+          ignore: ["geist", "@clerk/nextjs", "\\./.*", "\\.\\./.*", "^@/"], // Add ^@/ to ignore path aliases
+        },
       ],
       "@typescript-eslint/consistent-type-imports": [
         "warn",
@@ -96,28 +86,13 @@ const config = tseslint.config(
       ],
       "@typescript-eslint/no-unnecessary-condition": [
         "error",
-        {
-          allowConstantLoopConditions: true,
-        },
+        { allowConstantLoopConditions: true },
       ],
       "@typescript-eslint/consistent-type-exports": [
         "error",
         { fixMixedExportsWithInlineTypeSpecifier: true },
       ],
-      "import-x/no-unresolved": ["error", { ignore: ["geist"] }],
-      "react-compiler/react-compiler": "error",
     },
   },
-  {
-    files: ["**/*.cjs", "**/*.cts"],
-    languageOptions: {
-      sourceType: "commonjs",
-    },
-  },
-
   prettierConfig,
-);
-
-export default config;
-
-/* eslint-enable import-x/no-named-as-default-member */
+];

@@ -1,16 +1,17 @@
 "use client";
 
+import { nanoid } from "nanoid";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { GiWeightLiftingUp } from "react-icons/gi";
+import { IoAddCircle } from "react-icons/io5";
+import { useUser } from "@clerk/nextjs";
+import { postRoutines } from "@/app/actions/routines";
+import ExerciseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import SaveHeader from "@/app/components/SaveHeader";
 import SecondaryButton from "@/app/components/SecondaryButton";
-import ExerciseRoutineCard from "@/app/components/ExceriseRoutineCard";
-import { IoAddCircle } from "react-icons/io5";
-import { GiWeightLiftingUp } from "react-icons/gi";
-import { useCallback, useEffect, useState } from "react";
-import { Exercise } from "@/lib/db/schema";
-import { postRoutines } from "@/app/actions/routines";
-import { ExerciseInput } from "@/types/exercises";
-import { nanoid } from "nanoid";
+import type { Exercise } from "@/lib/db/schema";
+import type { ExerciseInput } from "@/types/exercises";
 
 interface ExerciseData {
   exerciseId: string;
@@ -19,6 +20,7 @@ interface ExerciseData {
 }
 
 export default function Routine() {
+  const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const folderId = searchParams.get("folderId");
@@ -77,13 +79,13 @@ export default function Routine() {
   }
 
   function handleSave() {
-    if (!routineName || !folderId) return;
+    if (!routineName || !folderId || !user) return;
 
     // Transform exerciseData into ExerciseInput array
     const exerciseInputs: ExerciseInput[] = Object.entries(exerciseData).map(
       ([_, data], index) => ({
         id: nanoid(),
-        planId: folderId,
+        planId: "",
         exerciseId: data.exerciseId,
         order: index,
         warmupSets: 0,
@@ -99,14 +101,25 @@ export default function Routine() {
       name: routineName,
       folderId: folderId,
       exercises: exerciseInputs,
-    }).then((result) => {
-      if (result.success) {
-        router.push(`/dashboard`);
-      } else {
-        // Handle error
-        console.error("Failed to save routine:", result.error);
-      }
-    });
+      userId: user.id,
+    })
+      .then((result) => {
+        if (result.success) {
+          // small delay before navigation
+          setTimeout(() => {
+            router.refresh(); // Force refresh of the page data
+            router.push(`/dashboard`);
+          }, 500);
+        } else {
+          // Handle error
+          console.error("Failed to save routine:", result.error);
+          // TODO: Show error to user
+        }
+      })
+      .catch((error) => {
+        console.error("Error saving routine:", error);
+        // TODO: Show error to user
+      });
   }
 
   function handleCancel() {

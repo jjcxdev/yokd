@@ -1,10 +1,11 @@
-import SecondaryButton from "@/app/components/SecondaryButton";
-import { IoAddCircle } from "react-icons/io5";
-import { BsStopwatch } from "react-icons/bs";
-import { IoMdMore } from "react-icons/io";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { BsStopwatch } from "react-icons/bs";
 import { FaRegTrashCan } from "react-icons/fa6";
-import { Exercise } from "@/lib/db/schema";
+import { IoMdMore } from "react-icons/io";
+import { IoAddCircle } from "react-icons/io5";
+
+import SecondaryButton from "@/app/components/SecondaryButton";
+import type { Exercise } from "@/lib/db/schema";
 
 interface ExerciseRoutineCardProps {
   exercise: Exercise;
