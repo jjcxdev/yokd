@@ -57,6 +57,13 @@
       "when": 1734742849350,
       "tag": "0007_noisy_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1735282676825,
+      "tag": "0008_bizarre_true_believers",
+      "breakpoints": true
     }
   ]
 }
