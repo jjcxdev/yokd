@@ -10,7 +10,7 @@ import { VscNewFolder } from "react-icons/vsc";
 import CreateFolderModal from "@/app/components/CreateFolderModal";
 import PrimaryButton from "@/app/components/PrimaryButton";
 import RoutineCard from "@/app/components/RoutineCard";
-import type { Plan } from "@/lib/db/schema";
+import type { Plan, PlanWithExercises } from "@/lib/db/schema";
 import type { Folders } from "@/types/folders";
 
 import FolderList from "./FolderList";
@@ -20,7 +20,7 @@ const Header = dynamic(() => import("@/app/components/Header"), { ssr: false });
 
 interface DashboardClientProps {
   initialFolders: Folders[];
-  initialPlans: Plan[];
+  initialPlans: PlanWithExercises[];
 }
 
 export default function Dashboard({
@@ -59,13 +59,6 @@ export default function Dashboard({
           folders={initialFolders}
           plans={initialPlans}
           onFolderDeleted={() => router.refresh()}
-        />
-      </div>
-      <div>
-        <RoutineCard
-          icon={<GoKebabHorizontal />}
-          label="1/2 Back & Biceps"
-          desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vestibulum, ex eget gravida maximus, nulla odio condimentum magna, ac venenatis ex tellus vel diam"
         />
       </div>
       {isCreateModalOpen && (

@@ -92,3 +92,6 @@ export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Plan = typeof plans.$inferSelect;
 export type Exercise = typeof exercises.$inferSelect;
+export interface PlanWithExercises extends Plan {
+  exercises: Array<{ name: string }>;
+}

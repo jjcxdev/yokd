@@ -4,7 +4,7 @@ import React from "react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { TbLayoutNavbarExpandFilled } from "react-icons/tb";
 
-import { type Plan } from "@/lib/db/schema";
+import { PlanWithExercises, type Plan } from "@/lib/db/schema";
 import type { Folders } from "@/types/folders";
 
 import { deleteFolder } from "../actions/folders";
@@ -13,7 +13,7 @@ import RoutineCard from "./RoutineCard";
 
 interface FolderListProps {
   folders: Folders[];
-  plans?: Plan[];
+  plans?: PlanWithExercises[];
   onFolderDeleted?: () => void;
 }
 
@@ -44,11 +44,11 @@ export default function FolderList({
                 count={folderPlans.length.toString()}
               >
                 <div className="space-y-2">
-                  {folderPlans.map((plan) => (
+                  {folderPlans.map((plan: PlanWithExercises) => (
                     <RoutineCard
                       key={plan.id}
                       label={plan.name}
-                      desc={plan.description || "No description available"}
+                      exercises={plan.exercises || []}
                     />
                   ))}
                 </div>

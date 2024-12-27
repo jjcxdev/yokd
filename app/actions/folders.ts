@@ -1,12 +1,13 @@
 "use server";
 
-import { asc, eq, inArray } from "drizzle-orm";
+import { asc, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
-import type { Plan} from "@/lib/db/schema";
-import { folders, plans } from "@/lib/db/schema";
+import type { Plan } from "@/lib/db/schema";
+import { exercises, folders, planExercises, plans } from "@/lib/db/schema";
 import type { Folders } from "@/types/folders";
+import type { PlanWithExercises } from "@/lib/db/schema";
 
 export async function createFolder(name: string, userId: string) {
   try {
@@ -59,7 +60,7 @@ export async function deleteFolder(folderId: string) {
 
 export async function fetchFoldersWithPlans(): Promise<{
   folders: Folders[];
-  plans: Plan[];
+  plans: PlanWithExercises[];
 }> {
   try {
     const foldersData = await db
@@ -70,19 +71,52 @@ export async function fetchFoldersWithPlans(): Promise<{
     const plansData =
       foldersData.length > 0
         ? await db
-            .select()
+            .select({
+              // Select all plan fields
+              id: plans.id,
+              name: plans.name,
+              folderId: plans.folderId,
+              userId: plans.userId,
+              createdAt: plans.createdAt,
+              description: plans.description,
+              // Add exercises as JSON array
+              exerciseNames:
+                sql<string>`GROUP_CONCAT(json_object('name', ${exercises.name}))`.as(
+                  "exercises",
+                ),
+            })
             .from(plans)
+            .leftJoin(planExercises, eq(plans.id, planExercises.planId))
+            .leftJoin(exercises, eq(planExercises.exerciseId, exercises.id))
             .where(
               inArray(
                 plans.folderId,
                 foldersData.map((f) => f.id),
               ),
             )
+            .groupBy(plans.id)
         : [];
+    // Parse the JSON string into actual arrays
+    const transformedPlans: PlanWithExercises[] = plansData.map((plan) => {
+      try {
+        // The string is already a series of JSON objects, but needs to be wrapped in brackets
+        const exercisesArray = JSON.parse(`[${plan.exerciseNames}]`);
+        return {
+          ...plan,
+          exercises: exercisesArray,
+        };
+      } catch (error) {
+        console.error("Error parsing exercises for plan:", plan.id, error);
+        return {
+          ...plan,
+          exercises: [],
+        };
+      }
+    });
 
     return {
       folders: foldersData,
-      plans: plansData,
+      plans: transformedPlans,
     };
   } catch (error) {
     console.error("Error fetching folders with plans:", error);
