@@ -6,19 +6,22 @@ export const users = sqliteTable("users", {
   createdAt: integer("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-});
-
-export const sessions = sqliteTable("sessions", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").notNull(),
-  expiresAt: integer("expires_at").notNull(),
+  updatedAt: integer("updated_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const folders = sqliteTable("folders", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  userId: text("user_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+  description: text("description"),
   createdAt: integer("created_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer("updated_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
@@ -32,10 +35,16 @@ export const plans = sqliteTable("plans", {
   userId: text("user_id")
     .notNull()
     .references(() => users.id),
+  status: text("status", { enum: ["active", "archived"] })
+    .notNull()
+    .default("active"),
+  description: text("description"),
   createdAt: integer("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  description: text("description"),
+  updatedAt: integer("updated_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
 });
 
 const validTypes = ["machine", "dumbbell", "cable"] as const;
@@ -47,7 +56,9 @@ export const exercises = sqliteTable("exercises", {
   type: text("type", { enum: validTypes }).$type<ValidType>().notNull(),
   muscleGroup: text("muscleGroup").notNull(),
   isCustom: integer("is_custom").notNull().default(0),
-  createdBy: text("created_by").default("justinchambers"),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => users.id),
   createdAt: integer("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
@@ -55,8 +66,12 @@ export const exercises = sqliteTable("exercises", {
 
 export const planExercises = sqliteTable("plan_exercises", {
   id: text("id").primaryKey(),
-  planId: text("plan_id").notNull(),
-  exerciseId: text("exercise_id").notNull(),
+  planId: text("plan_id")
+    .notNull()
+    .references(() => plans.id),
+  exerciseId: text("exercise_id")
+    .notNull()
+    .references(() => exercises.id),
   order: integer("order").notNull(),
   warmupSets: integer("warmup_sets").notNull().default(0),
   warmupReps: integer("warmup_reps").notNull().default(0),
@@ -68,19 +83,30 @@ export const planExercises = sqliteTable("plan_exercises", {
 
 export const workoutSessions = sqliteTable("workout_sessions", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull(),
-  planId: text("plan_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+  planId: text("plan_id")
+    .notNull()
+    .references(() => plans.id),
   status: text("status", { enum: ["active", "completed", "cancelled"] })
     .notNull()
     .default("active"),
-  startedAt: integer("started_at").notNull(),
-  completedAt: integer("completed_at").notNull(),
+  startedAt: integer("started_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+  completedAt: integer("completed_at"),
 });
 
 export const sets = sqliteTable("sets", {
   id: text("id").primaryKey(),
-  sessionId: text("session_id").notNull(),
-  exerciseId: text("exercise_id").notNull(),
+  sessionId: text("session_id")
+    .notNull()
+    .references(() => workoutSessions.id),
+  exerciseId: text("exercise_id")
+    .notNull()
+    .references(() => exercises.id),
+  setNumber: integer("set_number").notNull(),
   weight: integer("weight").notNull().default(0),
   reps: integer("reps").notNull().default(0),
   isWarmup: integer("is_warmup").notNull().default(0),
@@ -89,7 +115,6 @@ export const sets = sqliteTable("sets", {
 
 // Only export the types you commonly need in your app
 export type User = typeof users.$inferSelect;
-export type Session = typeof sessions.$inferSelect;
 export type Plan = typeof plans.$inferSelect;
 export type Exercise = typeof exercises.$inferSelect;
 export interface PlanWithExercises extends Plan {

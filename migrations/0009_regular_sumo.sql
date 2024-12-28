@@ -1,0 +1,2 @@
+ALTER TABLE `workout_sessions` ALTER COLUMN "user_id" TO "user_id" text NOT NULL REFERENCES users(id) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `workout_sessions` ALTER COLUMN "plan_id" TO "plan_id" text NOT NULL REFERENCES plans(id) ON DELETE no action ON UPDATE no action;

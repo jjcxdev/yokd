@@ -3,14 +3,12 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { GoKebabHorizontal } from "react-icons/go";
 import { MdFormatListBulletedAdd } from "react-icons/md";
 import { VscNewFolder } from "react-icons/vsc";
 
 import CreateFolderModal from "@/app/components/CreateFolderModal";
 import PrimaryButton from "@/app/components/PrimaryButton";
-import RoutineCard from "@/app/components/RoutineCard";
-import type { Plan, PlanWithExercises } from "@/lib/db/schema";
+import type { PlanWithExercises } from "@/lib/db/schema";
 import type { Folders } from "@/types/folders";
 
 import FolderList from "./FolderList";

@@ -88,6 +88,7 @@ export default function FolderList({
                   {folderPlans.map((plan: PlanWithExercises) => (
                     <RoutineCard
                       key={plan.id}
+                      id={plan.id}
                       label={plan.name}
                       exercises={plan.exercises || []}
                       onDelete={() => {
