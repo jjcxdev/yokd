@@ -22,15 +22,12 @@ type ExerciseWithPlan = {
 
 interface SessionClientProps {
   sessionData: {
-    session: {
-      id: string;
-      userId: string;
-      planId: string;
-      status: "active" | "completed" | "cancelled";
-      startedAt: number;
-      completedAt: number | null;
-    };
     exercises: ExerciseWithPlan[];
+    userId: string;
+    planId: string;
+    status: "active" | "completed" | "cancelled";
+    startedAt: number;
+    completedAt: number | null;
   };
 }
 
@@ -59,6 +56,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
             <ExceriseRoutineCard
               key={exercise.id}
               exercise={exercise}
+              planExercise={planExercise}
               onUpdate={(data) => handleExerciseUpdate(exercise.id, data)}
             />
           ))}

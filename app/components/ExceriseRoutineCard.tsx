@@ -9,6 +9,18 @@ import type { Exercise } from "@/lib/db/schema";
 
 interface ExerciseRoutineCardProps {
   exercise: Exercise;
+  planExercise: {
+    id: string;
+    planId: string;
+    exerciseId: string;
+    order: number;
+    warmupSets: number;
+    warmupReps: number;
+    workingSets: number;
+    workingReps: number;
+    restTime: number;
+    notes?: string | null;
+  };
   onUpdate: (exerciseData: {
     exerciseId: string;
     notes: string;
@@ -21,6 +33,7 @@ interface ExerciseRoutineCardProps {
 
 export default function ExceriseRoutineCard({
   exercise,
+  planExercise,
   onUpdate,
 }: ExerciseRoutineCardProps) {
   interface Set {
@@ -29,8 +42,36 @@ export default function ExceriseRoutineCard({
     reps: string;
   }
 
-  const [sets, setSets] = useState([{ id: 1, weight: "", reps: "" }]);
-  const [notes, setNotes] = useState<string>("");
+  // Initialize sets based on planExercise data
+  const initialSets = useMemo(() => {
+    const sets = [];
+
+    // Add warmup sets
+    for (let i = 1; i <= planExercise.warmupSets; i++) {
+      sets.push({
+        id: i,
+        weight: "",
+        reps: planExercise.warmupReps.toString(),
+        isWarmup: true,
+      });
+    }
+
+    // Add working sets
+    for (let i = 1; i <= planExercise.workingSets; i++) {
+      sets.push({
+        id: i,
+        weight: "",
+        reps: planExercise.workingReps.toString(),
+        isWarmup: false,
+      });
+    }
+    return sets.length
+      ? sets
+      : [{ id: 1, weight: "", reps: "", isWarmup: false }];
+  }, [planExercise]);
+
+  const [sets, setSets] = useState(initialSets);
+  const [notes, setNotes] = useState<string>(planExercise.notes || "");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Memoize the data transformation
@@ -60,6 +101,7 @@ export default function ExceriseRoutineCard({
         id: prevSets.length + 1,
         weight: "",
         reps: "",
+        isWarmup: false,
       },
     ]);
   }
@@ -91,9 +133,14 @@ export default function ExceriseRoutineCard({
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
-      textarea.style.height = `${textarea.scroll}px`;
+      textarea.style.height = `${textarea.scrollHeight}px`;
     }
   }, [notes]);
+
+  const handleCheckboxChange = (setId: number) => {
+    // Trigger rest timer countdown logic
+    console.log(`Set ${setId} completed. Trigger rest timer countdown.`);
+  };
 
   return (
     <div className="rounded-lg bg-card p-4">
@@ -115,6 +162,12 @@ export default function ExceriseRoutineCard({
               placeholder="Add routine notes here"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              style={{ overflow: "hidden", height: "auto" }}
+              onInput={(e) => {
+                const textarea = e.target as HTMLTextAreaElement;
+                textarea.style.height = "auto";
+                textarea.style.height = `${textarea.scrollHeight}px`;
+              }}
             />
           </form>
         </div>
@@ -125,7 +178,7 @@ export default function ExceriseRoutineCard({
       <div className="flex items-center gap-2 py-4 text-accent">
         <BsStopwatch />
         <p>Rest Timer:</p>
-        <div>90s</div>
+        <div>{planExercise.restTime}</div>
       </div>
 
       {/* Set details header */}
@@ -134,7 +187,7 @@ export default function ExceriseRoutineCard({
         <div className="flex w-1/4 justify-start">Set</div>
         <div className="flex w-1/4 justify-center">Lbs</div>
         <div className="flex w-1/4 justify-center">Reps</div>
-        <div className="flex w-1/4 justify-center"></div>
+        <div className="flex w-1/4 justify-center">✓</div>
       </div>
 
       {/* Dynamic sets */}
@@ -149,7 +202,12 @@ export default function ExceriseRoutineCard({
                 type="text"
                 placeholder="-"
                 value={set.weight}
-                onChange={(e) => updateSet(set.id, "weight", e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*\.?\d*$/.test(value)) {
+                    updateSet(set.id, "weight", value);
+                  }
+                }}
               />
             </form>
           </div>
@@ -160,11 +218,20 @@ export default function ExceriseRoutineCard({
                 type="text"
                 placeholder="-"
                 value={set.reps}
-                onChange={(e) => updateSet(set.id, "reps", e.target.value)}
-              ></input>
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) {
+                    updateSet(set.id, "reps", value);
+                  }
+                }}
+              />
             </form>
           </div>
           <div className="flex w-1/4 justify-end">
+            <input
+              type="checkbox"
+              onChange={() => handleCheckboxChange(set.id)}
+            />
             <button
               className="text-sm text-remove"
               onClick={() => deleteSet(set.id)}

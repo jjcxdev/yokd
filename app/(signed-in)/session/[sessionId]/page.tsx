@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getWorkoutSession } from "@/app/actions/workout";
 import SessionClient from "./SessionClient";
+import SessionWrapper from "./SessionWrapper";
 
 interface SessionPageProps {
   params: {
@@ -19,9 +20,29 @@ export default async function SessionPage({ params }: SessionPageProps) {
 
     // Access sessionId after auth check
     const { sessionId } = await params;
+    const { session, exercises } = await getWorkoutSession(sessionId);
 
-    const sessionData = await getWorkoutSession(sessionId);
-    return <SessionClient sessionData={sessionData} />;
+    const sessionData = {
+      exercises,
+      userId: session.userId,
+      planId: session.planId,
+      status: session.status,
+      startedAt: session.startedAt,
+      completedAt: session.completedAt,
+      sessionId: session.id,
+    };
+
+    const handleFinish = (): void => {
+      // Logic to stop the timer and save the data
+      console.log("Finish button clicked");
+      // Save the data here
+    };
+
+    return (
+      <SessionWrapper>
+        <SessionClient sessionData={sessionData} />
+      </SessionWrapper>
+    );
   } catch (error) {
     console.error("Error in session page:", error);
     redirect("/dashboard");
