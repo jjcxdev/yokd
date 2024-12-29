@@ -32,14 +32,8 @@ export default async function SessionPage({ params }: SessionPageProps) {
       sessionId: session.id,
     };
 
-    const handleFinish = (): void => {
-      // Logic to stop the timer and save the data
-      console.log("Finish button clicked");
-      // Save the data here
-    };
-
     return (
-      <SessionWrapper>
+      <SessionWrapper sessionId={sessionData.sessionId}>
         <SessionClient sessionData={sessionData} />
       </SessionWrapper>
     );

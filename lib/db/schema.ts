@@ -1,5 +1,11 @@
 import { sql } from "drizzle-orm";
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  uniqueIndex,
+  index,
+  text,
+  integer,
+} from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
@@ -97,6 +103,34 @@ export const workoutSessions = sqliteTable("workout_sessions", {
     .default(sql`CURRENT_TIMESTAMP`),
   completedAt: integer("completed_at"),
 });
+
+export const workoutData = sqliteTable(
+  "workout_data",
+  {
+    id: text("id").primaryKey(),
+    sessionId: text("session_id")
+      .notNull()
+      .references(() => workoutSessions.id),
+    exerciseId: text("exercise_id")
+      .notNull()
+      .references(() => exercises.id),
+    notes: text("notes"),
+    sets: text("sets"),
+    updatedAt: integer("updated_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => ({
+    sessionExerciseIdx: index("session_exercise_idx").on(
+      table.sessionId,
+      table.exerciseId,
+    ),
+    uniqueSessionExercise: uniqueIndex("unique_session_exercise").on(
+      table.sessionId,
+      table.exerciseId,
+    ),
+  }),
+);
 
 export const sets = sqliteTable("sets", {
   id: text("id").primaryKey(),

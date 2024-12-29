@@ -21,6 +21,10 @@ interface ExerciseRoutineCardProps {
     restTime: number;
     notes?: string | null;
   };
+  previousData: {
+    notes: string;
+    sets: string;
+  };
   onUpdate: (exerciseData: {
     exerciseId: string;
     notes: string;
@@ -31,24 +35,74 @@ interface ExerciseRoutineCardProps {
   }) => void;
 }
 
+type ExerciseData = {
+  exerciseId: string;
+  notes: string;
+  sets: Array<{
+    weight: string;
+    reps: string;
+  }>;
+};
+
+function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number,
+): {
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+} {
+  let timeout: NodeJS.Timeout | null = null;
+
+  const debounced = (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+
+  debounced.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  };
+
+  return debounced;
+}
+
 export default function ExceriseRoutineCard({
   exercise,
   planExercise,
+  previousData,
   onUpdate,
 }: ExerciseRoutineCardProps) {
   interface Set {
     id: number;
     weight: string;
     reps: string;
+    isWarmup: boolean;
   }
 
-  // Initialize sets based on planExercise data
+  // Initialize sets based on planExercise data and previous data
   const initialSets = useMemo(() => {
-    const sets = [];
+    try {
+      // If we have previous data, use it
+      if (previousData.sets) {
+        const parsedSets = JSON.parse(previousData.sets);
+        return parsedSets.map((set: any, index: number) => ({
+          id: index + 1,
+          weight: set.weight || "",
+          reps: set.reps || "",
+          isWarmup: index < planExercise.warmupSets,
+        }));
+      }
+    } catch (error) {
+      console.error("Error parsing previous data:", error);
+    }
 
+    // Fallback to default sets if no previous data or parsing error
+    const defaultSets = [];
     // Add warmup sets
     for (let i = 1; i <= planExercise.warmupSets; i++) {
-      sets.push({
+      defaultSets.push({
         id: i,
         weight: "",
         reps: planExercise.warmupReps.toString(),
@@ -58,44 +112,62 @@ export default function ExceriseRoutineCard({
 
     // Add working sets
     for (let i = 1; i <= planExercise.workingSets; i++) {
-      sets.push({
-        id: i,
+      defaultSets.push({
+        id: i + planExercise.warmupSets,
         weight: "",
         reps: planExercise.workingReps.toString(),
         isWarmup: false,
       });
     }
-    return sets.length
-      ? sets
+
+    // Return default sets if no valid previous data
+    return defaultSets.length
+      ? defaultSets
       : [{ id: 1, weight: "", reps: "", isWarmup: false }];
-  }, [planExercise]);
+  }, [planExercise, previousData]); // Remove previousData from dependencies
 
   const [sets, setSets] = useState(initialSets);
   const [notes, setNotes] = useState<string>(planExercise.notes || "");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const isInitialRender = useRef(true);
 
   // Memoize the data transformation
   const currentData = useMemo(
     () => ({
       exerciseId: exercise.id,
       notes,
-      sets: sets.map(({ weight, reps }) => ({ weight, reps })),
+      sets: sets.map(({ weight, reps }: { weight: string; reps: string }) => ({
+        weight,
+        reps,
+      })),
     }),
     [sets, notes, exercise.id],
   );
 
-  // Only update parent when currentData actually changes
-  useEffect(() => {
-    // Debounce the update
-    const timeoutId = setTimeout(() => {
-      onUpdate(currentData);
-    }, 100);
+  const debouncedOnUpdate = useCallback(
+    debounce((data: ExerciseData) => {
+      onUpdate(data);
+    }, 500),
+    [onUpdate],
+  );
 
-    return () => clearTimeout(timeoutId);
-  }, [currentData, onUpdate]);
+  // Only update parent on user changes, not initial render
+  useEffect(() => {
+    // Skip very first render
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
+    debouncedOnUpdate(currentData);
+
+    return () => {
+      debouncedOnUpdate.cancel();
+    };
+  }, [currentData, debouncedOnUpdate]);
 
   function addSet() {
-    setSets((prevSets) => [
+    setSets((prevSets: Set[]) => [
       ...prevSets,
       {
         id: prevSets.length + 1,
@@ -112,16 +184,18 @@ export default function ExceriseRoutineCard({
     value: string,
   ): void {
     setSets(
-      sets.map((set) => (set.id === id ? { ...set, [field]: value } : set)),
+      sets.map((set: Set) =>
+        set.id === id ? { ...set, [field]: value } : set,
+      ),
     );
   }
 
   function deleteSet(id: number): void {
     if (sets.length <= 1) return;
 
-    const filteredSets = sets.filter((set) => set.id !== id);
+    const filteredSets = sets.filter((set: Set) => set.id !== id);
 
-    const reindexedSets = filteredSets.map((set, index) => ({
+    const reindexedSets = filteredSets.map((set: Set, index: number) => ({
       ...set,
       id: index + 1,
     }));
@@ -192,7 +266,7 @@ export default function ExceriseRoutineCard({
 
       {/* Dynamic sets */}
 
-      {sets.map((set) => (
+      {sets.map((set: Set) => (
         <div key={set.id} className="flex w-full">
           <div className="flex w-1/4 justify-start text-sm">{set.id}</div>
           <div className="flex w-1/4 justify-center">
