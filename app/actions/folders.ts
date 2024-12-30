@@ -71,7 +71,6 @@ export async function createFolder(name: string, userId: string) {
 
     // Log the data we're trying to insert
     console.log("Creating folder with data:", folderData);
-
     try {
       // Insert the folder into the database
       console.log("Attempting to insert folder...");
