@@ -54,7 +54,6 @@ export default function SessionWrapper({
             } as any)
           : child,
       )}
-      ;
     </SessionLayout>
   );
 }

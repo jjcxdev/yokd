@@ -3,6 +3,7 @@ import { BsStopwatch } from "react-icons/bs";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdMore } from "react-icons/io";
 import { IoAddCircle } from "react-icons/io5";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import SecondaryButton from "@/app/components/SecondaryButton";
 import type { Exercise } from "@/lib/db/schema";
@@ -267,6 +268,7 @@ export default function ExceriseRoutineCard({
         <div className="flex w-1/4 justify-center">Lbs</div>
         <div className="flex w-1/4 justify-center">Reps</div>
         <div className="flex w-1/4 justify-center">✓</div>
+        <div className="flex w-[14px] justify-center"></div>
       </div>
 
       {/* Dynamic sets */}
@@ -306,11 +308,11 @@ export default function ExceriseRoutineCard({
               />
             </form>
           </div>
-          <div className="flex w-1/4 justify-end">
-            <input
-              type="checkbox"
-              onChange={() => handleCheckboxChange(set.id)}
-            />
+          <div className="flex w-1/4 justify-center">
+            <Checkbox onCheckedChange={() => handleCheckboxChange(set.id)} />
+          </div>
+          {/* Delete Set Button */}
+          <div className="w-[14px ] flex justify-center">
             <button
               className="text-sm text-remove"
               onClick={() => deleteSet(set.id)}

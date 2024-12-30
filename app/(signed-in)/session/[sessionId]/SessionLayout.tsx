@@ -78,19 +78,31 @@ export default function SessionLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-primary p-4">
-        <div>
-          <div className="text-sm text-dimmed">Duration</div>
-          <div className="text-accent">{formatTime(elapsedTime)}</div>
-        </div>
-        <div>
-          <div className="text-sm text-dimmed">Rest Time</div>
-          <div className="text-accent">
-            {isResting ? `${currentRestTime}s` : `${restTime}s`}
+        <div className="flex w-full items-center justify-between">
+          {/* Duration Time */}
+          <div className="min-w-32">
+            <div className="text-sm text-dimmed">Duration</div>
+            <div className="text-accent">{formatTime(elapsedTime)}</div>
+          </div>
+
+          {/* Rest Time */}
+          <div className="min-w-32 text-center">
+            <div className="text-sm text-dimmed">Rest Time</div>
+            <div className="text-2xl font-bold text-accent">
+              {isResting ? `${currentRestTime}s` : `${restTime}s`}
+            </div>
+          </div>
+
+          {/* Finish Button */}
+          <div className="min-w-32 text-right">
+            <button
+              className="rounded-lg bg-accent px-4 py-2"
+              onClick={onFinish}
+            >
+              Finish
+            </button>
           </div>
         </div>
-        <button className="rounded-lg bg-accent px-4 py-2" onClick={onFinish}>
-          Finish
-        </button>
       </header>
       <main className="flex-grow p-4">{children}</main>
     </div>
