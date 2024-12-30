@@ -157,7 +157,7 @@ export default function Routine() {
   }
 
   return (
-    <div className="flex min-h-screen w-96 flex-col gap-4 border border-red-500">
+    <div className="flex min-h-screen w-full flex-col gap-4 bg-background md:rounded-lg">
       <SaveHeader
         title={"Create Routine"}
         button={"Cancel"}
@@ -207,6 +207,7 @@ export default function Routine() {
                   notes: "",
                 }}
                 onUpdate={(data) => memoizedUpdate(exercise.id, data)}
+                onRestTimeTrigger={() => {}}
               />
             </div>
           ))}

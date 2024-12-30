@@ -36,7 +36,7 @@ export default function FolderList({
 }: FolderListProps) {
   return (
     <div>
-      <ul>
+      <ul className="grid grid-cols-1 md:grid-cols-2 md:gap-4">
         {folders.map((folder) => {
           // Filter plans for this specific folder
           const folderPlans = plans.filter(

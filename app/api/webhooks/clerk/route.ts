@@ -16,12 +16,16 @@ export async function POST(req: Request) {
       });
     }
 
-    // log headers
-    const headerPayLoad = await headers();
-    const svix_id = headerPayLoad.get("svix-id");
-    const svix_timestamp = headerPayLoad.get("svix-timestamp");
-    const svix_signature = headerPayLoad.get("svix-signature");
-    console.log("Received headers:", { svix_id, svix_timestamp });
+    // Log headers
+    const headerPayload = await headers();
+    const svix_id = headerPayload.get("svix-id");
+    const svix_timestamp = headerPayload.get("svix-timestamp");
+    const svix_signature = headerPayload.get("svix-signature");
+    console.log("Received headers:", {
+      svix_id,
+      svix_timestamp,
+      svix_signature,
+    });
 
     if (!svix_id || !svix_timestamp || !svix_signature) {
       console.error("Missing svix headers");
@@ -31,11 +35,11 @@ export async function POST(req: Request) {
       });
     }
 
-    // get the body
-    const payload = await req.json();
-    console.log("Received payload:", JSON.stringify(payload, null, 2));
+    // Get the body
+    const payload = await req.text(); // Read the raw body as text
+    console.log("Received payload:", payload);
 
-    // verify the webhook
+    // Verify the webhook
     console.log("Attempting verification with:", {
       secret: WEBHOOK_SECRET.substring(0, 4) + "...",
       headers: {
@@ -46,7 +50,7 @@ export async function POST(req: Request) {
     });
 
     const wh = new Webhook(WEBHOOK_SECRET);
-    const evt = wh.verify(JSON.stringify(payload), {
+    const evt = wh.verify(payload, {
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
@@ -54,7 +58,7 @@ export async function POST(req: Request) {
 
     console.log("Verification successful, event type:", evt.type);
 
-    // handle the events
+    // Handle the events
     if (evt.type === "user.created") {
       console.log("Processing user.created event");
       const timestamp = new Date(evt.data.created_at).getTime();
