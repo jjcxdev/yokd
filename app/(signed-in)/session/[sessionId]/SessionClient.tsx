@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
-import { planExercises, type Exercise } from "@/lib/db/schema";
+import { type Exercise } from "@/lib/db/schema";
 import { updateWorkoutData } from "@/app/actions/workout";
 import { isEqual } from "lodash";
 
@@ -41,6 +41,7 @@ interface SessionClientProps {
     completedAt: number | null;
     sessionId: string;
   };
+  onRestTimeTrigger: (time: number) => void;
 }
 
 function isValidExercise(
@@ -49,7 +50,10 @@ function isValidExercise(
   return exerciseData.exercise !== null;
 }
 
-export default function SessionClient({ sessionData }: SessionClientProps) {
+export default function SessionClient({
+  sessionData,
+  onRestTimeTrigger,
+}: SessionClientProps) {
   // Keep track of pending updates
   const updateTimeoutRef = useRef<NodeJS.Timeout>();
   const hasInitialized = useRef(false);
@@ -194,6 +198,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
                 sets: exerciseData[exercise.id].sets,
               }}
               onUpdate={(data) => handleExerciseUpdate(exercise.id, data)}
+              onRestTimeTrigger={onRestTimeTrigger}
             />
           ))}
       </div>

@@ -21,7 +21,7 @@ interface ExerciseRoutineCardProps {
     restTime: number;
     notes?: string | null;
   };
-  previousData: {
+  previousData?: {
     notes: string;
     sets: string;
   };
@@ -33,6 +33,7 @@ interface ExerciseRoutineCardProps {
       reps: string;
     }>;
   }) => void;
+  onRestTimeTrigger: (restTime: number) => void;
 }
 
 type ExerciseData = {
@@ -73,6 +74,7 @@ export default function ExceriseRoutineCard({
   planExercise,
   previousData,
   onUpdate,
+  onRestTimeTrigger,
 }: ExerciseRoutineCardProps) {
   interface Set {
     id: number;
@@ -85,7 +87,7 @@ export default function ExceriseRoutineCard({
   const initialSets = useMemo(() => {
     try {
       // If we have previous data, use it
-      if (previousData.sets) {
+      if (previousData?.sets) {
         const parsedSets = JSON.parse(previousData.sets);
         return parsedSets.map((set: any, index: number) => ({
           id: index + 1,
@@ -127,7 +129,9 @@ export default function ExceriseRoutineCard({
   }, [planExercise, previousData]); // Remove previousData from dependencies
 
   const [sets, setSets] = useState(initialSets);
-  const [notes, setNotes] = useState<string>(planExercise.notes || "");
+  const [notes, setNotes] = useState<string>(
+    previousData?.notes || planExercise.notes || "",
+  );
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const isInitialRender = useRef(true);
 
@@ -214,6 +218,7 @@ export default function ExceriseRoutineCard({
   const handleCheckboxChange = (setId: number) => {
     // Trigger rest timer countdown logic
     console.log(`Set ${setId} completed. Trigger rest timer countdown.`);
+    onRestTimeTrigger(planExercise.restTime);
   };
 
   return (
