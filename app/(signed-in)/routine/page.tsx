@@ -194,6 +194,18 @@ export default function Routine() {
             <div className="pb-2" key={exercise.id}>
               <ExerciseRoutineCard
                 exercise={exercise}
+                planExercise={{
+                  id: "",
+                  planId: "",
+                  exerciseId: exercise.id,
+                  order: 0,
+                  warmupSets: 0,
+                  warmupReps: 0,
+                  workingSets: 0,
+                  workingReps: 0,
+                  restTime: 0,
+                  notes: "",
+                }}
                 onUpdate={(data) => memoizedUpdate(exercise.id, data)}
               />
             </div>

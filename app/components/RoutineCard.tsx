@@ -1,6 +1,5 @@
 import React from "react";
-import { deleteFolder } from "../actions/folders";
-
+import { startTransition } from "react";
 import SecondaryButton from "@/app/components/SecondaryButton";
 import {
   Drawer,
@@ -14,22 +13,38 @@ import {
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { Button } from "@/components/ui/button";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { startWorkoutSession } from "../actions/workout";
 
 interface RoutineCardProps {
+  id: string;
   label: string;
   exercises: Array<{ name: string }>;
   icon?: JSX.Element;
   onDelete?: () => void;
 }
 
-export default function RoutineCard({ ...props }: RoutineCardProps) {
+export default function RoutineCard({
+  id,
+  label,
+  exercises,
+  onDelete,
+  icon,
+}: RoutineCardProps) {
   // Convert exercises array to comma-separated string
-  const exerciseList = props.exercises.map((ex) => ex.name).join(", ");
+  const exerciseList = exercises.map((ex) => ex.name).join(", ");
+
+  const handleStartRoutine = () => {
+    startTransition(() => {
+      startWorkoutSession(id).catch((error) => {
+        console.error("Error starting workout:", error);
+      });
+    });
+  };
 
   return (
     <div className="flex flex-col gap-1 rounded-lg border border-border bg-primary p-4">
       <div className="flex items-center justify-between font-bold">
-        <div>{props.label}</div>
+        <div>{label}</div>
         <div className="flex items-center gap-2">
           <Drawer>
             <DrawerTrigger asChild>
@@ -39,13 +54,13 @@ export default function RoutineCard({ ...props }: RoutineCardProps) {
             </DrawerTrigger>
             <DrawerContent>
               <DrawerHeader>
-                <DrawerTitle>{props.label}</DrawerTitle>
+                <DrawerTitle>{label}</DrawerTitle>
               </DrawerHeader>
               <div className="p-4">
                 <Button
                   variant="destructive"
                   className="flex w-full items-center justify-center gap-2"
-                  onClick={props.onDelete}
+                  onClick={onDelete}
                 >
                   <FaRegTrashAlt />
                   Delete Routine
@@ -60,12 +75,12 @@ export default function RoutineCard({ ...props }: RoutineCardProps) {
               </DrawerFooter>
             </DrawerContent>
           </Drawer>
-          {props.icon}
+          {icon}
         </div>
       </div>
       <div className="line-clamp-2 text-xs text-dimmed">{exerciseList}</div>
       <div>
-        <SecondaryButton label="Start Routine" />
+        <SecondaryButton onClick={handleStartRoutine} label="Start Routine" />
       </div>
     </div>
   );

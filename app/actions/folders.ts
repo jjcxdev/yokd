@@ -111,6 +111,8 @@ export async function fetchFoldersWithPlans(): Promise<{
               folderId: plans.folderId,
               userId: plans.userId,
               createdAt: plans.createdAt,
+              updatedAt: plans.updatedAt,
+              status: plans.status,
               description: plans.description,
               // Add exercises as JSON array
               exerciseNames:
@@ -136,12 +138,16 @@ export async function fetchFoldersWithPlans(): Promise<{
         const exercisesArray = JSON.parse(`[${plan.exerciseNames}]`);
         return {
           ...plan,
+          status: plan.status ?? "active",
+          updatedAt: plan.updatedAt ?? plan.createdAt,
           exercises: exercisesArray,
         };
       } catch (error) {
         console.error("Error parsing exercises for plan:", plan.id, error);
         return {
           ...plan,
+          status: plan.status ?? "active",
+          updatedAt: plan.updatedAt ?? plan.createdAt,
           exercises: [],
         };
       }
