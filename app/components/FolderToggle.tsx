@@ -28,7 +28,7 @@ export default function FolderToggle({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full rounded-md border-2 border-transparent bg-accent/10 p-2 hover:border-2 hover:border-accent md:p-8">
       <div className="flex w-full items-center justify-between">
         <button onClick={handleToggle} className="flex items-center gap-2">
           <BiChevronRight
@@ -42,7 +42,7 @@ export default function FolderToggle({
         <div className="flex items-center">{props.menuIcon} </div>
       </div>
 
-      {isExpanded && <div>{children}</div>}
+      {isExpanded && <div className="pt-2 md:pt-4">{children}</div>}
     </div>
   );
 }
