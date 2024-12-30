@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import React from "react";
+import React, { useState } from "react";
 
 import SecondaryButton from "@/app/components/SecondaryButton";
 
@@ -19,12 +19,8 @@ export default function CreateFolderModal({
   onSuccess,
 }: CreateFolderModalProps) {
   const { userId } = useAuth();
-
-  async function handleCreateFolder(formData: FormData) {
-    if (!userId) return;
-    const name = formData.get("name")?.toString() || "";
-    await createFolder(name, userId);
-  }
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -41,16 +37,39 @@ export default function CreateFolderModal({
           <div>
             <form
               action={async (formData) => {
-                if (!userId) return;
+                if (!userId) {
+                  setError("You must be logged in to create a folder");
+                  return;
+                }
+
+                if (isSubmitting) {
+                  return;
+                }
 
                 try {
-                  const name = formData.get("name")?.toString() || "";
-                  await createFolder(name, userId);
-                  onSuccess?.();
-                  onClose();
+                  setIsSubmitting(true);
+                  setError(null);
+
+                  const name = formData.get("name")?.toString();
+                  if (!name) {
+                    setError("Name is required");
+                    return;
+                  }
+
+                  const result = await createFolder(name, userId);
+                  if (result) {
+                    onSuccess?.();
+                    onClose();
+                  }
                 } catch (error) {
                   console.error("Error creating folder:", error);
-                  throw new Error("Error creating folder");
+                  setError(
+                    error instanceof Error
+                      ? error.message
+                      : "Failed to create folder. Please try again.",
+                  );
+                } finally {
+                  setIsSubmitting(false);
                 }
               }}
             >
@@ -60,10 +79,17 @@ export default function CreateFolderModal({
                 type="text"
                 placeholder="New Folder"
                 required
+                min={1}
+                onChange={() => setError(null)}
+                disabled={isSubmitting}
               />
 
               <div className="pt-4">
-                <SecondaryButton label="Save" type="submit" />
+                <SecondaryButton
+                  label={isSubmitting ? "Creating..." : "Save"}
+                  type="submit"
+                  disabled={isSubmitting}
+                />
               </div>
               <div className="py-2">
                 <SecondaryButton
@@ -71,6 +97,7 @@ export default function CreateFolderModal({
                   type="button"
                   label="Cancel"
                   onClick={onClose}
+                  disabled={isSubmitting}
                 />
               </div>
             </form>

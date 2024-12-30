@@ -10,18 +10,19 @@ const VARIANTS = {
 
 type ButtonVariant = keyof typeof VARIANTS;
 
-interface PrimaryButtonProps {
+interface SecondaryButtonProps {
   variant?: ButtonVariant;
   type?: string;
   icon?: JSX.Element;
   onClick?: () => void;
+  disabled?: boolean;
   label: string;
 }
 
-export default function PrimaryButton({
+export default function SecondaryButton({
   variant = "purple",
   ...props
-}: PrimaryButtonProps) {
+}: SecondaryButtonProps) {
   return (
     <button
       onClick={props.onClick}
