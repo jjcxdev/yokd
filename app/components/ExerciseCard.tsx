@@ -21,14 +21,16 @@ export default function ExerciseCard({ ...props }: ExerciseCardProps) {
 
   function handleColorChange(): void {
     setBorderColor((prev) =>
-      prev === "border-border" ? "border-accent" : "border-border",
+      prev === "border-border" ? "border-accent" : "border-transparent",
     );
-    setBorderWidth((prev) => (prev === "border" ? "border-4" : "border"));
+    setBorderWidth((prev) => (prev === "border" ? "border-2" : "border-2"));
   }
 
   return (
     <button onClick={handleClick} className="h-fit w-full">
-      <div className={`rounded-lg border ${borderColor} ${borderWidth} p-4`}>
+      <div
+        className={`rounded-lg border-2 hover:bg-accent/30 ${borderColor} ${borderWidth} p-4`}
+      >
         <div className="flex justify-between">
           <div className="font-bold">{props.title}</div>
           <div className="text-sm italic text-accent">{props.exerciseType}</div>

@@ -4,7 +4,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-background min-h-screen text-white">
+    <section className="min-h-screen bg-accent text-white md:p-10">
       {children}
     </section>
   );

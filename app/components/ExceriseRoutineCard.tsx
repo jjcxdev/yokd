@@ -264,19 +264,19 @@ export default function ExceriseRoutineCard({
       {/* Set details header */}
 
       <div className="flex w-full text-xs uppercase text-dimmed">
-        <div className="flex w-1/4 justify-start">Set</div>
-        <div className="flex w-1/4 justify-center">Lbs</div>
-        <div className="flex w-1/4 justify-center">Reps</div>
-        <div className="flex w-1/4 justify-center">✓</div>
-        <div className="flex w-[14px] justify-center"></div>
+        <div className="flex w-1/5 justify-start">Set</div>
+        <div className="flex w-1/5 justify-center">Lbs</div>
+        <div className="flex w-1/5 justify-center">Reps</div>
+        <div className="flex w-1/5 justify-center">✓</div>
+        <div className="flex w-1/5 justify-center"></div>
       </div>
 
       {/* Dynamic sets */}
 
       {sets.map((set: Set) => (
         <div key={set.id} className="flex w-full">
-          <div className="flex w-1/4 justify-start text-sm">{set.id}</div>
-          <div className="flex w-1/4 justify-center">
+          <div className="flex w-1/5 justify-start text-sm">{set.id}</div>
+          <div className="flex w-1/5 justify-center">
             <form className="w-full">
               <input
                 className="w-full bg-transparent text-center text-sm"
@@ -292,7 +292,7 @@ export default function ExceriseRoutineCard({
               />
             </form>
           </div>
-          <div className="flex w-1/4 justify-center">
+          <div className="flex w-1/5 justify-center">
             <form className="w-full">
               <input
                 className="flex w-full bg-transparent text-center text-sm"
@@ -308,11 +308,11 @@ export default function ExceriseRoutineCard({
               />
             </form>
           </div>
-          <div className="flex w-1/4 justify-center">
+          <div className="flex w-1/5 justify-center">
             <Checkbox onCheckedChange={() => handleCheckboxChange(set.id)} />
           </div>
           {/* Delete Set Button */}
-          <div className="w-[14px ] flex justify-center">
+          <div className="flex w-1/5 justify-center">
             <button
               className="text-sm text-remove"
               onClick={() => deleteSet(set.id)}

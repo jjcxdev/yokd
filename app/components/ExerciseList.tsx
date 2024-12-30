@@ -64,8 +64,8 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
   }
 
   return (
-    <div className="flex min-h-screen w-96 flex-col gap-4 border border-red-500">
-      <div className="fixed w-96">
+    <div className="flex min-h-screen w-full flex-col gap-4">
+      <div className="h-24">
         <ActionHeader
           title={"Add Exercise"}
           button={"Cancel"}
@@ -75,8 +75,8 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
         />
       </div>
       <div>
-        <div className="p-4 pt-32">
-          <ul>
+        <div className="p-4">
+          <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {initialData.map((exercise) => (
               <li className="pb-4" key={exercise.id}>
                 <ExerciseCard
