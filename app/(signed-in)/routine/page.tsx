@@ -207,6 +207,7 @@ export default function Routine() {
                   notes: "",
                 }}
                 onUpdate={(data) => memoizedUpdate(exercise.id, data)}
+                onRestTimeTrigger={() => {}}
               />
             </div>
           ))}

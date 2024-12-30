@@ -6,16 +6,18 @@ import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/lib/db";
 import {
+  workoutData,
+  workoutSessions,
   exercises,
   folders,
   planExercises,
   plans,
   users,
+  sets,
 } from "@/lib/db/schema";
 import type { Folders } from "@/types/folders";
 import type { PlanWithExercises } from "@/lib/db/schema";
 import { nanoid } from "nanoid";
-import { time } from "console";
 
 // CREATE FOLDER
 
@@ -128,32 +130,94 @@ export async function fetchFolders() {
 
 export async function deleteFolder(folderId: string) {
   try {
+    console.log(`Attempting to delete folder with ID: ${folderId}`);
+
+    // Validate auth
+    const authResult = await auth();
+    if (!authResult?.userId) {
+      throw new Error("User not authenticated");
+    }
+    console.log(`Authenticated user ID: ${authResult.userId}`);
+
     // First get all plans in this folder
     const folderPlans = await db
       .select({ id: plans.id })
       .from(plans)
       .where(eq(plans.folderId, folderId));
+    console.log(`Found ${folderPlans.length} plans in folder`);
 
-    // Delete all plan_exercises for plans in this folder
     if (folderPlans.length > 0) {
-      await db.delete(planExercises).where(
-        inArray(
-          planExercises.planId,
-          folderPlans.map((plan) => plan.id),
-        ),
+      const planIds = folderPlans.map((plan) => plan.id);
+
+      // Delete all workout data related to these plans
+      await db
+        .delete(workoutData)
+        .where(
+          inArray(
+            workoutData.sessionId,
+            db
+              .select({ id: workoutSessions.id })
+              .from(workoutSessions)
+              .where(inArray(workoutSessions.planId, planIds)),
+          ),
+        );
+      console.log(`Deleted workout data for plans in folder`);
+
+      // Delete all sets related to these plans
+      await db
+        .delete(sets)
+        .where(
+          inArray(
+            sets.sessionId,
+            db
+              .select({ id: workoutSessions.id })
+              .from(workoutSessions)
+              .where(inArray(workoutSessions.planId, planIds)),
+          ),
+        );
+      console.log(`Deleted sets for plans in folder`);
+
+      // Delete all workout sessions related to these plans
+      await db
+        .delete(workoutSessions)
+        .where(inArray(workoutSessions.planId, planIds));
+      console.log(`Deleted workout sessions for plans in folder`);
+
+      // Delete all plan_exercises for plans in this folder
+      await db
+        .delete(planExercises)
+        .where(inArray(planExercises.planId, planIds));
+      console.log(`Deleted plan exercises for plans in folder`);
+
+      // Delete associated plans
+      await db.delete(plans).where(eq(plans.folderId, folderId));
+      console.log(`Deleted plans in folder`);
+    }
+
+    // Ensure there are no remaining references to the folder
+    const remainingReferences = await db
+      .select({ id: plans.id })
+      .from(plans)
+      .where(eq(plans.folderId, folderId));
+    if (remainingReferences.length > 0) {
+      throw new Error(
+        `Cannot delete folder with ID: ${folderId} as there are still references to it.`,
       );
     }
 
-    // Delete associated plans
-    await db.delete(plans).where(eq(plans.folderId, folderId));
-
     // Then delete the folder
     await db.delete(folders).where(eq(folders.id, folderId));
+    console.log(`Deleted folder with ID: ${folderId}`);
 
     // Revalidate after deletion
     revalidatePath("/dashboard");
+    console.log("Page revalidated");
   } catch (error) {
     console.error("Error deleting folder:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     throw new Error("Failed to delete folder");
   }
 }
@@ -162,16 +226,29 @@ export async function deleteFolder(folderId: string) {
 
 export async function deletePlan(planId: string) {
   try {
+    // Validate auth
+    const authResult = await auth();
+    if (!authResult?.userId) {
+      throw new Error("User not authenticated");
+    }
+
     // Firt delete associated plan_exercises
     await db.delete(planExercises).where(eq(planExercises.planId, planId));
 
     // Then delete the plan
     await db.delete(plans).where(eq(plans.id, planId));
 
+    console.log("Plan deleted successfully");
     // Revalidate after delete
     revalidatePath("/dashboard");
+    console.log("Page revalidated");
   } catch (error) {
-    console.error("Error deleting plan:", error);
+    if (error instanceof Error) {
+      console.error("Error deleting plan:", error.message);
+      console.error("Error stack:", error.stack);
+    } else {
+      console.error("Error deleting plan:", error);
+    }
     throw new Error("Failed to delete plan");
   }
 }

@@ -52,13 +52,22 @@ export default function Dashboard({
           onClick={() => setIsSelectModalOpen(true)}
         />
       </div>
-      <div>
-        <FolderList
-          folders={initialFolders}
-          plans={initialPlans}
-          onFolderDeleted={() => router.refresh()}
-        />
-      </div>
+
+      {/* Folders section */}
+      {initialFolders.length === 0 ? (
+        <div>
+          Welcome to YOKD. Create a New Folder and a New Routine to get started.
+        </div>
+      ) : (
+        <div>
+          <FolderList
+            folders={initialFolders}
+            plans={initialPlans}
+            onFolderDeleted={() => router.refresh()}
+          />
+        </div>
+      )}
+
       {isCreateModalOpen && (
         <CreateFolderModal
           isOpen={isCreateModalOpen}
