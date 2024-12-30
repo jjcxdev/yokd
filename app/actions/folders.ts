@@ -1,34 +1,115 @@
 "use server";
 
-import { asc, eq, inArray, sql } from "drizzle-orm";
+import { asc, and, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/lib/db";
-import type { Plan } from "@/lib/db/schema";
-import { exercises, folders, planExercises, plans } from "@/lib/db/schema";
+import {
+  exercises,
+  folders,
+  planExercises,
+  plans,
+  users,
+} from "@/lib/db/schema";
 import type { Folders } from "@/types/folders";
 import type { PlanWithExercises } from "@/lib/db/schema";
+import { nanoid } from "nanoid";
+import { time } from "console";
+
+// CREATE FOLDER
 
 export async function createFolder(name: string, userId: string) {
+  console.log("Starting createFolder with:", { name, userId });
+
   try {
+    // Verify auth
+    console.log("Verifying auth...");
+    const authResult = await auth();
+    console.log("Auth result:", authResult);
+
+    if (!authResult?.userId || authResult.userId !== userId) {
+      console.log("Auth mismatch:", {
+        authUserId: authResult?.userId,
+        providedUserId: userId,
+      });
+      throw new Error("Unauthorized: User ID mismatch");
+    }
+
+    // Check if user exists in database
+    console.log("Checking if user exists in database...");
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!existingUser.length) {
+      console.log("User not found in database, creating user record...");
+      const timestamp = Date.now();
+      await db.insert(users).values({
+        id: userId,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+      console.log("User record created");
+    }
+
+    const timestamp = Date.now();
+
+    // Create folder data matching schema exactly
     const folderData = {
-      id: crypto.randomUUID(),
+      id: nanoid(),
       name,
-      userId,
+      userId: authResult.userId,
       createdAt: Date.now(),
+      updatedAt: Date.now(),
+      description: null,
     };
 
-    await db.insert(folders).values(folderData);
+    // Log the data we're trying to insert
+    console.log("Creating folder with data:", folderData);
 
-    // Revalidate the dashboard page to show the new folder
-    revalidatePath("/dashboard");
+    try {
+      // Insert the folder into the database
+      console.log("Attempting to insert folder...");
+      await db.insert(folders).values(folderData);
+      console.log("Folder inserted succesfully");
 
-    return folderData;
+      // Revalidate the dashboard page to show the new folder
+      revalidatePath("/dashboard");
+      console.log("Page revalidated");
+
+      return { success: true, data: folderData };
+    } catch (dbError) {
+      console.error("Database error:", {
+        error: dbError,
+        message:
+          dbError instanceof Error ? dbError.message : "Unknown database error",
+        stack: dbError instanceof Error ? dbError.stack : undefined,
+      });
+      throw new Error(
+        `Database error: ${dbError instanceof Error ? dbError.message : "Unknown database error"}`,
+      );
+    }
   } catch (error) {
-    console.error("Error creating Folder:", error);
-    throw new Error("Failed to create folder");
+    // Better error logging
+    console.error("Detailed error in createFolder:", {
+      error,
+      name,
+      userId,
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
+    // Make the error message more specific
+    throw error instanceof Error
+      ? error
+      : new Error("Failed to create folder: Database constraint error");
   }
 }
+
+// FETCH FOLDERS
 
 export async function fetchFolders() {
   try {
@@ -42,6 +123,8 @@ export async function fetchFolders() {
     throw new Error("Failed to fetch folders");
   }
 }
+
+// DELETE FOLDER
 
 export async function deleteFolder(folderId: string) {
   try {
@@ -75,6 +158,8 @@ export async function deleteFolder(folderId: string) {
   }
 }
 
+// DELETE PLAN
+
 export async function deletePlan(planId: string) {
   try {
     // Firt delete associated plan_exercises
@@ -91,14 +176,24 @@ export async function deletePlan(planId: string) {
   }
 }
 
+// FETCH FOLDERS WITH PLANS
+
 export async function fetchFoldersWithPlans(): Promise<{
   folders: Folders[];
   plans: PlanWithExercises[];
 }> {
   try {
+    // Get the current user's ID from auth
+    const { userId } = await auth();
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
+    // Fetch only folders and plans that belong to the current user
     const foldersData = await db
       .select()
       .from(folders)
+      .where(eq(folders.userId, userId))
       .orderBy((f) => [asc(f.createdAt), asc(f.name)]);
 
     const plansData =
@@ -124,13 +219,17 @@ export async function fetchFoldersWithPlans(): Promise<{
             .leftJoin(planExercises, eq(plans.id, planExercises.planId))
             .leftJoin(exercises, eq(planExercises.exerciseId, exercises.id))
             .where(
-              inArray(
-                plans.folderId,
-                foldersData.map((f) => f.id),
+              and(
+                eq(plans.userId, userId),
+                inArray(
+                  plans.folderId,
+                  foldersData.map((f) => f.id),
+                ),
               ),
             )
             .groupBy(plans.id)
         : [];
+
     // Parse the JSON string into actual arrays
     const transformedPlans: PlanWithExercises[] = plansData.map((plan) => {
       try {

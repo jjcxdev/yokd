@@ -51,6 +51,7 @@ export async function POST(req: Request) {
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
     }) as WebhookEvent;
+
     console.log("Verification successful, event type:", evt.type);
 
     // handle the events
@@ -62,6 +63,7 @@ export async function POST(req: Request) {
         createdAt: timestamp,
         updatedAt: timestamp, // Set initial updatedAt to same as createdAt
       });
+      console.log("User record created successfully");
     }
 
     return new Response(JSON.stringify({ success: true }), {
