@@ -17,7 +17,7 @@ export default function SessionLayout({
   onRestTimerComplete,
   children,
 }: SessionLayoutProps): JSX.Element {
-  const [startTime, setStartTime] = useState<number>(Date.now());
+  const [startTime] = useState<number>(Date.now());
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [currentRestTime, setCurrentRestTime] = useState<number>(restTime);
 

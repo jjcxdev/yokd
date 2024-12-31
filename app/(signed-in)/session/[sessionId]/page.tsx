@@ -1,16 +1,18 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+
 import { getWorkoutSession } from "@/app/actions/workout";
+
 import SessionClient from "./SessionClient";
 import SessionWrapper from "./SessionWrapper";
 
-interface SessionPageProps {
-  params: {
-    sessionId: string;
-  };
-}
+export default async function SessionPage({
+  params,
+}: {
+  params: Promise<{ sessionId: string }>;
+}) {
+  const resolvedParams = await params;
 
-export default async function SessionPage({ params }: SessionPageProps) {
   try {
     const { userId } = await auth();
 
@@ -19,7 +21,7 @@ export default async function SessionPage({ params }: SessionPageProps) {
     }
 
     // Access sessionId after auth check
-    const { sessionId } = await params;
+    const { sessionId } = resolvedParams;
     const { session, exercises } = await getWorkoutSession(sessionId);
 
     const sessionData = {
@@ -34,7 +36,7 @@ export default async function SessionPage({ params }: SessionPageProps) {
 
     return (
       <SessionWrapper sessionId={sessionData.sessionId}>
-        <SessionClient sessionData={sessionData} />
+        <SessionClient onRestTimeTrigger={() => {}} sessionData={sessionData} />
       </SessionWrapper>
     );
   } catch (error) {

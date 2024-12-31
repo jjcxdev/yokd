@@ -1,7 +1,6 @@
 import React from "react";
-import { VscNewFolder } from "react-icons/vsc";
 import { MdFormatListBulletedAdd } from "react-icons/md";
-import Image from "next/image";
+import { VscNewFolder } from "react-icons/vsc";
 
 interface EmptyStateProps {
   onCreateFolder: () => void;
@@ -16,7 +15,7 @@ export default function EmptyState({
     <div className="flex h-[82vh] flex-col items-center justify-center rounded-lg border-2 border-accent p-8">
       <div className="flex flex-col items-center gap-1 text-center">
         <h2 className="text-2xl font-bold">Welcome to YOKD</h2>
-        <p className="text-dimmed">Let's set up your workout routines</p>
+        <p className="text-dimmed">Let&apos;s set up your workout routines</p>
       </div>
 
       <div className="flex flex-col gap-6">

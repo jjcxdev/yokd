@@ -3,9 +3,9 @@ import { BsStopwatch } from "react-icons/bs";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdMore } from "react-icons/io";
 import { IoAddCircle } from "react-icons/io5";
-import { Checkbox } from "@/components/ui/checkbox";
 
 import SecondaryButton from "@/app/components/SecondaryButton";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Exercise } from "@/lib/db/schema";
 
 interface ExerciseRoutineCardProps {
@@ -285,7 +285,7 @@ export default function ExceriseRoutineCard({
                 value={set.weight}
                 onChange={(e) => {
                   const value = e.target.value;
-                  if (/^\d*\.?\d*$/.test(value)) {
+                  if (/^\d*(?:\.\d*)?$/.test(value)) {
                     updateSet(set.id, "weight", value);
                   }
                 }}

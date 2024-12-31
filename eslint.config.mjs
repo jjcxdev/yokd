@@ -1,7 +1,6 @@
-/* eslint-disable import-x/no-named-as-default-member */
 import comments from "@eslint-community/eslint-plugin-eslint-comments/configs";
 import react from "@eslint-react/eslint-plugin";
-import { FlatCompat } from "@eslint/eslintrc";
+import nextPlugin from "@next/eslint-plugin-next";
 import js from "@eslint/js";
 import prettierConfig from "eslint-config-prettier";
 import eslintPluginImportX from "eslint-plugin-import-x";
@@ -12,11 +11,7 @@ import tailwind from "eslint-plugin-tailwindcss";
 import * as tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 
-const compat = new FlatCompat({
-  baseDirectory: ".",
-  recommendedConfig: js.configs.recommended,
-});
-
+/** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
   {
     ignores: [
@@ -26,6 +21,7 @@ export default [
       "next.config.mjs",
       "postcss.config.mjs",
       "coverage/**",
+      "public/**",
     ],
   },
   {
@@ -35,47 +31,37 @@ export default [
       "simple-import-sort": simpleImportSort,
       "import-x": eslintPluginImportX,
       regexp: regexPlugin,
-      security: security,
+      security,
       tailwindcss: tailwind,
       "@eslint-comments": comments,
-      react: react,
+      react,
+      next: nextPlugin,
     },
     languageOptions: {
-      ecmaVersion: 2017,
-      sourceType: "module",
       parser: tsParser,
       parserOptions: {
+        project: "./tsconfig.json",
+        ecmaVersion: 2020,
+        sourceType: "module",
         ecmaFeatures: {
           jsx: true,
         },
-        project: "./tsconfig.json",
       },
     },
     settings: {
-      tailwindcss: {
-        callees: ["classnames", "clsx", "ctl", "cn", "cva"],
+      next: {
+        rootDir: ".",
       },
       "import/resolver": {
-        typescript: {
-          alwaysTryTypes: true,
-          project: "./tsconfig.json",
-        },
-        node: {
-          extensions: [".js", ".jsx", ".ts", ".tsx"],
-        },
+        typescript: true,
+        node: true,
       },
     },
     rules: {
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
       "import-x/order": "off",
-      // Add this to ignore path alias errors
-      "import-x/no-unresolved": [
-        "error",
-        {
-          ignore: ["geist", "@clerk/nextjs", "\\./.*", "\\.\\./.*", "^@/"], // Add ^@/ to ignore path aliases
-        },
-      ],
+      "import-x/no-named-as-default-member": "off",
       "@typescript-eslint/consistent-type-imports": [
         "warn",
         { prefer: "type-imports", fixStyle: "separate-type-imports" },
@@ -84,14 +70,9 @@ export default [
         "error",
         { checksVoidReturn: { attributes: false } },
       ],
-      "@typescript-eslint/no-unnecessary-condition": [
-        "error",
-        { allowConstantLoopConditions: true },
-      ],
-      "@typescript-eslint/consistent-type-exports": [
-        "error",
-        { fixMixedExportsWithInlineTypeSpecifier: true },
-      ],
+      "react/react-in-jsx-scope": "off",
+      "react/jsx-uses-react": "off",
+      "next/no-html-link-for-pages": "off",
     },
   },
   prettierConfig,

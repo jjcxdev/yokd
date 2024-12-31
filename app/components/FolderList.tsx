@@ -1,17 +1,11 @@
 "use client";
 
 import React from "react";
+import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { TbLayoutNavbarExpandFilled } from "react-icons/tb";
 
-import { PlanWithExercises, type Plan } from "@/lib/db/schema";
-import type { Folders } from "@/types/folders";
-
-import { deleteFolder, deletePlan } from "../actions/folders";
-import FolderToggle from "./FolderToggle";
-import RoutineCard from "./RoutineCard";
 import { Button } from "@/components/ui/button";
-
 import {
   Drawer,
   DrawerClose,
@@ -21,7 +15,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { BiDotsHorizontalRounded } from "react-icons/bi";
+import type { PlanWithExercises } from "@/lib/db/schema";
+import type { Folders } from "@/types/types";
+
+import { deleteFolder, deletePlan } from "../actions/folders";
+import FolderToggle from "./FolderToggle";
+import RoutineCard from "./RoutineCard";
 
 interface FolderListProps {
   folders: Folders[];
@@ -90,7 +89,7 @@ export default function FolderList({
                       key={plan.id}
                       id={plan.id}
                       label={plan.name}
-                      exercises={plan.exercises || []}
+                      exercises={plan.exercises}
                       onDelete={() => {
                         deletePlan(plan.id);
                         onFolderDeleted?.();

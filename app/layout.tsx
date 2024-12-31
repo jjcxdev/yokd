@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 
+import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
+
 const helvObl = localFont({
   src: "./fonts/Helv_Black_Ob.woff",
   variable: "--font-helv-ob",
@@ -32,6 +34,7 @@ export default async function RootLayout({
       <html lang="en">
         <body className={`${inter.className} ${helvObl.variable} antialiased`}>
           {children}
+          <ServiceWorkerRegistration />
         </body>
       </html>
     </ClerkProvider>

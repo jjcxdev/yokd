@@ -1,31 +1,20 @@
 "use server";
 
+import { auth } from "@clerk/nextjs/server";
+import { and, desc, eq, lt } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
 import { db } from "@/lib/db";
 import {
-  workoutSessions,
-  planExercises,
   exercises,
+  planExercises,
   plans,
-  workoutData,
   sets,
+  workoutData,
+  workoutSessions,
 } from "@/lib/db/schema";
-import { eq, desc, and, lt } from "drizzle-orm";
-import { auth } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
-
-// Define interface here, before the functions
-interface WorkoutSet {
-  id: string;
-  sessionId: string;
-  exerciseId: string;
-  setNumber: number;
-  weight: number;
-  reps: number;
-  isWarmup: number;
-  completedAt: number;
-}
 
 // GET WORKOUT SESSION FUNCTION
 

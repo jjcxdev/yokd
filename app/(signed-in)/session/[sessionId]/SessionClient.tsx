@@ -1,10 +1,11 @@
 "use client";
 
+import { isEqual } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import { updateWorkoutData } from "@/app/actions/workout";
 import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import { type Exercise } from "@/lib/db/schema";
-import { updateWorkoutData } from "@/app/actions/workout";
-import { isEqual } from "lodash";
 
 type ExerciseSet = {
   weight: string;

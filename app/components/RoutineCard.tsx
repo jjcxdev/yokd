@@ -1,6 +1,10 @@
 import React from "react";
 import { startTransition } from "react";
+import { BiDotsHorizontalRounded } from "react-icons/bi";
+import { FaRegTrashAlt } from "react-icons/fa";
+
 import SecondaryButton from "@/app/components/SecondaryButton";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -10,9 +14,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { BiDotsHorizontalRounded } from "react-icons/bi";
-import { Button } from "@/components/ui/button";
-import { FaRegTrashAlt } from "react-icons/fa";
+
 import { startWorkoutSession } from "../actions/workout";
 
 interface RoutineCardProps {
