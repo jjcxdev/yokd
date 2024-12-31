@@ -39,8 +39,8 @@ export default function Dashboard({
   const hasContent = initialFolders.length > 0 || initialPlans.length > 0;
 
   return (
-    <div className="max-w-1/2 flex min-h-screen w-full flex-col gap-4 bg-background md:rounded-lg">
-      <header className="border-b-[1px] border-accent/30">
+    <div className="flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background">
+      <header className="sticky top-0 z-10 flex w-full border-b-[1px] border-accent/30">
         <Header />
       </header>
       <div className="flex flex-col gap-8 p-4">

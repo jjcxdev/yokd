@@ -28,11 +28,11 @@ export default function FolderToggle({
   }
 
   return (
-    <div className="w-full rounded-md border-2 border-transparent bg-accent/10 p-2 hover:border-2 hover:border-accent md:p-8">
+    <div className="w-full rounded-md border-2 border-transparent bg-card p-2 hover:border-2 hover:border-accent md:p-4">
       <div className="flex w-full items-center justify-between">
         <button onClick={handleToggle} className="flex items-center gap-2">
           <BiChevronRight
-            className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+            className={`h-4 w-4 transition-transform duration-200 md:h-8 md:w-8 ${isExpanded ? "rotate-90" : ""}`}
           />
           <div>{folder.name}</div>
           {props.count && (

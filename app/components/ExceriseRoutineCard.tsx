@@ -223,7 +223,7 @@ export default function ExceriseRoutineCard({
   };
 
   return (
-    <div className="rounded-lg bg-card p-4">
+    <div className="w-full max-w-96 rounded-lg bg-card p-4">
       {/* Exercise Label */}
 
       <div className="flex w-full flex-col">
@@ -275,11 +275,11 @@ export default function ExceriseRoutineCard({
 
       {sets.map((set: Set) => (
         <div key={set.id} className="flex w-full">
-          <div className="flex w-1/5 justify-start text-sm">{set.id}</div>
+          <div className="flex w-1/5 justify-start text-base">{set.id}</div>
           <div className="flex w-1/5 justify-center">
             <form className="w-full">
               <input
-                className="w-full bg-transparent text-center text-sm"
+                className="w-full bg-transparent text-center text-base"
                 type="text"
                 placeholder="-"
                 value={set.weight}
@@ -295,7 +295,7 @@ export default function ExceriseRoutineCard({
           <div className="flex w-1/5 justify-center">
             <form className="w-full">
               <input
-                className="flex w-full bg-transparent text-center text-sm"
+                className="flex w-full bg-transparent text-center text-base"
                 type="text"
                 placeholder="-"
                 value={set.reps}
@@ -308,13 +308,13 @@ export default function ExceriseRoutineCard({
               />
             </form>
           </div>
-          <div className="flex w-1/5 justify-center">
+          <div className="flex w-1/5 items-center justify-center">
             <Checkbox onCheckedChange={() => handleCheckboxChange(set.id)} />
           </div>
           {/* Delete Set Button */}
           <div className="flex w-1/5 justify-center">
             <button
-              className="text-sm text-remove"
+              className="text-base text-remove"
               onClick={() => deleteSet(set.id)}
               disabled={sets.length <= 1}
             >

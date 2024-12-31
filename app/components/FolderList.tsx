@@ -35,7 +35,7 @@ export default function FolderList({
 }: FolderListProps) {
   return (
     <div>
-      <ul className="grid grid-cols-1 md:grid-cols-2 md:gap-4">
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {folders.map((folder) => {
           // Filter plans for this specific folder
           const folderPlans = plans.filter(
@@ -43,7 +43,7 @@ export default function FolderList({
           );
 
           return (
-            <li className="pb-4" key={folder.id}>
+            <li className="" key={folder.id}>
               <FolderToggle
                 folder={folder}
                 menuIcon={

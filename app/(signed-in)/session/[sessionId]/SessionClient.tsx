@@ -184,8 +184,8 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
   );
 
   return (
-    <div className="flex min-h-screen w-96 flex-col gap-4">
-      <div className="flex flex-col gap-6">
+    <div className="flex min-h-full w-full flex-col items-center justify-center gap-4">
+      <div className="flex w-full flex-col items-center gap-6">
         {sessionData.exercises
           .filter(isValidExercise)
           .map(({ exercise, planExercise }) => (

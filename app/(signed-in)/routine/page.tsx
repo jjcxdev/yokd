@@ -159,24 +159,27 @@ function RoutineContent() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col gap-4 bg-background md:rounded-lg">
-      <SaveHeader
-        title={"Create Routine"}
-        button={"Cancel"}
-        onSave={handleSave}
-        onCancel={handleCancel}
-      />
-      <div>
-        <form className="px-2">
-          <input
-            className="h-10 w-full border-b-2 border-accent bg-transparent px-4"
-            name="routine"
-            type="text"
-            placeholder="Routine Name"
-            value={routineName}
-            onChange={handleRoutineNameChange}
-          />
-        </form>
+    <div className="flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background">
+      <div className="sticky top-0 z-10 flex flex-col">
+        <SaveHeader
+          title={"Create Routine"}
+          button={"Cancel"}
+          onSave={handleSave}
+          onCancel={handleCancel}
+        />
+
+        <div>
+          <form className="px-2">
+            <input
+              className="h-10 w-full border-b-2 border-accent bg-background px-4"
+              name="routine"
+              type="text"
+              placeholder="Routine Name"
+              value={routineName}
+              onChange={handleRoutineNameChange}
+            />
+          </form>
+        </div>
       </div>
 
       {/* Exercise section */}
@@ -193,7 +196,7 @@ function RoutineContent() {
       ) : (
         <div className="flex flex-col p-4">
           {exercises.map((exercise) => (
-            <div className="pb-2" key={exercise.id}>
+            <div className="flex w-full justify-center pb-2" key={exercise.id}>
               <ExerciseRoutineCard
                 exercise={exercise}
                 planExercise={{
@@ -217,7 +220,7 @@ function RoutineContent() {
       )}
 
       <div className="flex w-full justify-center">
-        <div className="w-3/4">
+        <div className="flex w-full justify-center pb-8">
           <SecondaryButton
             icon={<IoAddCircle />}
             label={"Add exercise"}
