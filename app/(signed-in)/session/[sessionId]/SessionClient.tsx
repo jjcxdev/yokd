@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { updateWorkoutData } from "@/app/actions/workout";
 import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import { type Exercise } from "@/lib/db/schema";
+import { useSessionContext } from "./SessionContext";
 
 type ExerciseSet = {
   weight: string;
@@ -42,7 +43,6 @@ interface SessionClientProps {
     completedAt: number | null;
     sessionId: string;
   };
-  onRestTimeTrigger: (time: number) => void;
 }
 
 function isValidExercise(
@@ -51,10 +51,9 @@ function isValidExercise(
   return exerciseData.exercise !== null;
 }
 
-export default function SessionClient({
-  sessionData,
-  onRestTimeTrigger,
-}: SessionClientProps) {
+export default function SessionClient({ sessionData }: SessionClientProps) {
+  const { onRestTimeTrigger } = useSessionContext();
+
   // Keep track of pending updates
   const updateTimeoutRef = useRef<NodeJS.Timeout>();
   const hasInitialized = useRef(false);
