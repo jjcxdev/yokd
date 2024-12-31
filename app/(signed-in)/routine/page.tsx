@@ -126,7 +126,7 @@ function RoutineContent() {
         warmupReps: 0,
         workingSets: data.sets.length,
         workingReps: parseInt(data.sets[0]?.reps || "0"),
-        restTime: 60,
+        restTime: 30,
         notes: data.notes || undefined,
       }),
     );

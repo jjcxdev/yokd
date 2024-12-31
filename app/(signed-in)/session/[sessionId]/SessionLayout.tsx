@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface SessionLayoutProps {
   onFinish: () => void;
@@ -20,6 +20,8 @@ export default function SessionLayout({
   const [startTime] = useState<number>(Date.now());
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [currentRestTime, setCurrentRestTime] = useState<number>(restTime);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isAudioInitialized = useRef<boolean>(false);
 
   // Session duration timer
   useEffect(() => {
@@ -29,6 +31,29 @@ export default function SessionLayout({
 
     return () => clearInterval(timer);
   }, [startTime]);
+
+  // Initialize audio only once and only after user interaction
+  useEffect(() => {
+    const initializeAudio = () => {
+      if (!isAudioInitialized.current && typeof window !== "undefined") {
+        audioRef.current = new Audio("/boxing-bell.mp3");
+        audioRef.current.preload = "auto";
+        isAudioInitialized.current = true;
+        // Remove the event listener once audio is initialized
+        document.removeEventListener("touchstart", initializeAudio);
+        document.removeEventListener("click", initializeAudio);
+      }
+    };
+
+    // Add listeners for both touch and click events
+    document.addEventListener("touchstart", initializeAudio);
+    document.addEventListener("click", initializeAudio);
+
+    return () => {
+      document.removeEventListener("touchstart", initializeAudio);
+      document.removeEventListener("click", initializeAudio);
+    };
+  }, []);
 
   // Rest timer
   useEffect(() => {
@@ -50,26 +75,10 @@ export default function SessionLayout({
     return () => clearInterval(restTimer);
   }, [isResting, restTime, onRestTimerComplete]);
 
-  // Reset current rest time when rest timer changes
+  // Rest current rest time when rest timer changes
   useEffect(() => {
     setCurrentRestTime(restTime);
   }, [restTime]);
-
-  // Initialize and play chime sound
-  const [audio] = useState(() => {
-    if (typeof window !== "undefined") {
-      const sound = new Audio("/boxing-bell.mp3");
-      sound.preload = "auto";
-      // Enable playing on mobile
-      const enableAudio = () => {
-        sound.play().catch((error) => console.log("Audio play failed:", error));
-        document.removeEventListener("touchstart", enableAudio);
-      };
-      document.addEventListener("touchstart", enableAudio);
-      return sound;
-    }
-    return null;
-  });
 
   // Request notification permission on component mount
   useEffect(() => {
@@ -79,10 +88,10 @@ export default function SessionLayout({
   }, []);
 
   const playChime = () => {
-    // Try to play audio
-    if (audio) {
-      audio.currentTime = 0;
-      audio.play().catch((error) => {
+    // Only play audio if it's initialized
+    if (audioRef.current && isAudioInitialized.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch((error) => {
         console.log("Failed to play audio:", error);
       });
     }
