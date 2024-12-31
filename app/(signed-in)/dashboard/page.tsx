@@ -2,6 +2,8 @@ import { fetchFoldersWithPlans } from "@/app/actions/folders";
 import DashboardClient from "@/app/components/DashboardClient";
 import type { Folder, PlanWithExercises } from "@/types/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function Dashboard() {
   let initialFolders: Folder[] = [];
   let initialPlans: PlanWithExercises[] = [];

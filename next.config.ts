@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    // Disable Next.js internal ESLint
+    ignoreDuringBuilds: true,
+  },
   async headers() {
     return [
       {
