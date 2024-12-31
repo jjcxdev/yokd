@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 
 import { completeWorkoutSession } from "@/app/actions/workout";
+import { SessionContext } from "./SessionContext";
 
 import SessionLayout from "./SessionLayout";
 
@@ -42,19 +43,21 @@ export default function SessionWrapper({
   }, []);
 
   return (
-    <SessionLayout
-      onFinish={handleFinish}
-      restTime={restTime}
-      isResting={isResting}
-      onRestTimerComplete={handleRestComplete}
-    >
-      {React.Children.map(children, (child) =>
-        React.isValidElement(child)
-          ? React.cloneElement(child, {
-              onRestTimeTrigger: handleRestTimer,
-            } as any)
-          : child,
-      )}
-    </SessionLayout>
+    <SessionContext.Provider value={{ onRestTimeTrigger: handleRestTimer }}>
+      <SessionLayout
+        onFinish={handleFinish}
+        restTime={restTime}
+        isResting={isResting}
+        onRestTimerComplete={handleRestComplete}
+      >
+        {React.Children.map(children, (child) =>
+          React.isValidElement(child)
+            ? React.cloneElement(child, {
+                onRestTimeTrigger: handleRestTimer,
+              } as any)
+            : child,
+        )}
+      </SessionLayout>
+    </SessionContext.Provider>
   );
 }

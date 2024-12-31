@@ -1,7 +1,7 @@
+// eslint.config.mjs
 import comments from "@eslint-community/eslint-plugin-eslint-comments/configs";
 import react from "@eslint-react/eslint-plugin";
 import nextPlugin from "@next/eslint-plugin-next";
-import js from "@eslint/js";
 import prettierConfig from "eslint-config-prettier";
 import eslintPluginImportX from "eslint-plugin-import-x";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
@@ -11,7 +11,7 @@ import tailwind from "eslint-plugin-tailwindcss";
 import * as tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 
-/** @type {import('eslint').Linter.FlatConfig[]} */
+/** @type {import('eslint').Linter.Config[]} */
 export default [
   {
     ignores: [
@@ -41,7 +41,7 @@ export default [
       parser: tsParser,
       parserOptions: {
         project: "./tsconfig.json",
-        ecmaVersion: 2020,
+        ecmaVersion: "latest", // Updated from 2020
         sourceType: "module",
         ecmaFeatures: {
           jsx: true,

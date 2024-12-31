@@ -36,7 +36,7 @@ export default async function SessionPage({
 
     return (
       <SessionWrapper sessionId={sessionData.sessionId}>
-        <SessionClient onRestTimeTrigger={() => {}} sessionData={sessionData} />
+        <SessionClient sessionData={sessionData} />
       </SessionWrapper>
     );
   } catch (error) {
