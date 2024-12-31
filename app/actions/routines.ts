@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
 import { planExercises, plans } from "@/lib/db/schema";
-import type { ExerciseInput } from "@/types/exercises";
+import type { ExerciseInput } from "@/types/types";
 
 interface RoutineInput {
   name: string;

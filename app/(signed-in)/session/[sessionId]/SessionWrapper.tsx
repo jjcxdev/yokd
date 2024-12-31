@@ -1,9 +1,10 @@
 "use client";
-import React, { useCallback, useState } from "react";
-import SessionLayout from "./SessionLayout";
 import { useRouter } from "next/navigation";
+import React, { useCallback, useState } from "react";
+
 import { completeWorkoutSession } from "@/app/actions/workout";
-import { set } from "lodash";
+
+import SessionLayout from "./SessionLayout";
 
 interface SessionWrapperProps {
   children: React.ReactNode;

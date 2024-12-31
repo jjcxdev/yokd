@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import ActionHeader from "@/app/components/ActionHeader";
 import ExerciseCard from "@/app/components/ExerciseCard";
-import type { Exercise } from "@/types/exercises";
+import type { Exercise } from "@/types/types";
 
 interface ExerciseListProps {
   initialData: Exercise[];

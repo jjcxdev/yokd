@@ -4,13 +4,8 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { FaRegFolderOpen } from "react-icons/fa";
-import { FaRegTrashAlt } from "react-icons/fa";
-import { TbLayoutNavbarExpandFilled } from "react-icons/tb";
 
-import type { Folders } from "@/types/folders";
-
-import FolderToggle from "./FolderToggle";
-import { on } from "events";
+import type { Folders } from "@/types/types";
 
 interface SelectFolderModalProps {
   isOpen: boolean;
@@ -23,7 +18,6 @@ export default function SelectFolderModal({
   onClose,
   folders,
 }: SelectFolderModalProps) {
-  const { userId } = useAuth();
   const router = useRouter();
 
   function handleFolderSelect(folderId: string) {

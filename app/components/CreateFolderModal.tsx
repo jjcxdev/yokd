@@ -42,9 +42,7 @@ export default function CreateFolderModal({
                   return;
                 }
 
-                if (isSubmitting) {
-                  return;
-                }
+                if (isSubmitting) return;
 
                 try {
                   setIsSubmitting(true);
@@ -63,11 +61,7 @@ export default function CreateFolderModal({
                   }
                 } catch (error) {
                   console.error("Error creating folder:", error);
-                  setError(
-                    error instanceof Error
-                      ? error.message
-                      : "Failed to create folder. Please try again.",
-                  );
+                  setError("Failed to create folder. Please try again.");
                 } finally {
                   setIsSubmitting(false);
                 }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { BiChevronRight } from "react-icons/bi";
 
-import type { Folders } from "@/types/folders";
+import type { Folders } from "@/types/types";
 
 interface FolderToggleProps {
   folder: Folders;

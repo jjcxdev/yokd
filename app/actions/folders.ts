@@ -1,23 +1,23 @@
 "use server";
 
-import { asc, and, eq, inArray, sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
+import type { PlanWithExercises } from "@/lib/db/schema";
 import {
-  workoutData,
-  workoutSessions,
   exercises,
   folders,
   planExercises,
   plans,
-  users,
   sets,
+  users,
+  workoutData,
+  workoutSessions,
 } from "@/lib/db/schema";
-import type { Folders } from "@/types/folders";
-import type { PlanWithExercises } from "@/lib/db/schema";
-import { nanoid } from "nanoid";
+import type { Folders } from "@/types/types";
 
 // CREATE FOLDER
 
@@ -30,9 +30,9 @@ export async function createFolder(name: string, userId: string) {
     const authResult = await auth();
     console.log("Auth result:", authResult);
 
-    if (!authResult?.userId || authResult.userId !== userId) {
+    if (!authResult.userId || authResult.userId !== userId) {
       console.log("Auth mismatch:", {
-        authUserId: authResult?.userId,
+        authUserId: authResult.userId,
         providedUserId: userId,
       });
       throw new Error("Unauthorized: User ID mismatch");
@@ -56,8 +56,6 @@ export async function createFolder(name: string, userId: string) {
       });
       console.log("User record created");
     }
-
-    const timestamp = Date.now();
 
     // Create folder data matching schema exactly
     const folderData = {
@@ -133,7 +131,7 @@ export async function deleteFolder(folderId: string) {
 
     // Validate auth
     const authResult = await auth();
-    if (!authResult?.userId) {
+    if (!authResult.userId) {
       throw new Error("User not authenticated");
     }
     console.log(`Authenticated user ID: ${authResult.userId}`);
@@ -227,7 +225,7 @@ export async function deletePlan(planId: string) {
   try {
     // Validate auth
     const authResult = await auth();
-    if (!authResult?.userId) {
+    if (!authResult.userId) {
       throw new Error("User not authenticated");
     }
 
@@ -265,12 +263,23 @@ export async function fetchFoldersWithPlans(): Promise<{
       throw new Error("User not authenticated");
     }
 
+    console.log("Fetching folders for user:", userId);
+
     // Fetch only folders and plans that belong to the current user
     const foldersData = await db
-      .select()
+      .select({
+        id: folders.id,
+        name: folders.name,
+        userId: folders.userId,
+        createdAt: folders.createdAt,
+        updatedAt: folders.updatedAt,
+        description: folders.description,
+      })
       .from(folders)
       .where(eq(folders.userId, userId))
       .orderBy((f) => [asc(f.createdAt), asc(f.name)]);
+
+    console.log("Fetched folders:", foldersData);
 
     const plansData =
       foldersData.length > 0
@@ -306,6 +315,8 @@ export async function fetchFoldersWithPlans(): Promise<{
             .groupBy(plans.id)
         : [];
 
+    console.log("Fetched plans:", plansData);
+
     // Parse the JSON string into actual arrays
     const transformedPlans: PlanWithExercises[] = plansData.map((plan) => {
       try {
@@ -313,16 +324,12 @@ export async function fetchFoldersWithPlans(): Promise<{
         const exercisesArray = JSON.parse(`[${plan.exerciseNames}]`);
         return {
           ...plan,
-          status: plan.status ?? "active",
-          updatedAt: plan.updatedAt ?? plan.createdAt,
           exercises: exercisesArray,
         };
       } catch (error) {
         console.error("Error parsing exercises for plan:", plan.id, error);
         return {
           ...plan,
-          status: plan.status ?? "active",
-          updatedAt: plan.updatedAt ?? plan.createdAt,
           exercises: [],
         };
       }

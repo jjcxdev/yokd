@@ -1,6 +1,6 @@
 "use client";
 
-import { SignIn, UserButton,useUser } from "@clerk/nextjs";
+import { SignIn, useUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 export default function Home() {

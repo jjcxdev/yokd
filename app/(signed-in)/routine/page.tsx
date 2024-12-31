@@ -1,17 +1,19 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
+import _ from "lodash";
 import { nanoid } from "nanoid";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { GiWeightLiftingUp } from "react-icons/gi";
 import { IoAddCircle } from "react-icons/io5";
-import { useUser } from "@clerk/nextjs";
+
 import { postRoutines } from "@/app/actions/routines";
 import ExerciseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import SaveHeader from "@/app/components/SaveHeader";
 import SecondaryButton from "@/app/components/SecondaryButton";
 import type { Exercise } from "@/lib/db/schema";
-import type { ExerciseInput } from "@/types/exercises";
+import type { ExerciseInput } from "@/types/types";
 
 interface ExerciseData {
   exerciseId: string;
@@ -19,7 +21,7 @@ interface ExerciseData {
   sets: Array<{ weight: string; reps: string }>;
 }
 
-export default function Routine() {
+function RoutineContent() {
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -225,5 +227,13 @@ export default function Routine() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RoutinePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RoutineContent />
+    </Suspense>
   );
 }
