@@ -15,10 +15,10 @@ YOKD is a web application designed to help users manage and track their workout 
 ## How to Use
 
 1. **Start a Routine**: From your dashboard, select a routine to start. The app will load and route you to the session page.
-2. **Log Exercises**: Each exercise card will display the sets, reps, weights, and notes from the plan. You can update these values as you complete your workout.
+2. **Log Exercises**: Each exercise card will display the sets, reps, weights, and notes from the routine. You can update these values as you complete your workout.
 3. **Mark Sets as Complete**: Use the checkbox to mark each set as complete. This will trigger the rest timer.
 4. **Rest Timer**: The rest timer will count down the rest period between sets. A chime will play when the rest period is over.
-5. **Finish Session**: Click the "Finish" button to end the session. The app will save all your data, including the total duration, sets, reps, weights, and notes. This data will be used as the initial data for the next time you run the same plan.
+5. **Finish Session**: Click the "Finish" button to end the session. The app will save all your data, including the total duration, sets, reps, weights, and notes. This data will be used as the initial data for the next time you run the same routine.
 
 ## Installation
 

@@ -6,8 +6,9 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 
-import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+
+import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
 
 const helvObl = localFont({
   src: "./fonts/Helv_Black_Ob.woff",

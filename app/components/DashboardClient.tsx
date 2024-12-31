@@ -8,7 +8,7 @@ import { VscNewFolder } from "react-icons/vsc";
 
 import CreateFolderModal from "@/app/components/CreateFolderModal";
 import PrimaryButton from "@/app/components/PrimaryButton";
-import type { PlanWithExercises } from "@/lib/db/schema";
+import type { RoutineWithExercises } from "@/lib/db/schema";
 import type { Folders } from "@/types/types";
 
 import EmptyState from "./EmptyState";
@@ -19,12 +19,12 @@ const Header = dynamic(() => import("@/app/components/Header"), { ssr: false });
 
 interface DashboardClientProps {
   initialFolders: Folders[];
-  initialPlans: PlanWithExercises[];
+  initialRoutines: RoutineWithExercises[];
 }
 
 export default function Dashboard({
   initialFolders,
-  initialPlans,
+  initialRoutines,
 }: DashboardClientProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
@@ -36,7 +36,7 @@ export default function Dashboard({
     router.refresh();
   };
 
-  const hasContent = initialFolders.length > 0 || initialPlans.length > 0;
+  const hasContent = initialFolders.length > 0 || initialRoutines.length > 0;
 
   return (
     <div className="flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background">
@@ -63,7 +63,7 @@ export default function Dashboard({
             <div>
               <FolderList
                 folders={initialFolders}
-                plans={initialPlans}
+                routines={initialRoutines}
                 onFolderDeleted={() => router.refresh()}
               />
             </div>

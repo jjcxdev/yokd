@@ -117,9 +117,11 @@ function RoutineContent() {
     const exerciseInputs: ExerciseInput[] = Object.entries(exerciseData).map(
       ([_, data], index) => ({
         id: nanoid(),
-        planId: "",
+        routineId: "",
         exerciseId: data.exerciseId,
         order: index,
+        workingSetWeights: data.sets.map((set) => parseInt(set.weight) || 0),
+        targetWeight: 0,
         warmupSets: 0,
         warmupReps: 0,
         workingSets: data.sets.length,
@@ -199,11 +201,12 @@ function RoutineContent() {
             <div className="flex w-full justify-center pb-2" key={exercise.id}>
               <ExerciseRoutineCard
                 exercise={exercise}
-                planExercise={{
+                routineExercise={{
                   id: "",
-                  planId: "",
+                  routineId: "",
                   exerciseId: exercise.id,
                   order: 0,
+                  workingSetWeights: "[]",
                   warmupSets: 0,
                   warmupReps: 0,
                   workingSets: 0,

@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
-import { planExercises, plans } from "@/lib/db/schema";
+import { routineExercises, routines } from "@/lib/db/schema";
 import type { ExerciseInput } from "@/types/types";
 
 interface RoutineInput {
@@ -21,24 +21,29 @@ export async function postRoutines({
   userId,
 }: RoutineInput) {
   try {
-    // Generate plan ID
-    const newPlanId = nanoid();
+    // Generate routine ID
+    const newRoutineId = nanoid();
 
-    // Create the plan
-    await db.insert(plans).values({
-      id: newPlanId,
+    // Create the routine
+    await db.insert(routines).values({
+      id: newRoutineId,
       name: name,
       folderId: folderId,
       userId: userId,
       createdAt: Date.now(),
     });
 
-    // Create the exercise entries with the generated planId
-    await db.insert(planExercises).values(
+    // Create the exercise entries with the generated routineId
+    await db.insert(routineExercises).values(
       exercises.map((exercise) => ({
         ...exercise,
+        workingSetWeights: JSON.stringify(
+          Array(exercise.workingSets).fill(
+            exercise.workingSetWeights?.[0] || 0,
+          ),
+        ),
         id: nanoid(), // Generate unique ID for each exercise
-        planId: newPlanId,
+        routineId: newRoutineId,
       })),
     );
 

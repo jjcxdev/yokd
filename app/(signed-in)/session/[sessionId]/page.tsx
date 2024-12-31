@@ -27,7 +27,7 @@ export default async function SessionPage({
     const sessionData = {
       exercises,
       userId: session.userId,
-      planId: session.planId,
+      routineId: session.routineId,
       status: session.status,
       startedAt: session.startedAt,
       completedAt: session.completedAt,

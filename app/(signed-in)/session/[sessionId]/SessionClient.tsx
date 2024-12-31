@@ -6,20 +6,23 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { updateWorkoutData } from "@/app/actions/workout";
 import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import { type Exercise } from "@/lib/db/schema";
+
 import { useSessionContext } from "./SessionContext";
+import { index } from "drizzle-orm/mysql-core";
 
 type ExerciseSet = {
   weight: string;
   reps: string;
 };
 
-type ExerciseWithPlan = {
+type ExerciseWithRoutine = {
   exercise: Exercise | null;
-  planExercise: {
+  routineExercise: {
     id: string;
-    planId: string;
+    routineId: string;
     exerciseId: string;
     order: number;
+    workingSetWeights: string;
     warmupSets: number;
     warmupReps: number;
     workingSets: number;
@@ -35,9 +38,9 @@ type ExerciseWithPlan = {
 
 interface SessionClientProps {
   sessionData: {
-    exercises: ExerciseWithPlan[];
+    exercises: ExerciseWithRoutine[];
     userId: string;
-    planId: string;
+    routineId: string;
     status: "active" | "completed" | "cancelled";
     startedAt: number;
     completedAt: number | null;
@@ -46,8 +49,8 @@ interface SessionClientProps {
 }
 
 function isValidExercise(
-  exerciseData: ExerciseWithPlan,
-): exerciseData is ExerciseWithPlan & { exercise: Exercise } {
+  exerciseData: ExerciseWithRoutine,
+): exerciseData is ExerciseWithRoutine & { exercise: Exercise } {
   return exerciseData.exercise !== null;
 }
 
@@ -67,48 +70,50 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
     const initialData: Record<string, { notes: string; sets: string }> = {};
 
     sessionData.exercises.forEach(
-      ({ exercise, planExercise, previousData }) => {
+      ({ exercise, routineExercise, previousData }) => {
         if (exercise) {
           console.log(
             `Initializing exercise data for ${exercise.id}`,
             previousData,
-            planExercise,
+            routineExercise,
           );
 
-          // If we have previous data, use it
-          if (previousData) {
-            console.log(`Found previous data for ${exercise.id}`, previousData);
+          // First create sets with initial weights from the routine
+          const workingWeights = JSON.parse(routineExercise.workingSetWeights);
+          const initialSets = Array(routineExercise.workingSets)
+            .fill(null)
+            .map((_, index) => ({
+              weight: workingWeights[index]?.toString() ?? "0",
+              reps: routineExercise.workingReps.toString(),
+            }));
+
+          // Check for valid previous data
+          const hasPreviousData =
+            previousData?.sets &&
+            previousData.sets !== "[]" &&
+            JSON.parse(previousData.sets).length > 0;
+
+          if (hasPreviousData) {
+            console.log(
+              `Found previous data with non-empty sets for ${exercise.id}`,
+              previousData,
+            );
             initialData[exercise.id] = {
               notes: previousData.notes,
               sets: previousData.sets,
             };
           } else {
-            console.log(
-              `No previous data for ${exercise.id}, initializing with empty data`,
-            );
-            // Otherwise, initialize with empty data
-            const totalSets =
-              planExercise.warmupSets + planExercise.workingSets;
-            const emptySets = Array(totalSets).fill({
-              weight: "",
-              reps: planExercise.workingReps.toString(),
-            });
-
+            console.log(`Using initial working sets for ${exercise.id}`);
             initialData[exercise.id] = {
-              notes: planExercise.notes || "",
-              sets: JSON.stringify(emptySets),
+              notes: routineExercise.notes || "",
+              sets: JSON.stringify(initialSets),
             };
           }
-          console.log(
-            `Final intial data for ${exercise.id}`,
-            initialData[exercise.id],
-          );
         }
       },
     );
 
-    console.log("Finial initialized exercise data:", initialData);
-    hasInitialized.current = true;
+    console.log("Final initialized exercise data:", initialData);
     return initialData;
   });
 
@@ -188,11 +193,11 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
       <div className="flex w-full flex-col items-center gap-6">
         {sessionData.exercises
           .filter(isValidExercise)
-          .map(({ exercise, planExercise }) => (
+          .map(({ exercise, routineExercise }) => (
             <ExceriseRoutineCard
               key={exercise.id}
               exercise={exercise}
-              planExercise={planExercise}
+              routineExercise={routineExercise}
               previousData={{
                 notes: exerciseData[exercise.id].notes,
                 sets: exerciseData[exercise.id].sets,

@@ -12,9 +12,10 @@ export interface Exercise {
 
 export interface ExerciseInput {
   id: string;
-  planId: string;
+  routineId: string;
   exerciseId: string;
   order: number;
+  workingSetWeights: number[];
   warmupSets: number;
   warmupReps: number;
   workingReps: number;
@@ -41,7 +42,7 @@ export interface Folder {
   description: string | null;
 }
 
-export interface Plan {
+export interface Routine {
   id: string;
   name: string;
   folderId: string;
@@ -53,7 +54,7 @@ export interface Plan {
   exercises: { name: string }[];
 }
 
-export interface PlanWithExercises extends Plan {
+export interface RoutineWithExercises extends Routine {
   exercises: Array<{ name: string }>;
 }
 

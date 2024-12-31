@@ -7,14 +7,16 @@ import { IoAddCircle } from "react-icons/io5";
 import SecondaryButton from "@/app/components/SecondaryButton";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Exercise } from "@/lib/db/schema";
+import { is } from "drizzle-orm";
 
 interface ExerciseRoutineCardProps {
   exercise: Exercise;
-  planExercise: {
+  routineExercise: {
     id: string;
-    planId: string;
+    routineId: string;
     exerciseId: string;
     order: number;
+    workingSetWeights: string;
     warmupSets: number;
     warmupReps: number;
     workingSets: number;
@@ -72,7 +74,7 @@ function debounce<T extends (...args: any[]) => void>(
 
 export default function ExceriseRoutineCard({
   exercise,
-  planExercise,
+  routineExercise,
   previousData,
   onUpdate,
   onRestTimeTrigger,
@@ -84,54 +86,62 @@ export default function ExceriseRoutineCard({
     isWarmup: boolean;
   }
 
-  // Initialize sets based on planExercise data and previous data
+  // Initialize sets based on routineExercise data and previous data
   const initialSets = useMemo(() => {
     try {
-      // If we have previous data, use it
-      if (previousData?.sets) {
-        const parsedSets = JSON.parse(previousData.sets);
-        return parsedSets.map((set: any, index: number) => ({
+      const workingWeights = JSON.parse(routineExercise.workingSetWeights);
+      const defaultSets = Array(routineExercise.workingSets)
+        .fill(null)
+        .map((_, index) => ({
           id: index + 1,
-          weight: set.weight || "",
-          reps: set.reps || "",
-          isWarmup: index < planExercise.warmupSets,
+          weight: workingWeights[index]?.toString() ?? "0",
+          reps: routineExercise.workingReps.toString(),
+          isWarmup: false,
         }));
+
+      // Only override with previous data if it exists and is valid
+      if (previousData?.sets && previousData.sets !== "[]") {
+        try {
+          const parsedSets = JSON.parse(previousData.sets);
+          if (Array.isArray(parsedSets) && parsedSets.length > 0) {
+            return parsedSets.map((set, index) => ({
+              id: index + 1,
+              weight: (
+                set?.weight ??
+                defaultSets[index]?.weight ??
+                "0"
+              ).toString(),
+              reps: (
+                set?.reps ??
+                defaultSets[index]?.reps ??
+                routineExercise.workingReps.toString()
+              ).toString(),
+              isWarmup: false,
+            }));
+          }
+        } catch {
+          // If there's any error parsing previous data, return default sets
+          return defaultSets;
+        }
       }
-    } catch (error) {
-      console.error("Error parsing previous data:", error);
-    }
 
-    // Fallback to default sets if no previous data or parsing error
-    const defaultSets = [];
-    // Add warmup sets
-    for (let i = 1; i <= planExercise.warmupSets; i++) {
-      defaultSets.push({
-        id: i,
-        weight: "",
-        reps: planExercise.warmupReps.toString(),
-        isWarmup: true,
-      });
+      return defaultSets;
+    } catch {
+      // If anything fails, return a single default set
+      return [
+        {
+          id: 1,
+          weight: "0",
+          reps: routineExercise.workingReps.toString(),
+          isWarmup: false,
+        },
+      ];
     }
-
-    // Add working sets
-    for (let i = 1; i <= planExercise.workingSets; i++) {
-      defaultSets.push({
-        id: i + planExercise.warmupSets,
-        weight: "",
-        reps: planExercise.workingReps.toString(),
-        isWarmup: false,
-      });
-    }
-
-    // Return default sets if no valid previous data
-    return defaultSets.length
-      ? defaultSets
-      : [{ id: 1, weight: "", reps: "", isWarmup: false }];
-  }, [planExercise, previousData]); // Remove previousData from dependencies
+  }, [routineExercise, previousData]);
 
   const [sets, setSets] = useState(initialSets);
   const [notes, setNotes] = useState<string>(
-    previousData?.notes || planExercise.notes || "",
+    previousData?.notes || routineExercise.notes || "",
   );
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const isInitialRender = useRef(true);
@@ -219,7 +229,7 @@ export default function ExceriseRoutineCard({
   const handleCheckboxChange = (setId: number) => {
     // Trigger rest timer countdown logic
     console.log(`Set ${setId} completed. Trigger rest timer countdown.`);
-    onRestTimeTrigger(planExercise.restTime);
+    onRestTimeTrigger(routineExercise.restTime);
   };
 
   return (
@@ -258,7 +268,7 @@ export default function ExceriseRoutineCard({
       <div className="flex items-center gap-2 py-4 text-accent">
         <BsStopwatch />
         <p>Rest Timer:</p>
-        <div>{planExercise.restTime}</div>
+        <div>{routineExercise.restTime}</div>
       </div>
 
       {/* Set details header */}
