@@ -32,7 +32,7 @@ export const folders = sqliteTable("folders", {
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const plans = sqliteTable("plans", {
+export const routines = sqliteTable("routines", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   folderId: text("folder_id")
@@ -70,15 +70,16 @@ export const exercises = sqliteTable("exercises", {
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const planExercises = sqliteTable("plan_exercises", {
+export const routineExercises = sqliteTable("routine_exercises", {
   id: text("id").primaryKey(),
-  planId: text("plan_id")
+  routineId: text("routine_id")
     .notNull()
-    .references(() => plans.id),
+    .references(() => routines.id),
   exerciseId: text("exercise_id")
     .notNull()
     .references(() => exercises.id),
   order: integer("order").notNull(),
+  workingSetWeights: text("working_set_weights").notNull().default("[]"),
   warmupSets: integer("warmup_sets").notNull().default(0),
   warmupReps: integer("warmup_reps").notNull().default(0),
   workingSets: integer("working_sets").notNull().default(0),
@@ -92,9 +93,9 @@ export const workoutSessions = sqliteTable("workout_sessions", {
   userId: text("user_id")
     .notNull()
     .references(() => users.id),
-  planId: text("plan_id")
+  routineId: text("routine_id")
     .notNull()
-    .references(() => plans.id),
+    .references(() => routines.id),
   status: text("status", { enum: ["active", "completed", "cancelled"] })
     .notNull()
     .default("active"),
@@ -149,8 +150,8 @@ export const sets = sqliteTable("sets", {
 
 // Only export the types you commonly need in your app
 export type User = typeof users.$inferSelect;
-export type Plan = typeof plans.$inferSelect;
+export type Routine = typeof routines.$inferSelect;
 export type Exercise = typeof exercises.$inferSelect;
-export interface PlanWithExercises extends Plan {
+export interface RoutineWithExercises extends Routine {
   exercises: Array<{ name: string }>;
 }

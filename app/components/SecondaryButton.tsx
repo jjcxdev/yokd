@@ -26,7 +26,7 @@ export default function SecondaryButton({
   return (
     <button
       onClick={props.onClick}
-      className={`${VARIANTS[variant]} flex h-10 w-full items-center justify-center gap-2 rounded-lg text-white`}
+      className={`${VARIANTS[variant]} flex h-10 w-full max-w-72 items-center justify-center gap-2 rounded-lg text-white`}
     >
       {props.icon && <div className="text-xl">{props.icon}</div>}
       <div className="text-sm">{props.label}</div>

@@ -1,0 +1,1 @@
+ALTER TABLE `plan_exercises` ADD `target_weight` integer DEFAULT 0 NOT NULL;

@@ -1,25 +1,25 @@
-import { fetchFoldersWithPlans } from "@/app/actions/folders";
+import { fetchFoldersWithRoutines } from "@/app/actions/folders";
 import DashboardClient from "@/app/components/DashboardClient";
-import type { Folder, PlanWithExercises } from "@/types/types";
+import type { Folder, RoutineWithExercises } from "@/types/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
   let initialFolders: Folder[] = [];
-  let initialPlans: PlanWithExercises[] = [];
+  let initialRoutines: RoutineWithExercises[] = [];
 
   try {
-    const { folders, plans } = await fetchFoldersWithPlans();
+    const { folders, routines } = await fetchFoldersWithRoutines();
     initialFolders = folders;
-    initialPlans = plans;
+    initialRoutines = routines;
   } catch (error) {
-    console.error("Error fetching folders with plans:", error);
+    console.error("Error fetching folders with routines:", error);
   }
 
   return (
     <DashboardClient
       initialFolders={initialFolders}
-      initialPlans={initialPlans}
+      initialRoutines={initialRoutines}
     />
   );
 }

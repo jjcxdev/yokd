@@ -17,7 +17,7 @@ export default async function Exercise() {
   const data = await getExercises();
 
   return (
-    <div className="flex min-h-screen w-full flex-col gap-4 bg-background">
+    <div className="flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background">
       <Suspense
         fallback={
           <div className="flex min-h-screen w-full items-center justify-center">

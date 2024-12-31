@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 
 import { completeWorkoutSession } from "@/app/actions/workout";
-import { SessionContext } from "./SessionContext";
 
+import { SessionContext } from "./SessionContext";
 import SessionLayout from "./SessionLayout";
 
 interface SessionWrapperProps {

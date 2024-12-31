@@ -10,7 +10,7 @@ export default function Home() {
     return (
       <main className="flex h-screen w-full flex-col justify-center bg-black">
         <div className="flex justify-center">
-          <SignIn />
+          <SignIn routing="hash" />
         </div>
       </main>
     );

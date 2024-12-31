@@ -6,12 +6,12 @@ import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
-import type { PlanWithExercises } from "@/lib/db/schema";
+import type { RoutineWithExercises } from "@/lib/db/schema";
 import {
   exercises,
   folders,
-  planExercises,
-  plans,
+  routineExercises,
+  routines,
   sets,
   users,
   workoutData,
@@ -136,17 +136,17 @@ export async function deleteFolder(folderId: string) {
     }
     console.log(`Authenticated user ID: ${authResult.userId}`);
 
-    // First get all plans in this folder
-    const folderPlans = await db
-      .select({ id: plans.id })
-      .from(plans)
-      .where(eq(plans.folderId, folderId));
-    console.log(`Found ${folderPlans.length} plans in folder`);
+    // First get all routines in this folder
+    const folderRoutines = await db
+      .select({ id: routines.id })
+      .from(routines)
+      .where(eq(routines.folderId, folderId));
+    console.log(`Found ${folderRoutines.length} routines in folder`);
 
-    if (folderPlans.length > 0) {
-      const planIds = folderPlans.map((plan) => plan.id);
+    if (folderRoutines.length > 0) {
+      const routineIds = folderRoutines.map((routine) => routine.id);
 
-      // Delete all workout data related to these plans
+      // Delete all workout data related to these routines
       await db
         .delete(workoutData)
         .where(
@@ -155,12 +155,12 @@ export async function deleteFolder(folderId: string) {
             db
               .select({ id: workoutSessions.id })
               .from(workoutSessions)
-              .where(inArray(workoutSessions.planId, planIds)),
+              .where(inArray(workoutSessions.routineId, routineIds)),
           ),
         );
-      console.log(`Deleted workout data for plans in folder`);
+      console.log(`Deleted workout data for routines in folder`);
 
-      // Delete all sets related to these plans
+      // Delete all sets related to these routines
       await db
         .delete(sets)
         .where(
@@ -169,33 +169,33 @@ export async function deleteFolder(folderId: string) {
             db
               .select({ id: workoutSessions.id })
               .from(workoutSessions)
-              .where(inArray(workoutSessions.planId, planIds)),
+              .where(inArray(workoutSessions.routineId, routineIds)),
           ),
         );
-      console.log(`Deleted sets for plans in folder`);
+      console.log(`Deleted sets for routines in folder`);
 
-      // Delete all workout sessions related to these plans
+      // Delete all workout sessions related to these routines
       await db
         .delete(workoutSessions)
-        .where(inArray(workoutSessions.planId, planIds));
-      console.log(`Deleted workout sessions for plans in folder`);
+        .where(inArray(workoutSessions.routineId, routineIds));
+      console.log(`Deleted workout sessions for routines in folder`);
 
-      // Delete all plan_exercises for plans in this folder
+      // Delete all routine_exercises for routines in this folder
       await db
-        .delete(planExercises)
-        .where(inArray(planExercises.planId, planIds));
-      console.log(`Deleted plan exercises for plans in folder`);
+        .delete(routineExercises)
+        .where(inArray(routineExercises.routineId, routineIds));
+      console.log(`Deleted routine exercises for routines in folder`);
 
-      // Delete associated plans
-      await db.delete(plans).where(eq(plans.folderId, folderId));
-      console.log(`Deleted plans in folder`);
+      // Delete associated routines
+      await db.delete(routines).where(eq(routines.folderId, folderId));
+      console.log(`Deleted routines in folder`);
     }
 
     // Ensure there are no remaining references to the folder
     const remainingReferences = await db
-      .select({ id: plans.id })
-      .from(plans)
-      .where(eq(plans.folderId, folderId));
+      .select({ id: routines.id })
+      .from(routines)
+      .where(eq(routines.folderId, folderId));
     if (remainingReferences.length > 0) {
       throw new Error(
         `Cannot delete folder with ID: ${folderId} as there are still references to it.`,
@@ -219,9 +219,9 @@ export async function deleteFolder(folderId: string) {
   }
 }
 
-// DELETE PLAN
+// DELETE ROUTINE
 
-export async function deletePlan(planId: string) {
+export async function deleteRoutine(routineId: string) {
   try {
     // Validate auth
     const authResult = await auth();
@@ -229,32 +229,34 @@ export async function deletePlan(planId: string) {
       throw new Error("User not authenticated");
     }
 
-    // Firt delete associated plan_exercises
-    await db.delete(planExercises).where(eq(planExercises.planId, planId));
+    // Firt delete associated routine_exercises
+    await db
+      .delete(routineExercises)
+      .where(eq(routineExercises.routineId, routineId));
 
-    // Then delete the plan
-    await db.delete(plans).where(eq(plans.id, planId));
+    // Then delete the routine
+    await db.delete(routines).where(eq(routines.id, routineId));
 
-    console.log("Plan deleted successfully");
+    console.log("Routine deleted successfully");
     // Revalidate after delete
     revalidatePath("/dashboard");
     console.log("Page revalidated");
   } catch (error) {
     if (error instanceof Error) {
-      console.error("Error deleting plan:", error.message);
+      console.error("Error deleting routine:", error.message);
       console.error("Error stack:", error.stack);
     } else {
-      console.error("Error deleting plan:", error);
+      console.error("Error deleting routine:", error);
     }
-    throw new Error("Failed to delete plan");
+    throw new Error("Failed to delete routine");
   }
 }
 
-// FETCH FOLDERS WITH PLANS
+// FETCH FOLDERS WITH ROUTINES
 
-export async function fetchFoldersWithPlans(): Promise<{
+export async function fetchFoldersWithRoutines(): Promise<{
   folders: Folders[];
-  plans: PlanWithExercises[];
+  routines: RoutineWithExercises[];
 }> {
   try {
     // Get the current user's ID from auth
@@ -265,7 +267,7 @@ export async function fetchFoldersWithPlans(): Promise<{
 
     console.log("Fetching folders for user:", userId);
 
-    // Fetch only folders and plans that belong to the current user
+    // Fetch only folders and routines that belong to the current user
     const foldersData = await db
       .select({
         id: folders.id,
@@ -281,66 +283,75 @@ export async function fetchFoldersWithPlans(): Promise<{
 
     console.log("Fetched folders:", foldersData);
 
-    const plansData =
+    const routinesData =
       foldersData.length > 0
         ? await db
             .select({
-              // Select all plan fields
-              id: plans.id,
-              name: plans.name,
-              folderId: plans.folderId,
-              userId: plans.userId,
-              createdAt: plans.createdAt,
-              updatedAt: plans.updatedAt,
-              status: plans.status,
-              description: plans.description,
+              // Select all routine fields
+              id: routines.id,
+              name: routines.name,
+              folderId: routines.folderId,
+              userId: routines.userId,
+              createdAt: routines.createdAt,
+              updatedAt: routines.updatedAt,
+              status: routines.status,
+              description: routines.description,
               // Add exercises as JSON array
               exerciseNames:
                 sql<string>`GROUP_CONCAT(json_object('name', ${exercises.name}))`.as(
                   "exercises",
                 ),
             })
-            .from(plans)
-            .leftJoin(planExercises, eq(plans.id, planExercises.planId))
-            .leftJoin(exercises, eq(planExercises.exerciseId, exercises.id))
+            .from(routines)
+            .leftJoin(
+              routineExercises,
+              eq(routines.id, routineExercises.routineId),
+            )
+            .leftJoin(exercises, eq(routineExercises.exerciseId, exercises.id))
             .where(
               and(
-                eq(plans.userId, userId),
+                eq(routines.userId, userId),
                 inArray(
-                  plans.folderId,
+                  routines.folderId,
                   foldersData.map((f) => f.id),
                 ),
               ),
             )
-            .groupBy(plans.id)
+            .groupBy(routines.id)
         : [];
 
-    console.log("Fetched plans:", plansData);
+    console.log("Fetched routines:", routinesData);
 
     // Parse the JSON string into actual arrays
-    const transformedPlans: PlanWithExercises[] = plansData.map((plan) => {
-      try {
-        // The string is already a series of JSON objects, but needs to be wrapped in brackets
-        const exercisesArray = JSON.parse(`[${plan.exerciseNames}]`);
-        return {
-          ...plan,
-          exercises: exercisesArray,
-        };
-      } catch (error) {
-        console.error("Error parsing exercises for plan:", plan.id, error);
-        return {
-          ...plan,
-          exercises: [],
-        };
-      }
-    });
+    const transformedRoutines: RoutineWithExercises[] = routinesData.map(
+      (routine) => {
+        try {
+          // The string is already a series of JSON objects, but needs to be wrapped in brackets
+          const exercisesArray = JSON.parse(`[${routine.exerciseNames}]`);
+          return {
+            ...routine,
+            exercises: exercisesArray,
+          };
+        } catch (error) {
+          console.error(
+            "Error parsing exercises for routine:",
+            routine.id,
+            error,
+          );
+          return {
+            ...routine,
+            exercises: [],
+          };
+        }
+      },
+    );
 
     return {
       folders: foldersData,
-      plans: transformedPlans,
+      routines: transformedRoutines,
     };
   } catch (error) {
-    console.error("Error fetching folders with plans:", error);
-    throw new Error("Failed to fetch folders with plans");
+    console.error("Error fetching folders with routines:", error);
+    throw new Error("Failed to fetch folders with routines");
   }
 }

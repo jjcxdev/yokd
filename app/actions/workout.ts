@@ -9,8 +9,8 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import {
   exercises,
-  planExercises,
-  plans,
+  routineExercises,
+  routines,
   sets,
   workoutData,
   workoutSessions,
@@ -18,7 +18,7 @@ import {
 
 // GET WORKOUT SESSION FUNCTION
 
-export async function startWorkoutSession(planId: string) {
+export async function startWorkoutSession(routineId: string) {
   try {
     const { userId } = await auth();
     console.log("Starting session with userId:", userId);
@@ -27,17 +27,17 @@ export async function startWorkoutSession(planId: string) {
       throw new Error("Unauthorized");
     }
 
-    // First verify the plan exists and belongs to this user
-    const plan = await db
+    // First verify the routine exists and belongs to this user
+    const routine = await db
       .select()
-      .from(plans)
-      .where(eq(plans.id, planId))
+      .from(routines)
+      .where(eq(routines.id, routineId))
       .limit(1);
 
-    console.log("Found plan:", plan);
+    console.log("Found routine:", routine);
 
-    if (!plan.length || plan[0].userId !== userId) {
-      throw new Error("Plan not found or unauthorized");
+    if (!routine.length || routine[0].userId !== userId) {
+      throw new Error("Routine not found or unauthorized");
     }
 
     const sessionId = nanoid();
@@ -46,7 +46,7 @@ export async function startWorkoutSession(planId: string) {
     console.log("Creating session with dat:", {
       id: sessionId,
       userId,
-      planId,
+      routineId,
       status: "active",
       startedAt: timestamp,
       completedAt: null,
@@ -56,7 +56,7 @@ export async function startWorkoutSession(planId: string) {
     await db.insert(workoutSessions).values({
       id: sessionId,
       userId,
-      planId,
+      routineId,
       status: "active",
       startedAt: timestamp,
       completedAt: null,
@@ -64,19 +64,19 @@ export async function startWorkoutSession(planId: string) {
 
     console.log("Session created successfully:", sessionId);
 
-    // Fetch exercises for this plan
-    const planExerciseList = await db
+    // Fetch exercises for this routine
+    const routineExerciseList = await db
       .select({
         exercise: exercises,
-        planExercise: planExercises,
+        routineExercise: routineExercises,
       })
-      .from(planExercises)
-      .where(eq(planExercises.planId, planId))
-      .leftJoin(exercises, eq(exercises.id, planExercises.exerciseId))
-      .orderBy(planExercises.order);
+      .from(routineExercises)
+      .where(eq(routineExercises.routineId, routineId))
+      .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+      .orderBy(routineExercises.order);
 
-    if (!planExerciseList.length) {
-      console.log("Warning: No exercises found for plan", planId);
+    if (!routineExerciseList.length) {
+      console.log("Warning: No exercises found for routine", routineId);
     }
 
     redirect(`/session/${sessionId}`);
@@ -104,25 +104,25 @@ export async function getWorkoutSession(sessionId: string) {
       throw new Error("Unauthorized session access");
     }
 
-    // Get exercises for this plan
+    // Get exercises for this routine
     const exercisesList = await db
       .select({
         exercise: exercises,
-        planExercise: planExercises,
+        routineExercise: routineExercises,
       })
-      .from(planExercises)
-      .where(eq(planExercises.planId, session[0].planId))
-      .leftJoin(exercises, eq(exercises.id, planExercises.exerciseId))
-      .orderBy(planExercises.order);
+      .from(routineExercises)
+      .where(eq(routineExercises.routineId, session[0].routineId))
+      .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+      .orderBy(routineExercises.order);
 
-    // Get the most recent completed session for this user/plan before this session
+    // Get the most recent completed session for this user/routine before this session
     const previousSession = await db
       .select()
       .from(workoutSessions)
       .where(
         and(
           eq(workoutSessions.userId, userId),
-          eq(workoutSessions.planId, session[0].planId),
+          eq(workoutSessions.routineId, session[0].routineId),
           eq(workoutSessions.status, "completed"),
           lt(workoutSessions.startedAt, session[0].startedAt),
         ),

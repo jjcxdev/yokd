@@ -64,8 +64,8 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col gap-4">
-      <div className="h-24">
+    <div className="flex min-h-screen w-full flex-col gap-4 md:rounded-lg">
+      <div className="sticky top-0 z-10 flex">
         <ActionHeader
           title={"Add Exercise"}
           button={"Cancel"}

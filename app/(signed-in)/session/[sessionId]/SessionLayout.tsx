@@ -55,10 +55,50 @@ export default function SessionLayout({
     setCurrentRestTime(restTime);
   }, [restTime]);
 
-  // Play chime sound
+  // Initialize and play chime sound
+  const [audio] = useState(() => {
+    if (typeof window !== "undefined") {
+      const sound = new Audio("/boxing-bell.mp3");
+      sound.preload = "auto";
+      // Enable playing on mobile
+      const enableAudio = () => {
+        sound.play().catch((error) => console.log("Audio play failed:", error));
+        document.removeEventListener("touchstart", enableAudio);
+      };
+      document.addEventListener("touchstart", enableAudio);
+      return sound;
+    }
+    return null;
+  });
+
+  // Request notification permission on component mount
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
+  }, []);
+
   const playChime = () => {
-    const audio = new Audio("/boxing-bell.mp3");
-    audio.play();
+    // Try to play audio
+    if (audio) {
+      audio.currentTime = 0;
+      audio.play().catch((error) => {
+        console.log("Failed to play audio:", error);
+      });
+    }
+
+    // Trigger vibration if supported
+    if ("vibrate" in navigator) {
+      navigator.vibrate([200, 100, 200]); // Vibrate-pause-vibrate pattern
+    }
+
+    // Show system notification if permitted
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Rest Period Complete", {
+        body: "Time to start your next set!",
+        icon: "/favicon.ico", // Make sure you have a favicon
+      });
+    }
   };
 
   const formatTime = (time: number) => {
@@ -76,7 +116,7 @@ export default function SessionLayout({
   }, [restTime, currentRestTime, isResting]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen w-full max-w-3xl flex-col bg-background">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-primary p-4">
         <div className="flex w-full items-center justify-between">
           {/* Duration Time */}

@@ -15,35 +15,35 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import type { PlanWithExercises } from "@/lib/db/schema";
+import type { RoutineWithExercises } from "@/lib/db/schema";
 import type { Folders } from "@/types/types";
 
-import { deleteFolder, deletePlan } from "../actions/folders";
+import { deleteFolder, deleteRoutine } from "../actions/folders";
 import FolderToggle from "./FolderToggle";
 import RoutineCard from "./RoutineCard";
 
 interface FolderListProps {
   folders: Folders[];
-  plans?: PlanWithExercises[];
+  routines?: RoutineWithExercises[];
   onFolderDeleted?: () => void;
 }
 
 export default function FolderList({
   folders,
-  plans = [],
+  routines = [],
   onFolderDeleted,
 }: FolderListProps) {
   return (
     <div>
-      <ul className="grid grid-cols-1 md:grid-cols-2 md:gap-4">
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {folders.map((folder) => {
-          // Filter plans for this specific folder
-          const folderPlans = plans.filter(
-            (plan) => plan.folderId === folder.id,
+          // Filter routines for this specific folder
+          const folderRoutines = routines.filter(
+            (routine) => routine.folderId === folder.id,
           );
 
           return (
-            <li className="pb-4" key={folder.id}>
+            <li className="" key={folder.id}>
               <FolderToggle
                 folder={folder}
                 menuIcon={
@@ -81,17 +81,17 @@ export default function FolderList({
                   </Drawer>
                 }
                 folderIcon={<TbLayoutNavbarExpandFilled />}
-                count={folderPlans.length.toString()}
+                count={folderRoutines.length.toString()}
               >
                 <div className="space-y-2">
-                  {folderPlans.map((plan: PlanWithExercises) => (
+                  {folderRoutines.map((routine: RoutineWithExercises) => (
                     <RoutineCard
-                      key={plan.id}
-                      id={plan.id}
-                      label={plan.name}
-                      exercises={plan.exercises}
+                      key={routine.id}
+                      id={routine.id}
+                      label={routine.name}
+                      exercises={routine.exercises}
                       onDelete={() => {
-                        deletePlan(plan.id);
+                        deleteRoutine(routine.id);
                         onFolderDeleted?.();
                       }}
                     />
