@@ -6,8 +6,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 
-import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import PWAWrapper from "@/components/PWAWrapper";
 
 const helvObl = localFont({
   src: "./fonts/Helv_Black_Ob.woff",
@@ -32,6 +31,17 @@ export const metadata: Metadata = {
       { url: "/icons/icon-192x192.png" },
       { url: "/icons/icon-512x512.png" },
     ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "YOKD",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
   },
   title: "YOKD",
   description: "Workout Tracker",
@@ -69,8 +79,7 @@ export default async function RootLayout({
       <html lang="en">
         <body className={`${inter.className} ${helvObl.variable} antialiased`}>
           {children}
-          <ServiceWorkerRegistration />
-          <PWAInstallPrompt />
+          <PWAWrapper />
         </body>
       </html>
     </ClerkProvider>

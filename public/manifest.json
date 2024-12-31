@@ -4,7 +4,7 @@
   "description": "Track and optimize your workout progress with YOKD's intuitive workout tracking system",
   "start_url": "/",
   "id": "/",
-  "display_override": ["fullscreen ", "minimal-ui"],
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0B0911",
   "theme_color": "#7233F3",
