@@ -2,11 +2,12 @@ import "./globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 const helvObl = localFont({
   src: "./fonts/Helv_Black_Ob.woff",
@@ -19,8 +20,19 @@ const inter = Inter({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#7233F3",
+};
+
 export const metadata: Metadata = {
-  manifest: "public/manifest.json",
+  manifest: "/manifest.json",
+
+  icons: {
+    apple: [
+      { url: "/icons/icon-192x192.png" },
+      { url: "/icons/icon-512x512.png" },
+    ],
+  },
   title: "YOKD",
   description: "Workout Tracker",
   creator: "jjcx",
@@ -58,6 +70,7 @@ export default async function RootLayout({
         <body className={`${inter.className} ${helvObl.variable} antialiased`}>
           {children}
           <ServiceWorkerRegistration />
+          <PWAInstallPrompt />
         </body>
       </html>
     </ClerkProvider>
