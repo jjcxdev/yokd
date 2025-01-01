@@ -9,6 +9,9 @@
 
 This project was developed as the final project for Harvard University's CS50 Introduction to Computer Science course. YOKD represents the culmination of skills learned throughout the course, applying web development, database management, and user experience design principles.
 
+### Video Demo:
+<a href="https://youtu.be/Tlk_5uLrk9A">YouTube</a>
+
 ## Project Overview
 
 YOKD is a comprehensive web application designed to streamline workout tracking and management. Developed as a solution to the challenge of maintaining consistent workout logs, the app provides an intuitive platform for fitness enthusiasts to log, track, and optimize their workout routines.
