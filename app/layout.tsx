@@ -1,6 +1,7 @@
 import "./globals.css";
 
-import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkProvider} from "@clerk/nextjs";
+import { AuthWrapper } from "./components/AuthWrapper";
 import { dark } from "@clerk/themes";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
@@ -65,13 +66,16 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
     <ClerkProvider afterSignOutUrl={'/'} appearance={{ baseTheme: dark }}>
       <html lang="en">
         <body className={`${inter.className} ${helvObl.variable} antialiased`}>
+         <AuthWrapper>
           {children}
           <ServiceWorkerRegistration />
           <PWAInstallPrompt />
+          </AuthWrapper>
         </body>
       </html>
     </ClerkProvider>
