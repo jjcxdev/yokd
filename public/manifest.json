@@ -4,7 +4,7 @@
   "description": "Track and optimize your workout progress with YOKD's intuitive workout tracking system",
   "start_url": "/",
   "id": "/",
-  "display_override": ["fullscreen ", "minimal-ui"],
+  "display_override": ["fullscreen", "minimal-ui"],
   "display": "standalone",
   "background_color": "#0B0911",
   "theme_color": "#7233F3",
@@ -32,6 +32,21 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "apple-touch-icon"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml"
     }
   ],
   "screenshots": [
@@ -47,5 +62,16 @@
       "type": "image/png",
       "form_factor": "wide"
     }
-  ]
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "categories": ["fitness", "health"],
+  "orientation": "any",
+  "lang": "en",
+  "dir": "ltr",
+  "iarc_rating_id": "",
+  "shortcuts": [],
+  "edge_side_panel": {
+    "preferred_width": 380
+  }
 }
