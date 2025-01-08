@@ -2,6 +2,7 @@
 
 import { UserButton } from "@clerk/nextjs";
 import React from "react";
+import UserName from "./UserName";
 
 export default function Header() {
   return (
@@ -11,6 +12,7 @@ export default function Header() {
       </div>
 
       <div className="flex align-middle">
+        <UserName />
         <UserButton />
       </div>
     </div>
