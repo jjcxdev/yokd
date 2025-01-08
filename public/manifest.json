@@ -6,8 +6,8 @@
   "id": "/",
   "display_override": ["fullscreen", "minimal-ui"],
   "display": "standalone",
-  "background_color": "#0B0911",
-  "theme_color": "#7233F3",
+  "background_color": "#000000",
+  "theme_color": "#E7FC00",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
