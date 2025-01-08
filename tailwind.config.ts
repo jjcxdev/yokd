@@ -10,11 +10,12 @@ export default {
     extend: {
       colors: {
         border: "hsl(var(--border))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
-        background: "hsl(var(--background))",
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -23,10 +24,6 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
-        dimmed: "#92909E",
-        button: "#271C43",
-        buttonDark: "#211E2D",
-        remove: "#D78397",
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -43,7 +40,9 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
-        foreground: "hsl(var(--foreground))",
+        dimmed: "hsl(var(--dimmed))",
+        button: "hsl(var(--button))",
+        remove: "hsl(var(--remove))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
       },

@@ -12,29 +12,28 @@
     /* Your custom colors in HSL */
     --background: 260 10% 6%; /* #0E0D10 */
     --foreground: 0 0% 100%; /* #FFFFFF */
-    --secondary: 240 1% 39%; /* #636366 */
+    --secondary: 264 41% 19%; /* #636366 */
     --border: 264 9% 22%; /* #38343E */
     --card: 0 0% 10%; /* #1A1A1A */
     --accent: 65 100% 49%; /* #E7FC00 */
     --dimmed: 0 0% 53%; /* #868686 */
     --button: 240 1% 18%; /* #2D2D2E */
-    --remove: 0 92% 44%; /* #D50C0C */
+    --remove: 348 53% 65%; /* #E66680 */
 
-    /* Required shadcn vars using your dark theme */
-    --primary-foreground: 0 0% 100%;
-    --card-foreground: 0 0% 100%;
-    --popover: 264 25% 10%;
-    --popover-foreground: 0 0% 100%;
-    --secondary: 264 41% 19%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 264 25% 10%;
-    --muted-foreground: 252 4% 62%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 348 53% 65%;
-    --destructive-foreground: 0 0% 100%;
-    --input: 282 10% 47%;
-    --ring: 265 89% 58%;
-
+    /* shadcn required vars */
+    --primary: 65 100% 49%; /* #E7FC00 */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 100%; /* #FFFFFF */
+    --popover: 264 25% 10%; /* #1F1825 */
+    --popover-foreground: 0 0% 100%; /* #FFFFFF */
+    --secondary-foreground: 0 0% 100%; /* #FFFFFF */
+    --muted: 264 25% 10%; /* #1F1825 */
+    --muted-foreground: 252 4% 62%; /* #9C9A9F */
+    --accent-foreground: 260 10% 6%; /* #0E0D10 */
+    --destructive: 348 53% 65%; /* #E66680 */
+    --destructive-foreground: 260 10% 6%; /* #0E0D10 */
+    --input: 0 0% 53%; /* #868686 */
+    --ring: 65 100% 49%; /* #E7FC00 */
     --radius: 0.5rem;
   }
 }

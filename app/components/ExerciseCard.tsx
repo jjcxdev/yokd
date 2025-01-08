@@ -11,7 +11,7 @@ interface ExerciseCardProps {
 }
 
 export default function ExerciseCard({ ...props }: ExerciseCardProps) {
-  const [borderColor, setBorderColor] = useState("border-border");
+  const [borderColor, setBorderColor] = useState("border-transparent");
   const [borderWidth, setBorderWidth] = useState("border");
 
   function handleClick() {
@@ -21,18 +21,18 @@ export default function ExerciseCard({ ...props }: ExerciseCardProps) {
 
   function handleColorChange(): void {
     setBorderColor((prev) =>
-      prev === "border-border" ? "border-accent" : "border-transparent",
+      prev === "border-transparent" ? "border-accent" : "border-transparent",
     );
-    setBorderWidth((prev) => (prev === "border" ? "border-2" : "border-2"));
+    setBorderWidth((prev) => (prev === "border-2" ? "border-2" : "border-2"));
   }
 
   return (
     <button onClick={handleClick} className="h-fit w-full">
       <div
-        className={`rounded-lg border-2 hover:bg-accent/30 ${borderColor} ${borderWidth} p-4`}
+        className={`rounded-lg border-2 bg-card hover:bg-accent/30 ${borderColor} ${borderWidth} p-4`}
       >
         <div className="flex justify-between">
-          <div className="font-bold">{props.title}</div>
+          <div className="truncate text-sm font-bold">{props.title}</div>
           <div className="text-sm italic text-accent">{props.exerciseType}</div>
         </div>
         <div className="flex w-full justify-start text-sm text-dimmed">
