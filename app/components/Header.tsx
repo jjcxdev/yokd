@@ -1,9 +1,8 @@
 "use client";
 
 import { UserButton } from "@clerk/nextjs";
-import React, { Suspense } from "react";
+import React from "react";
 import UserName from "./UserName";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Header() {
   return (
