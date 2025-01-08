@@ -12,7 +12,7 @@ interface ActionHeaderProps {
 
 export default function ActionHeader({ ...props }: ActionHeaderProps) {
   return (
-    <div className="flex w-full items-baseline justify-between bg-primary p-4 md:rounded-t-lg">
+    <div className="flex w-full items-baseline justify-between bg-card p-4 md:rounded-t-lg">
       <div className="flex pt-8 text-sm text-accent">
         <button onClick={props.onCancel}>{props.button}</button>
       </div>

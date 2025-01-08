@@ -6,6 +6,10 @@ import { useState } from "react";
 import ActionHeader from "@/app/components/ActionHeader";
 import ExerciseCard from "@/app/components/ExerciseCard";
 import type { Exercise } from "@/types/types";
+import { ExerciseSearch } from "./ExerciseSearch";
+import { ExerciseSort } from "./ExerciseSort";
+import { ExerciseMuscleFilter } from "./ExerciseMuscleFilter";
+import { ExerciseTypeFilter } from "./ExerciseTypeFilter";
 
 interface ExerciseListProps {
   initialData: Exercise[];
@@ -74,9 +78,23 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
           onCancel={handleCancel}
         />
       </div>
+
+      {/* Filters & Search */}
+
+      {/* <div className="flex flex-col gap-2 px-4">
+        <ExerciseSearch />
+        <ExerciseMuscleFilter />
+        <div className="flex items-center gap-2">
+          <ExerciseTypeFilter />
+          <div className="text-accent">|</div>
+          <ExerciseSort />
+        </div>
+      </div> */}
+
+      {/* Exercise list */}
       <div>
         <div className="p-4">
-          <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <ul className="grid grid-cols-1 md:grid-cols-2">
             {initialData.map((exercise) => (
               <li className="pb-4" key={exercise.id}>
                 <ExerciseCard

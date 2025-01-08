@@ -247,7 +247,7 @@ export default function ExceriseRoutineCard({
           <form className="h-full w-full">
             <textarea
               ref={textareaRef}
-              className="h-auto min-h-[2.5rem] w-full resize-none bg-transparent text-sm"
+              className="h-auto min-h-[2.5rem] w-full resize-none bg-transparent"
               rows={1}
               placeholder="Add routine notes here"
               value={notes}

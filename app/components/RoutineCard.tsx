@@ -44,7 +44,7 @@ export default function RoutineCard({
   };
 
   return (
-    <div className="flex flex-col gap-1 rounded-md border-2 border-transparent bg-primary p-4">
+    <div className="flex flex-col gap-1 rounded-md border-2 border-transparent bg-button p-4">
       <div className="flex items-center justify-between font-bold">
         <div>{label}</div>
         <div className="flex items-center gap-2">

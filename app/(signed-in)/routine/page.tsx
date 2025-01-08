@@ -161,7 +161,7 @@ function RoutineContent() {
   }
 
   return (
-    <div className="flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background">
+    <div className="flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background pb-20">
       <div className="sticky top-0 z-10 flex flex-col">
         <SaveHeader
           title={"Create Routine"}
@@ -173,10 +173,10 @@ function RoutineContent() {
         <div>
           <form className="px-2">
             <input
-              className="h-10 w-full border-b-2 border-accent bg-background px-4"
+              className="h-10 w-full border-b-2 border-accent/20 bg-background px-4"
               name="routine"
               type="text"
-              placeholder="Routine Name"
+              placeholder="Enter Routine Name"
               value={routineName}
               onChange={handleRoutineNameChange}
             />
@@ -223,7 +223,7 @@ function RoutineContent() {
       )}
 
       <div className="flex w-full justify-center">
-        <div className="flex w-full justify-center pb-8">
+        <div className="flex w-full max-w-72 justify-center pb-8">
           <SecondaryButton
             icon={<IoAddCircle />}
             label={"Add exercise"}

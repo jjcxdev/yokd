@@ -5,9 +5,9 @@ export default function UserName() {
 
   if (!user) return <div>Not signed in</div>;
   return (
-    <div>
-      <div>{user?.firstName}</div>
-      <div>{user?.lastName}</div>
+    <div className="flex flex-col items-end justify-center">
+      <div className="text-sm leading-none text-dimmed">{user?.firstName}</div>
+      <div className="text-lg leading-none">{user?.lastName}</div>
     </div>
   );
 }
