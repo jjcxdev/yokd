@@ -12,7 +12,7 @@ export default function EmptyState({
   onCreateRoutine,
 }: EmptyStateProps) {
   return (
-    <div className="flex h-[82vh] flex-col items-center justify-center rounded-lg border-2 border-accent p-8">
+    <div className="flex h-[82vh] flex-col items-center justify-center rounded-lg bg-card p-8">
       <div className="flex flex-col items-center gap-1 text-center">
         <h2 className="text-2xl font-bold">Welcome to YOKD</h2>
         <p className="text-dimmed">Let&apos;s set up your workout routines</p>
@@ -29,7 +29,7 @@ export default function EmptyState({
           </p>
           <button
             onClick={onCreateFolder}
-            className="mt-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent/90"
+            className="mt-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-button transition-colors hover:bg-accent/90"
           >
             New Folder
           </button>
@@ -51,7 +51,7 @@ export default function EmptyState({
           </p>
           <button
             onClick={onCreateRoutine}
-            className="mt-2 rounded-lg bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent/90"
+            className="mt-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-button transition-colors hover:bg-accent/90"
           >
             New Routine
           </button>
