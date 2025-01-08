@@ -10,16 +10,15 @@
 @layer base {
   :root {
     /* Your custom colors in HSL */
-    --background: 264 31% 5%; /* #0B0911 */
-    --foreground: 0 0% 100%; /* White text */
-    --border: 282 10% 47%; /* #38343E */
-    --primary: 280 9% 13%; /* #201E24 */
-    --card: 264 25% 10%; /* #16121F */
-    --accent: 265 89% 58%; /* #7233F3 */
-    --dimmed: 252 4% 62%; /* #92909E */
-    --button: 264 41% 19%; /* #271C43 */
-    --button-dark: 252 19% 15%; /* #211E2D */
-    --remove: 348 53% 65%; /* #D78397 */
+    --background: 260 10% 6%; /* #0E0D10 */
+    --foreground: 0 0% 100%; /* #FFFFFF */
+    --secondary: 240 1% 39%; /* #636366 */
+    --border: 264 9% 22%; /* #38343E */
+    --card: 0 0% 10%; /* #1A1A1A */
+    --accent: 65 100% 49%; /* #E7FC00 */
+    --dimmed: 0 0% 53%; /* #868686 */
+    --button: 240 1% 18%; /* #2D2D2E */
+    --remove: 0 92% 44%; /* #D50C0C */
 
     /* Required shadcn vars using your dark theme */
     --primary-foreground: 0 0% 100%;
@@ -45,6 +44,6 @@
     @apply border-border;
   }
   body {
-    @apply text-foreground bg-background;
+    @apply bg-background text-foreground;
   }
 }
