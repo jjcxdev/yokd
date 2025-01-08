@@ -1,7 +1,9 @@
 "use client";
 
 import { UserButton } from "@clerk/nextjs";
-import React from "react";
+import React, { Suspense } from "react";
+import UserName from "./UserName";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Header() {
   return (
@@ -11,6 +13,9 @@ export default function Header() {
       </div>
 
       <div className="flex align-middle">
+        <Suspense fallback={<Skeleton />}>
+          <UserName />
+        </Suspense>
         <UserButton />
       </div>
     </div>
