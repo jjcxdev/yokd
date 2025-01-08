@@ -4,6 +4,7 @@ import { Webhook } from "svix";
 
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   //console.log("Webhook endpoint hit");
@@ -71,13 +72,23 @@ export async function POST(req: Request) {
       //  console.log("Processing user.created event");
 
       const timestamp = new Date(evt.data.created_at).getTime();
-      await db.insert(users).values({
-        id: evt.data.id,
-        createdAt: timestamp,
-        updatedAt: timestamp, // Set initial updatedAt to same as createdAt
-      });
 
-      //  console.log("User record created successfully");
+      // Check if user already exists
+      const existingUser = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, evt.data.id))
+        .limit(1);
+
+      if (!existingUser.length) {
+        await db.insert(users).values({
+          id: evt.data.id,
+          createdAt: timestamp,
+          updatedAt: timestamp, // Set initial updatedAt to same as createdAt
+        });
+
+        //  console.log("User record created successfully");
+      }
     }
 
     return new Response(JSON.stringify({ success: true }), {
