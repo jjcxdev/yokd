@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { MdFormatListBulletedAdd } from "react-icons/md";
 import { VscNewFolder } from "react-icons/vsc";
 
@@ -39,7 +39,7 @@ export default function Dashboard({
   const hasContent = initialFolders.length > 0 || initialRoutines.length > 0;
 
   return (
-    <div className="flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background">
+    <div className="container flex min-h-full flex-col gap-4 bg-background">
       <header className="sticky top-0 z-10 flex w-full border-b-[1px] border-accent/30">
         <Header />
       </header>
