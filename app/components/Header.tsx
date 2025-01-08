@@ -13,9 +13,7 @@ export default function Header() {
       </div>
 
       <div className="flex align-middle">
-        <Suspense fallback={<Skeleton />}>
-          <UserName />
-        </Suspense>
+        <UserName />
         <UserButton />
       </div>
     </div>
