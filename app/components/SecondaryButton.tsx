@@ -3,9 +3,9 @@
 import React from "react";
 
 const VARIANTS = {
-  yellow: "bg-accent",
-  grey: "bg-button",
-  dark: "bg-card",
+  yellow: "bg-accent text-background",
+  grey: "bg-accent/20",
+  dark: "bg-background",
 } as const;
 
 type ButtonVariant = keyof typeof VARIANTS;
@@ -26,7 +26,7 @@ export default function SecondaryButton({
   return (
     <button
       onClick={props.onClick}
-      className={`${VARIANTS[variant]} flex h-10 w-full items-center justify-center gap-2 rounded-lg`}
+      className={`${VARIANTS[variant]} flex h-10 w-full items-center justify-center gap-2 rounded-lg font-semibold`}
     >
       {props.icon && <div className="text-xl">{props.icon}</div>}
       <div className="text-sm">{props.label}</div>

@@ -28,7 +28,7 @@ export default function CreateFolderModal({
     <div className="fixed inset-0">
       <div className="absolute inset-0 min-h-screen bg-black/50 blur-sm backdrop-blur-sm"></div>
       <div className="relative z-50 flex min-h-screen w-full flex-col items-center justify-center">
-        <div className="flex min-w-96 max-w-96 flex-col gap-1 rounded-lg border border-border bg-primary p-4">
+        <div className="flex min-w-96 max-w-96 flex-col gap-1 rounded-lg bg-card p-4">
           <div>
             <h2 className="flex justify-center pb-2 font-bold">
               Create New Folder
@@ -69,7 +69,7 @@ export default function CreateFolderModal({
             >
               <input
                 name="name"
-                className="h-10 w-full rounded-lg border border-border bg-primary px-4"
+                className="h-10 w-full rounded-lg border border-border bg-background px-4"
                 type="text"
                 placeholder="New Folder"
                 required
@@ -77,22 +77,23 @@ export default function CreateFolderModal({
                 onChange={() => setError(null)}
                 disabled={isSubmitting}
               />
-
-              <div className="pt-4">
-                <SecondaryButton
-                  label={isSubmitting ? "Creating..." : "Save"}
-                  type="submit"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="py-2">
-                <SecondaryButton
-                  variant="grey"
-                  type="button"
-                  label="Cancel"
-                  onClick={onClose}
-                  disabled={isSubmitting}
-                />
+              <div className="flex w-full gap-4 pt-5">
+                <div className="w-full">
+                  <SecondaryButton
+                    label={isSubmitting ? "Creating..." : "Save"}
+                    type="submit"
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div className="w-full">
+                  <SecondaryButton
+                    variant="grey"
+                    type="button"
+                    label="Cancel"
+                    onClick={onClose}
+                    disabled={isSubmitting}
+                  />
+                </div>
               </div>
             </form>
           </div>
