@@ -1,8 +1,9 @@
 "use client";
 
-import YokdLogo from "@/app/yokdlogo.svg";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+
+import YokdLogo from "@/app/yokdlogo.svg";
 
 export default function Loading() {
   const [shouldShow, setShouldShow] = useState(true);

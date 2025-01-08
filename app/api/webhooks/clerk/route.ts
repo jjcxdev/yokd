@@ -1,10 +1,10 @@
 import type { WebhookEvent } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { Webhook } from "svix";
 
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   //console.log("Webhook endpoint hit");

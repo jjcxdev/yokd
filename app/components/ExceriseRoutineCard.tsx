@@ -1,3 +1,4 @@
+import { is } from "drizzle-orm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BsStopwatch } from "react-icons/bs";
 import { FaRegTrashCan } from "react-icons/fa6";
@@ -7,7 +8,6 @@ import { IoAddCircle } from "react-icons/io5";
 import SecondaryButton from "@/app/components/SecondaryButton";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Exercise } from "@/lib/db/schema";
-import { is } from "drizzle-orm";
 
 interface ExerciseRoutineCardProps {
   exercise: Exercise;

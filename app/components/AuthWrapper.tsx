@@ -2,7 +2,8 @@
 
 import { useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
-import { ReactNode, useEffect } from "react"
+import type { ReactNode} from "react";
+import { useEffect } from "react"
 
 interface AuthWrapperProps{
     children: ReactNode;
