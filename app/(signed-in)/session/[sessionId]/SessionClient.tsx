@@ -1,5 +1,6 @@
 "use client";
 
+import { index } from "drizzle-orm/mysql-core";
 import { isEqual } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -8,7 +9,6 @@ import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import { type Exercise } from "@/lib/db/schema";
 
 import { useSessionContext } from "./SessionContext";
-import { index } from "drizzle-orm/mysql-core";
 
 type ExerciseSet = {
   weight: string;

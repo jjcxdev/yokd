@@ -1,7 +1,6 @@
 import "./globals.css";
 
 import { ClerkProvider} from "@clerk/nextjs";
-import { AuthWrapper } from "./components/AuthWrapper";
 import { dark } from "@clerk/themes";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
@@ -10,6 +9,7 @@ import localFont from "next/font/local";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
+import { AuthWrapper } from "./components/AuthWrapper";
 
 const helvObl = localFont({
   src: "./fonts/Helv_Black_Ob.woff",
