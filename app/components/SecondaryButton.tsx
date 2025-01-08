@@ -3,9 +3,9 @@
 import React from "react";
 
 const VARIANTS = {
-  purple: "bg-accent",
+  yellow: "bg-accent",
   grey: "bg-button",
-  dark: "bg-buttonDark",
+  dark: "bg-card",
 } as const;
 
 type ButtonVariant = keyof typeof VARIANTS;
@@ -20,13 +20,13 @@ interface SecondaryButtonProps {
 }
 
 export default function SecondaryButton({
-  variant = "purple",
+  variant = "yellow",
   ...props
 }: SecondaryButtonProps) {
   return (
     <button
       onClick={props.onClick}
-      className={`${VARIANTS[variant]} flex h-10 w-full max-w-72 items-center justify-center gap-2 rounded-lg text-white`}
+      className={`${VARIANTS[variant]} flex h-10 w-full items-center justify-center gap-2 rounded-lg`}
     >
       {props.icon && <div className="text-xl">{props.icon}</div>}
       <div className="text-sm">{props.label}</div>
