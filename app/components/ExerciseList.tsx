@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 import ActionHeader from "@/app/components/ActionHeader";
 import ExerciseCard from "@/app/components/ExerciseCard";
@@ -18,14 +19,19 @@ interface ExerciseListProps {
 export default function ExerciseList({ initialData }: ExerciseListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
+
   const folderId = searchParams.get("folderId");
   const routineName = searchParams.get("routineName");
 
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(
     new Set(),
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleExerciseToggle(id: string) {
+    if (isSubmitting) return;
+
     setSelectedExercises((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
@@ -38,27 +44,53 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
   }
 
   function handleAddExercises() {
-    // Filter the initalData to get only selected exercises
-    const selectedExercisesData = initialData.filter((exercise) =>
-      selectedExercises.has(exercise.id),
-    );
+    if (isSubmitting) return;
 
-    // Convert to URL-safe string
-    const exercisesParam = encodeURIComponent(
-      JSON.stringify(selectedExercisesData),
-    );
+    setIsSubmitting(true);
 
-    // Build URL with all parameters
-    let url = `/routine?folderId=${folderId}&selectedExercises=${exercisesParam}`;
-    if (routineName) {
-      url += `&routineName=${encodeURIComponent(routineName)}`;
+    toast({
+      title: "Saving routine...",
+      description: "Please wait while we update your routine",
+    });
+
+    try {
+      // Filter the initalData to get only selected exercises
+      const selectedExercisesData = initialData.filter((exercise) =>
+        selectedExercises.has(exercise.id),
+      );
+
+      // Convert to URL-safe string
+      const exercisesParam = encodeURIComponent(
+        JSON.stringify(selectedExercisesData),
+      );
+
+      // Build URL with all parameters
+      let url = `/routine?folderId=${folderId}&selectedExercises=${exercisesParam}`;
+      if (routineName) {
+        url += `&routineName=${encodeURIComponent(routineName)}`;
+      }
+
+      // Navigate back to routine page with selected exercises and routine name
+      router.push(url);
+
+      toast({
+        title: "Routine saved successfully",
+        description: `Added ${selectedExercises.size} exercise${selectedExercises.size !== 1 ? "s" : ""} to routine`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed to save routine",
+        description:
+          "Please try again. If the problem persists, refresh the page.",
+      });
+      setIsSubmitting(false);
     }
-
-    // Navigate back to routine page with selected exercises and routine name
-    router.push(url);
   }
 
   function handleCancel() {
+    if (isSubmitting) return;
+
     // Return to routine page preserving the routine name if it exists
     let url = `/routine?folderId=${folderId}`;
     if (routineName) {
@@ -76,6 +108,8 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
           count={selectedExercises.size}
           onAction={handleAddExercises}
           onCancel={handleCancel}
+          isLoading={isSubmitting}
+          disabled={isSubmitting}
         />
       </div>
 
@@ -103,6 +137,7 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
                   exerciseType={exercise.type}
                   isSelected={selectedExercises.has(exercise.id)}
                   onSelect={() => handleExerciseToggle(exercise.id)}
+                  disabled={isSubmitting}
                 />
               </li>
             ))}

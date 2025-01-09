@@ -8,6 +8,7 @@ interface ExerciseCardProps {
   exerciseType: string;
   isSelected: boolean;
   onSelect: () => void;
+  disabled?: boolean;
 }
 
 export default function ExerciseCard({ ...props }: ExerciseCardProps) {
@@ -15,6 +16,7 @@ export default function ExerciseCard({ ...props }: ExerciseCardProps) {
   const [borderWidth, setBorderWidth] = useState("border");
 
   function handleClick() {
+    if (props.disabled) return;
     handleColorChange();
     props.onSelect();
   }
@@ -27,7 +29,11 @@ export default function ExerciseCard({ ...props }: ExerciseCardProps) {
   }
 
   return (
-    <button onClick={handleClick} className="h-fit w-full">
+    <button
+      disabled={props.disabled}
+      onClick={handleClick}
+      className="h-fit w-full"
+    >
       <div
         className={`rounded-lg border-2 bg-card hover:bg-accent/30 ${borderColor} ${borderWidth} p-4`}
       >
