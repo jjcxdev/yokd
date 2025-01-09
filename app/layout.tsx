@@ -1,6 +1,6 @@
 import "./globals.css";
 
-import { ClerkProvider} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
@@ -10,6 +10,7 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
 import { AuthWrapper } from "./components/AuthWrapper";
+import { Toaster } from "@/components/ui/toaster";
 
 const helvObl = localFont({
   src: "./fonts/Helv_Black_Ob.woff",
@@ -66,15 +67,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-
   return (
-    <ClerkProvider afterSignOutUrl={'/'} appearance={{ baseTheme: dark }}>
+    <ClerkProvider afterSignOutUrl={"/"} appearance={{ baseTheme: dark }}>
       <html lang="en">
         <body className={`${inter.className} ${helvObl.variable} antialiased`}>
-         <AuthWrapper>
-          {children}
-          <ServiceWorkerRegistration />
-          <PWAInstallPrompt />
+          <AuthWrapper>
+            {children}
+            <Toaster />
+            <ServiceWorkerRegistration />
+            <PWAInstallPrompt />
           </AuthWrapper>
         </body>
       </html>
