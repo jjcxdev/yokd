@@ -1,3 +1,5 @@
+"use client";
+
 import { MobileFooter } from "../components/MobileFooter";
 
 export default function DashboardLayout({
