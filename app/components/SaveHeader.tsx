@@ -1,6 +1,5 @@
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
-import SecondaryButton from "./SecondaryButton";
 import { Button } from "@/components/ui/button";
 
 interface SaveHeaderProps {

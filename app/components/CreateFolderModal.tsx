@@ -3,7 +3,6 @@
 import { useAuth } from "@clerk/nextjs";
 import React, { useState } from "react";
 
-import SecondaryButton from "@/app/components/SecondaryButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 

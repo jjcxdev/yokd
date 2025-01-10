@@ -1,6 +1,5 @@
 "use client";
 
-import { index } from "drizzle-orm/mysql-core";
 import { isEqual } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 

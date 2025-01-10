@@ -3,7 +3,6 @@ import { startTransition } from "react";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { FaRegTrashAlt } from "react-icons/fa";
 
-import SecondaryButton from "@/app/components/SecondaryButton";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,

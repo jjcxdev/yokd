@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { FaRegFolderOpen } from "react-icons/fa";

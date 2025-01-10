@@ -8,7 +8,6 @@ import { FaDumbbell } from "react-icons/fa6";
 
 import { Button } from "@/components/ui/button";
 import CreateFolderModal from "@/app/components/CreateFolderModal";
-import PrimaryButton from "@/app/components/PrimaryButton";
 import type { RoutineWithExercises } from "@/lib/db/schema";
 import type { Folders } from "@/types/types";
 

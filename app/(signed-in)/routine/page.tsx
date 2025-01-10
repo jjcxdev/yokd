@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { postRoutines } from "@/app/actions/routines";
 import ExerciseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import SaveHeader from "@/app/components/SaveHeader";
-import SecondaryButton from "@/app/components/SecondaryButton";
 import type { Exercise } from "@/lib/db/schema";
 import type { ExerciseInput } from "@/types/types";
 import { Input } from "@/components/ui/input";

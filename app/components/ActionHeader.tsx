@@ -1,8 +1,6 @@
 import React from "react";
 
-import SecondaryButton from "./SecondaryButton";
 import { Button } from "@/components/ui/button";
-import { buttonVariants } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 interface ActionHeaderProps {
@@ -17,8 +15,6 @@ interface ActionHeaderProps {
 }
 
 export default function ActionHeader({
-  title,
-  button,
   count = 0,
   onAction,
   onCancel,

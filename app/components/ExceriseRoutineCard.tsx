@@ -1,11 +1,8 @@
-import { is } from "drizzle-orm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BsStopwatch } from "react-icons/bs";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdMore } from "react-icons/io";
 import { IoAddCircle } from "react-icons/io5";
-
-import SecondaryButton from "@/app/components/SecondaryButton";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Exercise } from "@/lib/db/schema";
 import { Button } from "@/components/ui/button";
@@ -20,8 +17,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 
