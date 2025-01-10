@@ -240,7 +240,7 @@ function RoutineContent() {
                   workingSetWeights: "[]",
                   warmupSets: 0,
                   warmupReps: 0,
-                  workingSets: 0,
+                  workingSets: 1,
                   workingReps: 0,
                   restTime: 0,
                   notes: "",
