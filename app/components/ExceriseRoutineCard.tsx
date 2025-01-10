@@ -50,6 +50,13 @@ interface ExerciseRoutineCardProps {
   onRestTimeTrigger: (restTime: number) => void;
 }
 
+interface Set {
+  id: number;
+  weight: string;
+  reps: string;
+  isWarmup: boolean;
+}
+
 type ExerciseData = {
   exerciseId: string;
   notes: string;
@@ -90,23 +97,35 @@ export default function ExceriseRoutineCard({
   onUpdate,
   onRestTimeTrigger,
 }: ExerciseRoutineCardProps) {
-  interface Set {
-    id: number;
-    weight: string;
-    reps: string;
-    isWarmup: boolean;
-  }
-
   // Initialize sets based on routineExercise data and previous data
   const initialSets = useMemo(() => {
+    const defaultSet = {
+      id: 1,
+      weight: "0",
+      reps: "0",
+      isWarmup: false,
+    };
+
     try {
-      const workingWeights = JSON.parse(routineExercise.workingSetWeights);
+      // Try tp parse working weights
+      let workingWeights = [];
+      try {
+        workingWeights = JSON.parse(routineExercise.workingSetWeights);
+      } catch {
+        workingWeights = [0]; // Default to 0 if parsing fails
+      }
+
+      if (!routineExercise.workingSets || routineExercise.workingSets < 1) {
+        return [defaultSet];
+      }
+
+      // Create an array of default sets based on working sets
       const defaultSets = Array(routineExercise.workingSets)
         .fill(null)
         .map((_, index) => ({
           id: index + 1,
           weight: workingWeights[index]?.toString() ?? "0",
-          reps: routineExercise.workingReps.toString(),
+          reps: routineExercise.workingReps.toString() || "0",
           isWarmup: false,
         }));
 
@@ -162,9 +181,9 @@ export default function ExceriseRoutineCard({
     () => ({
       exerciseId: exercise.id,
       notes,
-      sets: sets.map(({ weight, reps }: { weight: string; reps: string }) => ({
-        weight,
-        reps,
+      sets: sets.map((set: Set) => ({
+        weight: set.weight,
+        reps: set.reps,
       })),
     }),
     [sets, notes, exercise.id],
