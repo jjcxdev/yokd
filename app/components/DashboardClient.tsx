@@ -64,15 +64,15 @@ export default function Dashboard({
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-around md:flex-row">
+              <div className="flex items-center justify-around gap-4 md:flex-row">
                 <Button
-                  className="text-background"
+                  className="w-full text-background"
                   onClick={() => setIsCreateModalOpen(true)}
                 >
                   <BsCollectionFill /> New Program
                 </Button>
                 <Button
-                  className="text-background"
+                  className="w-full text-background"
                   onClick={() => setIsSelectModalOpen(true)}
                 >
                   <FaDumbbell /> New Routine

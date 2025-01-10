@@ -80,9 +80,13 @@ export default function RoutineCard({
           {icon}
         </div>
       </div>
-      <div className="line-clamp-2 text-xs text-dimmed">{exerciseList}</div>
+      <div className="line-clamp-2 pb-2 text-xs text-dimmed">
+        {exerciseList}
+      </div>
       <div>
-        <SecondaryButton onClick={handleStartRoutine} label="Start Routine" />
+        <Button className="w-full text-background" onClick={handleStartRoutine}>
+          Start Routine
+        </Button>
       </div>
     </div>
   );
