@@ -37,7 +37,7 @@ export default function CreateFolderModal({
     <div className="fixed inset-0">
       <div className="absolute inset-0 min-h-screen bg-black/50 blur-sm backdrop-blur-sm"></div>
       <div className="relative z-50 flex min-h-screen w-full flex-col items-center justify-center">
-        <Card>
+        <Card className="w-full max-w-96">
           <CardHeader>
             <CardTitle className="flex w-full justify-center">
               Create New Program
@@ -96,7 +96,7 @@ export default function CreateFolderModal({
                 </Button>
                 <Button
                   className="w-full"
-                  variant="outline"
+                  variant="secondary"
                   onClick={onClose}
                   disabled={isSubmitting}
                 >
