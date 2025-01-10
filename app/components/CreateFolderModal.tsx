@@ -4,8 +4,17 @@ import { useAuth } from "@clerk/nextjs";
 import React, { useState } from "react";
 
 import SecondaryButton from "@/app/components/SecondaryButton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 import { createFolder } from "../actions/folders";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface CreateFolderModalProps {
   isOpen: boolean;
@@ -28,13 +37,13 @@ export default function CreateFolderModal({
     <div className="fixed inset-0">
       <div className="absolute inset-0 min-h-screen bg-black/50 blur-sm backdrop-blur-sm"></div>
       <div className="relative z-50 flex min-h-screen w-full flex-col items-center justify-center">
-        <div className="flex min-w-96 max-w-96 flex-col gap-1 rounded-lg border border-accent/20 bg-card p-4">
-          <div>
-            <h2 className="flex justify-center pb-2 font-bold">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex w-full justify-center">
               Create New Program
-            </h2>
-          </div>
-          <div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <form
               action={async (formData) => {
                 if (!userId) {
@@ -67,7 +76,7 @@ export default function CreateFolderModal({
                 }
               }}
             >
-              <input
+              <Input
                 name="name"
                 className="h-10 w-full rounded-lg border border-border bg-background px-4"
                 type="text"
@@ -77,27 +86,26 @@ export default function CreateFolderModal({
                 onChange={() => setError(null)}
                 disabled={isSubmitting}
               />
-              <div className="flex w-full gap-4 pt-5">
-                <div className="w-full">
-                  <SecondaryButton
-                    label={isSubmitting ? "Creating..." : "Save"}
-                    type="submit"
-                    disabled={isSubmitting}
-                  />
-                </div>
-                <div className="w-full">
-                  <SecondaryButton
-                    variant="grey"
-                    type="button"
-                    label="Cancel"
-                    onClick={onClose}
-                    disabled={isSubmitting}
-                  />
-                </div>
+              <div className="mt-4 flex gap-4">
+                <Button
+                  className="w-full"
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  Save
+                </Button>
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
               </div>
             </form>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
