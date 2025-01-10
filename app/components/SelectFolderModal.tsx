@@ -31,10 +31,10 @@ export default function SelectFolderModal({
     <div className="fixed inset-0">
       <div className="absolute inset-0 min-h-screen bg-black/50 blur-sm backdrop-blur-sm"></div>
       <div className="relative z-50 flex min-h-screen w-full flex-col items-center justify-center">
-        <div className="flex w-full max-w-96 flex-col gap-1 rounded-lg border border-border bg-card p-4">
+        <div className="flex w-full max-w-96 flex-col gap-1 rounded-lg border border-accent/20 bg-card p-4">
           <div>
             <h2 className="flex justify-center pb-2 font-bold">
-              Select Folder
+              Select Program
             </h2>
           </div>
           <div>
