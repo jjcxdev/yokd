@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { GiWeightLiftingUp } from "react-icons/gi";
 import { IoAddCircle } from "react-icons/io5";
+import { useToast } from "@/hooks/use-toast";
 
 import { postRoutines } from "@/app/actions/routines";
 import ExerciseRoutineCard from "@/app/components/ExceriseRoutineCard";
@@ -24,10 +25,12 @@ interface ExerciseData {
 function RoutineContent() {
   const { user } = useUser();
   const router = useRouter();
+  const { toast } = useToast();
   const searchParams = useSearchParams();
   const folderId = searchParams.get("folderId");
   const selectedExercisesParam = searchParams.get("selectedExercises");
   const routineNameParam = searchParams.get("routineName");
+
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [routineName, setRoutineName] = useState<string>(
     routineNameParam || "",
@@ -35,6 +38,7 @@ function RoutineContent() {
   const [exerciseData, setExerciseData] = useState<
     Record<string, ExerciseData>
   >({});
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // When we recive new selected exercises, add them to our existing exercises
@@ -66,6 +70,11 @@ function RoutineContent() {
         }
       } catch (error) {
         console.error("Error parsing selected exercises:", error);
+        toast({
+          variant: "destructive",
+          title: "Error adding exercises",
+          description: "Please try again or refresh the page",
+        });
       }
     }
   }, [selectedExercisesParam, router, folderId, routineName, routineNameParam]);
@@ -113,6 +122,12 @@ function RoutineContent() {
   function handleSave() {
     if (!routineName || !folderId || !user) return;
 
+    setIsLoading(true);
+    toast({
+      title: "Saving routine...",
+      description: "Please wait while we save your routine",
+    });
+
     // Transform exerciseData into ExerciseInput array
     const exerciseInputs: ExerciseInput[] = Object.entries(exerciseData).map(
       ([_, data], index) => ({
@@ -139,6 +154,10 @@ function RoutineContent() {
     })
       .then((result) => {
         if (result.success) {
+          toast({
+            title: "Routine saved successfully",
+            description: `Created routine "${routineName}" with ${exerciseInputs.length} exercises`,
+          });
           // small delay before navigation
           setTimeout(() => {
             router.refresh(); // Force refresh of the page data
@@ -146,13 +165,20 @@ function RoutineContent() {
           }, 500);
         } else {
           // Handle error
-          console.error("Failed to save routine:", result.error);
-          // TODO: Show error to user
+          throw new Error(result.error);
         }
       })
       .catch((error) => {
         console.error("Error saving routine:", error);
-        // TODO: Show error to user
+        toast({
+          variant: "destructive",
+          title: "Failed to save routine",
+          description:
+            "Please try again. If the problem persists, refresh the page",
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }
 
@@ -168,6 +194,10 @@ function RoutineContent() {
           button={"Cancel"}
           onSave={handleSave}
           onCancel={handleCancel}
+          isLoading={isLoading}
+          disabled={isLoading}
+          routineName={routineName}
+          exerciseCount={exercises.length}
         />
 
         <div>
