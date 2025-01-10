@@ -46,10 +46,19 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
   function handleAddExercises() {
     if (isSubmitting) return;
 
+    // Validate exercise selection
+    if (selectedExercises.size === 0) {
+      toast({
+        variant: "destructive",
+        title: "No exercises selected",
+        description: "Please select at least one exercise",
+      });
+    }
+
     setIsSubmitting(true);
 
     toast({
-      title: "Saving routine...",
+      title: "Adding exercises...",
       description: "Please wait while we update your routine",
     });
 
@@ -74,7 +83,7 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
       router.push(url);
 
       toast({
-        title: "Routine saved successfully",
+        title: "Excercises added",
         description: `Added ${selectedExercises.size} exercise${selectedExercises.size !== 1 ? "s" : ""} to routine`,
       });
     } catch (error) {
@@ -110,6 +119,7 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
           onCancel={handleCancel}
           isLoading={isSubmitting}
           disabled={isSubmitting}
+          routineName={routineName}
         />
       </div>
 
