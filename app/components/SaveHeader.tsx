@@ -59,8 +59,8 @@ export default function SaveHeader({
           Cancel
         </Button>
       </div>
-      <div>{title}</div>
-      <div className="w-20">
+      <div className="flex w-full justify-center">{title}</div>
+      <div className="flex justify-end">
         <Button onClick={handleSave} disabled={disabled || isLoading}>
           Save
         </Button>
