@@ -1,6 +1,8 @@
 import React from "react";
 
 import SecondaryButton from "./SecondaryButton";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 interface ActionHeaderProps {
@@ -37,27 +39,23 @@ export default function ActionHeader({
     onAction?.();
   };
 
+  const getButtonText = () => `Add ${count} exercise${count === 1 ? "" : "s"}`;
+
   return (
     <div className="flex w-full items-baseline justify-between bg-card p-4 md:rounded-t-lg">
       <div className="flex pt-8 text-sm text-accent">
-        <button
-          className="disabled:opacity-50"
+        <Button
+          variant="ghost"
           disabled={disabled || isLoading}
           onClick={onCancel}
         >
-          {button}
-        </button>
+          Cancel
+        </Button>
       </div>
       <div className="w-40">
-        <SecondaryButton
-          label={
-            isLoading
-              ? "Adding..."
-              : `Add ${count} exercise${count === 1 ? "" : "s"}`
-          }
-          disabled={disabled || isLoading}
-          onClick={handleAction}
-        />
+        <Button disabled={disabled || isLoading} onClick={handleAction}>
+          {getButtonText()}
+        </Button>
       </div>
     </div>
   );
