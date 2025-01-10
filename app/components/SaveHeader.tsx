@@ -1,6 +1,7 @@
 import React from "react";
 import { useToast } from "@/hooks/use-toast";
 import SecondaryButton from "./SecondaryButton";
+import { Button } from "@/components/ui/button";
 
 interface SaveHeaderProps {
   title: string;
@@ -50,21 +51,19 @@ export default function SaveHeader({
   return (
     <div className="sticky z-50 flex w-full items-baseline justify-between bg-card p-4 md:rounded-t-lg">
       <div className="flex pt-8 text-sm text-accent">
-        <button
-          className="disabled:opacity-50"
+        <Button
           onClick={onCancel}
           disabled={disabled || isLoading}
+          variant="ghost"
         >
-          {button}
-        </button>
+          Cancel
+        </Button>
       </div>
       <div>{title}</div>
       <div className="w-20">
-        <SecondaryButton
-          label={isLoading ? "Saving..." : "Save"}
-          onClick={handleSave}
-          disabled={disabled || isLoading}
-        />
+        <Button onClick={handleSave} disabled={disabled || isLoading}>
+          Save
+        </Button>
       </div>
     </div>
   );
