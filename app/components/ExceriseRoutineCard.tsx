@@ -232,6 +232,7 @@ export default function ExceriseRoutineCard({
     onRestTimeTrigger(routineExercise.restTime);
   };
 
+  // DONT CONVERT TO SHADCN -- TOO MUCH CUSTOMIZATION
   return (
     <div className="w-full max-w-96 rounded-lg bg-card p-4">
       {/* Exercise Label */}
