@@ -43,7 +43,8 @@ export default function FolderToggle({
             />
           </Button>
           <div className="flex w-full items-center justify-between">
-            {folder.name}
+            <span className="whitespace-nowrap"> {folder.name}</span>
+
             <span className="flex w-full justify-start pl-2 text-xs text-accent">
               {props.count}
             </span>
