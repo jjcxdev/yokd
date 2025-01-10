@@ -19,7 +19,9 @@ import {
 } from "@/lib/db/schema";
 import type { Folders } from "@/types/types";
 
+//
 // CREATE FOLDER
+//
 
 export async function createFolder(name: string, userId: string) {
   console.log("Starting createFolder with:", { name, userId });
@@ -108,7 +110,9 @@ export async function createFolder(name: string, userId: string) {
   }
 }
 
+//
 // FETCH FOLDERS
+//
 
 export async function fetchFolders() {
   try {
@@ -123,7 +127,9 @@ export async function fetchFolders() {
   }
 }
 
+//
 // DELETE FOLDER
+//
 
 export async function deleteFolder(folderId: string) {
   try {
@@ -219,7 +225,9 @@ export async function deleteFolder(folderId: string) {
   }
 }
 
+//
 // DELETE ROUTINE
+//
 
 export async function deleteRoutine(routineId: string) {
   try {
@@ -229,15 +237,57 @@ export async function deleteRoutine(routineId: string) {
       throw new Error("User not authenticated");
     }
 
+    console.log(`Attempting to delete routine with ID: ${routineId}`);
+
+    // First delete all workout data related to this routine
+    await db
+      .delete(workoutData)
+      .where(
+        inArray(
+          workoutData.sessionId,
+          db
+            .select({ id: workoutSessions.id })
+            .from(workoutSessions)
+            .where(eq(workoutSessions.routineId, routineId)),
+        ),
+      );
+
+    console.log(`Deleted workout data for routine`);
+
+    // Delete all sets related to this routine
+    await db
+      .delete(sets)
+      .where(
+        inArray(
+          sets.sessionId,
+          db
+            .select({ id: workoutSessions.id })
+            .from(workoutSessions)
+            .where(eq(workoutSessions.routineId, routineId)),
+        ),
+      );
+
+    console.log(`Deleted sets for routine`);
+
+    // Delete all workout sessions related to this routine
+    await db
+      .delete(workoutSessions)
+      .where(eq(workoutSessions.routineId, routineId));
+
+    console.log(`Deleted workout sessions for routine`);
+
     // Firt delete associated routine_exercises
     await db
       .delete(routineExercises)
       .where(eq(routineExercises.routineId, routineId));
 
+    console.log(`Deleted routine exercises for routine`);
+
     // Then delete the routine
     await db.delete(routines).where(eq(routines.id, routineId));
 
     console.log("Routine deleted successfully");
+
     // Revalidate after delete
     revalidatePath("/dashboard");
     console.log("Page revalidated");
@@ -252,7 +302,9 @@ export async function deleteRoutine(routineId: string) {
   }
 }
 
+//
 // FETCH FOLDERS WITH ROUTINES
+//
 
 export async function fetchFoldersWithRoutines(): Promise<{
   folders: Folders[];
