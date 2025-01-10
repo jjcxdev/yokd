@@ -52,7 +52,7 @@ export default function RoutineCard({
 
   return (
     <>
-      <Card className="bg-button">
+      <Card className="w-full max-w-96 bg-button">
         <CardContent className="p-6">
           <CardTitle className="flex items-center justify-between">
             {label}

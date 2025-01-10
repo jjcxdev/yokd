@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { BiChevronRight } from "react-icons/bi";
 
 import type { Folders } from "@/types/types";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface FolderToggleProps {
   folder: Folders;
@@ -28,21 +30,33 @@ export default function FolderToggle({
   }
 
   return (
-    <div className="w-full rounded-md border-2 border-transparent bg-card p-2 hover:border-2 hover:border-accent md:p-4">
-      <div className="flex w-full items-center justify-between">
-        <button onClick={handleToggle} className="flex items-center gap-2">
-          <BiChevronRight
-            className={`h-4 w-4 transition-transform duration-200 md:h-8 md:w-8 ${isExpanded ? "rotate-90" : ""}`}
-          />
-          <div>{folder.name}</div>
-          {props.count && (
-            <div className="text-sm text-accent">{props.count}</div>
-          )}
-        </button>
-        <div className="flex items-center">{props.menuIcon} </div>
-      </div>
+    <>
+      <Card className="border-none">
+        <CardContent className="flex items-center gap-2 p-4">
+          <Button
+            variant="ghost"
+            onClick={handleToggle}
+            className="flex items-center gap-2"
+          >
+            <BiChevronRight
+              className={`h-4 w-4 transition-transform duration-200 md:h-8 md:w-8 ${isExpanded ? "rotate-90" : ""}`}
+            />
+          </Button>
+          <div className="flex w-full items-center justify-between">
+            {folder.name}
+            <span className="flex w-full justify-start pl-2 text-xs text-accent">
+              {props.count}
+            </span>
+            {props.menuIcon}
+          </div>
+        </CardContent>
 
-      {isExpanded && <div className="pt-2 md:pt-4">{children}</div>}
-    </div>
+        {isExpanded && (
+          <CardFooter className="flex w-full flex-col items-center justify-center">
+            <div className="w-full">{children}</div>
+          </CardFooter>
+        )}
+      </Card>
+    </>
   );
 }
