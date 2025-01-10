@@ -6,6 +6,7 @@ import { useState } from "react";
 import { BsCollectionFill } from "react-icons/bs";
 import { FaDumbbell } from "react-icons/fa6";
 
+import { Button } from "@/components/ui/button";
 import CreateFolderModal from "@/app/components/CreateFolderModal";
 import PrimaryButton from "@/app/components/PrimaryButton";
 import type { RoutineWithExercises } from "@/lib/db/schema";
@@ -63,17 +64,19 @@ export default function Dashboard({
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-4 md:flex-row">
-                <PrimaryButton
-                  label="New Program"
-                  icon={<BsCollectionFill size={22} />}
+              <div className="flex items-center justify-around md:flex-row">
+                <Button
+                  className="text-background"
                   onClick={() => setIsCreateModalOpen(true)}
-                />
-                <PrimaryButton
-                  label="New Routine"
-                  icon={<FaDumbbell size={22} />}
+                >
+                  <BsCollectionFill /> New Program
+                </Button>
+                <Button
+                  className="text-background"
                   onClick={() => setIsSelectModalOpen(true)}
-                />
+                >
+                  <FaDumbbell /> New Routine
+                </Button>
               </div>
             </div>
           </>
