@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface ExerciseCardProps {
   title: string;
@@ -28,23 +30,28 @@ export default function ExerciseCard({ ...props }: ExerciseCardProps) {
     setBorderWidth((prev) => (prev === "border-2" ? "border-2" : "border-2"));
   }
 
+  // DON'T REAPLACE WITH SHADCN -- TOO MUCH CUSTOMIZATION
   return (
-    <button
-      disabled={props.disabled}
-      onClick={handleClick}
-      className="h-fit w-full"
-    >
-      <div
-        className={`rounded-lg border-2 bg-card hover:bg-accent/30 ${borderColor} ${borderWidth} p-4`}
+    <div className="p-2">
+      <button
+        disabled={props.disabled}
+        onClick={handleClick}
+        className="h-fit w-full"
       >
-        <div className="flex justify-between">
-          <div className="truncate text-sm font-bold">{props.title}</div>
-          <div className="text-sm italic text-accent">{props.exerciseType}</div>
+        <div
+          className={`rounded-lg border-2 bg-card hover:bg-accent/30 ${borderColor} ${borderWidth} p-4`}
+        >
+          <div className="flex justify-between">
+            <div className="truncate text-sm font-bold">{props.title}</div>
+            <div className="text-sm italic text-accent">
+              {props.exerciseType}
+            </div>
+          </div>
+          <div className="flex w-full justify-start text-sm text-dimmed">
+            {props.muscleGroup}
+          </div>
         </div>
-        <div className="flex w-full justify-start text-sm text-dimmed">
-          {props.muscleGroup}
-        </div>
-      </div>
-    </button>
+      </button>
+    </div>
   );
 }
