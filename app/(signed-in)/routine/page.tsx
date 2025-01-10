@@ -15,6 +15,8 @@ import SaveHeader from "@/app/components/SaveHeader";
 import SecondaryButton from "@/app/components/SecondaryButton";
 import type { Exercise } from "@/lib/db/schema";
 import type { ExerciseInput } from "@/types/types";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface ExerciseData {
   exerciseId: string;
@@ -187,7 +189,7 @@ function RoutineContent() {
   }
 
   return (
-    <div className="flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background pb-20">
+    <div className="pb-22 flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background">
       <div className="sticky top-0 z-10 flex flex-col">
         <SaveHeader
           title={"Create Routine"}
@@ -201,8 +203,8 @@ function RoutineContent() {
         />
 
         <div>
-          <form className="px-2">
-            <input
+          <form className="p-2">
+            <Input
               className="h-10 w-full border-b-2 border-accent/20 bg-background px-4"
               name="routine"
               type="text"
@@ -254,12 +256,10 @@ function RoutineContent() {
 
       <div className="flex w-full justify-center">
         <div className="flex w-full max-w-72 justify-center pb-8">
-          <SecondaryButton
-            icon={<IoAddCircle />}
-            label={"Add exercise"}
-            variant="grey"
-            onClick={handleAddExercise}
-          />
+          <Button variant="outline" onClick={handleAddExercise}>
+            <IoAddCircle />
+            Add exercise
+          </Button>
         </div>
       </div>
     </div>
