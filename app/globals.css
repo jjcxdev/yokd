@@ -12,7 +12,7 @@
     /* Your custom colors in HSL */
     --background: 260 10% 6%; /* #0E0D10 */
     --foreground: 0 0% 100%; /* #FFFFFF */
-    --secondary: 264 41% 19%; /* #636366 */
+    --secondary: 66, 46%, 20%; /* #494E1D */
     --border: 264 9% 22%; /* #38343E */
     --card: 0 0% 10%; /* #1A1A1A */
     --accent: 65 100% 49%; /* #E7FC00 */
@@ -22,7 +22,7 @@
 
     /* shadcn required vars */
     --primary: 65 100% 49%; /* #E7FC00 */
-    --primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --primary-foreground: 260 10% 6%; /* #0E0D10 */
     --card-foreground: 0 0% 100%; /* #FFFFFF */
     --popover: 264 25% 10%; /* #1F1825 */
     --popover-foreground: 0 0% 100%; /* #FFFFFF */

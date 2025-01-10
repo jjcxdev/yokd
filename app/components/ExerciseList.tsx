@@ -140,7 +140,7 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
         <div className="p-4">
           <ul className="grid grid-cols-1 md:grid-cols-2">
             {initialData.map((exercise) => (
-              <li className="pb-4" key={exercise.id}>
+              <li className="" key={exercise.id}>
                 <ExerciseCard
                   title={exercise.name}
                   muscleGroup={exercise.muscleGroup}

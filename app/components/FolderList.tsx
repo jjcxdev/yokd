@@ -83,7 +83,7 @@ export default function FolderList({
                 folderIcon={<TbLayoutNavbarExpandFilled />}
                 count={folderRoutines.length.toString()}
               >
-                <div className="space-y-2">
+                <div className="flex justify-center">
                   {folderRoutines.map((routine: RoutineWithExercises) => (
                     <RoutineCard
                       key={routine.id}

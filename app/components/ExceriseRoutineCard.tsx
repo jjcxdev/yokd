@@ -8,6 +8,22 @@ import { IoAddCircle } from "react-icons/io5";
 import SecondaryButton from "@/app/components/SecondaryButton";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Exercise } from "@/lib/db/schema";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
 
 interface ExerciseRoutineCardProps {
   exercise: Exercise;
@@ -233,119 +249,121 @@ export default function ExceriseRoutineCard({
   };
 
   return (
-    <div className="w-full max-w-96 rounded-lg bg-card p-4">
-      {/* Exercise Label */}
-
-      <div className="flex w-full flex-col">
-        <div className="flex w-full justify-between">
-          <h1 className="text-xl font-bold">{exercise.name}</h1>
-          <div className="text-2xl">
-            <IoMdMore />
-          </div>
-        </div>
-        <div>
-          <form className="h-full w-full">
-            <textarea
-              ref={textareaRef}
-              className="h-auto min-h-[2.5rem] w-full resize-none bg-transparent"
-              rows={1}
-              placeholder="Add routine notes here"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              style={{ overflow: "hidden", height: "auto" }}
-              onInput={(e) => {
-                const textarea = e.target as HTMLTextAreaElement;
-                textarea.style.height = "auto";
-                textarea.style.height = `${textarea.scrollHeight}px`;
-              }}
-            />
-          </form>
-        </div>
-      </div>
-
-      {/* Rest Timer */}
-
-      <div className="flex items-center gap-2 py-4 text-accent">
-        <BsStopwatch />
-        <p>Rest Timer:</p>
-        <div>{routineExercise.restTime}</div>
-      </div>
-
-      {/* Set details header */}
-
-      <div className="flex w-full text-xs uppercase text-dimmed">
-        <div className="flex w-1/5 justify-start">Set</div>
-        <div className="flex w-1/5 justify-center">Lbs</div>
-        <div className="flex w-1/5 justify-center">Reps</div>
-        <div className="flex w-1/5 justify-center">✓</div>
-        <div className="flex w-1/5 justify-center"></div>
-      </div>
-
-      {/* Dynamic sets */}
-
-      {sets.map((set: Set) => (
-        <div key={set.id} className="flex w-full">
-          <div className="flex w-1/5 justify-start text-base">{set.id}</div>
-          <div className="flex w-1/5 justify-center">
-            <form className="w-full">
-              <input
-                className="w-full bg-transparent text-center text-base"
-                type="text"
-                placeholder="-"
-                value={set.weight}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (/^\d*(?:\.\d*)?$/.test(value)) {
-                    updateSet(set.id, "weight", value);
-                  }
+    <>
+      <Card>
+        {/* Exercise Label */}
+        <CardHeader>
+          <CardTitle className="flex w-full justify-between">
+            {exercise.name}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button>
+                  <IoMdMore />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full">
+                <DropdownMenuItem>Edit</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </CardTitle>
+          <CardDescription>
+            <form className="h-full w-full">
+              <textarea
+                ref={textareaRef}
+                className="h-auto min-h-[2.5rem] w-full resize-none bg-transparent"
+                rows={1}
+                placeholder="Add routine notes here"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                style={{ overflow: "hidden", height: "auto" }}
+                onInput={(e) => {
+                  const textarea = e.target as HTMLTextAreaElement;
+                  textarea.style.height = "auto";
+                  textarea.style.height = `${textarea.scrollHeight}px`;
                 }}
               />
             </form>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Rest Timer */}
+          <div className="flex items-center gap-2 py-4 text-accent">
+            <BsStopwatch />
+            <p>Rest Timer:</p>
+            <div>{routineExercise.restTime}</div>
           </div>
-          <div className="flex w-1/5 justify-center">
-            <form className="w-full">
-              <input
-                className="flex w-full bg-transparent text-center text-base"
-                type="text"
-                placeholder="-"
-                value={set.reps}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (/^\d*$/.test(value)) {
-                    updateSet(set.id, "reps", value);
-                  }
-                }}
-              />
-            </form>
+          {/* Set details header */}
+          <div className="flex w-full text-xs uppercase text-dimmed">
+            <div className="flex w-1/5 justify-start">Set</div>
+            <div className="flex w-1/5 justify-center">Lbs</div>
+            <div className="flex w-1/5 justify-center">Reps</div>
+            <div className="flex w-1/5 justify-center">✓</div>
+            <div className="flex w-1/5 justify-center"></div>
           </div>
-          <div className="flex w-1/5 items-center justify-center">
-            <Checkbox onCheckedChange={() => handleCheckboxChange(set.id)} />
+          {/* Dynamic sets */}
+          {sets.map((set: Set) => (
+            <div key={set.id} className="flex w-full">
+              <div className="flex w-1/5 justify-start text-base">{set.id}</div>
+              <div className="flex w-1/5 justify-center">
+                <form className="w-full">
+                  <input
+                    className="w-full bg-transparent text-center text-base"
+                    type="text"
+                    placeholder="-"
+                    value={set.weight}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*(?:\.\d*)?$/.test(value)) {
+                        updateSet(set.id, "weight", value);
+                      }
+                    }}
+                  />
+                </form>
+              </div>
+              <div className="flex w-1/5 justify-center">
+                <form className="w-full">
+                  <input
+                    className="flex w-full bg-transparent text-center text-base"
+                    type="text"
+                    placeholder="-"
+                    value={set.reps}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*$/.test(value)) {
+                        updateSet(set.id, "reps", value);
+                      }
+                    }}
+                  />
+                </form>
+              </div>
+              <div className="flex w-1/5 items-center justify-center">
+                <Checkbox
+                  onCheckedChange={() => handleCheckboxChange(set.id)}
+                />
+              </div>
+              {/* Delete Set Button */}
+              <div className="flex w-1/5 justify-center">
+                <button
+                  className="text-base text-remove"
+                  onClick={() => deleteSet(set.id)}
+                  disabled={sets.length <= 1}
+                >
+                  <FaRegTrashCan />
+                </button>
+              </div>
+            </div>
+          ))}
+          {/* Add Set Button */}
+          <div className="flex w-full justify-center">
+            <div className="w-full pt-4">
+              <Button className="w-full" variant="secondary" onClick={addSet}>
+                <IoAddCircle />
+                Add Set
+              </Button>
+            </div>
           </div>
-          {/* Delete Set Button */}
-          <div className="flex w-1/5 justify-center">
-            <button
-              className="text-base text-remove"
-              onClick={() => deleteSet(set.id)}
-              disabled={sets.length <= 1}
-            >
-              <FaRegTrashCan />
-            </button>
-          </div>
-        </div>
-      ))}
-
-      {/* Add Set Button */}
-
-      <div className="flex w-full justify-center">
-        <div className="w-full pt-4">
-          <SecondaryButton
-            icon={<IoAddCircle />}
-            label={"Add set"}
-            variant="dark"
-            onClick={addSet}
-          />
-        </div>
-      </div>
-    </div>
+        </CardContent>
+      </Card>
+    </>
   );
 }

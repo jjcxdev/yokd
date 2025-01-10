@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import React, { useEffect, useRef, useState } from "react";
 
 interface SessionLayoutProps {
@@ -143,13 +144,9 @@ export default function SessionLayout({
           </div>
 
           {/* Finish Button */}
-          <div className="min-w-20 text-right">
-            <button
-              className="rounded-lg bg-accent px-4 py-2 font-semibold text-background"
-              onClick={onFinish}
-            >
-              Finish
-            </button>
+
+          <div className="">
+            <Button onClick={onFinish}>Finish</Button>
           </div>
         </div>
       </header>

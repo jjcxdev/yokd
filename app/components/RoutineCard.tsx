@@ -16,6 +16,13 @@ import {
 } from "@/components/ui/drawer";
 
 import { startWorkoutSession } from "../actions/workout";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 interface RoutineCardProps {
   id: string;
@@ -44,46 +51,52 @@ export default function RoutineCard({
   };
 
   return (
-    <div className="flex flex-col gap-1 rounded-md border-2 border-transparent bg-button p-4">
-      <div className="flex items-center justify-between font-bold">
-        <div>{label}</div>
-        <div className="flex items-center gap-2">
-          <Drawer>
-            <DrawerTrigger asChild>
-              <span className="cursor-pointer hover:text-accent">
-                <BiDotsHorizontalRounded size={20} />
-              </span>
-            </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader>
-                <DrawerTitle>{label}</DrawerTitle>
-              </DrawerHeader>
-              <div className="p-4">
-                <Button
-                  variant="destructive"
-                  className="flex w-full items-center justify-center gap-2"
-                  onClick={onDelete}
-                >
-                  <FaRegTrashAlt />
-                  Delete Routine
-                </Button>
-              </div>
-              <DrawerFooter>
-                <DrawerClose asChild>
-                  <Button variant="outline" className="w-full">
-                    Cancel
+    <>
+      <Card className="w-full max-w-96 bg-button">
+        <CardContent className="p-6">
+          <CardTitle className="flex items-center justify-between">
+            {label}
+            <Drawer>
+              <DrawerTrigger asChild>
+                <span className="cursor-pointer hover:text-accent">
+                  <BiDotsHorizontalRounded size={20} />
+                </span>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>{label}</DrawerTitle>
+                </DrawerHeader>
+                <div className="p-4">
+                  <Button
+                    variant="destructive"
+                    className="flex w-full items-center justify-center gap-2"
+                    onClick={onDelete}
+                  >
+                    <FaRegTrashAlt />
+                    Delete Routine
                   </Button>
-                </DrawerClose>
-              </DrawerFooter>
-            </DrawerContent>
-          </Drawer>
-          {icon}
-        </div>
-      </div>
-      <div className="line-clamp-2 text-xs text-dimmed">{exerciseList}</div>
-      <div>
-        <SecondaryButton onClick={handleStartRoutine} label="Start Routine" />
-      </div>
-    </div>
+                </div>
+                <DrawerFooter>
+                  <DrawerClose asChild>
+                    <Button variant="outline" className="w-full">
+                      Cancel
+                    </Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </DrawerContent>
+            </Drawer>
+          </CardTitle>
+          <div className="line-clamp-2 pb-2 text-xs text-dimmed">
+            {exerciseList}
+          </div>
+          <Button
+            className="w-full text-background"
+            onClick={handleStartRoutine}
+          >
+            Start Routine
+          </Button>
+        </CardContent>
+      </Card>
+    </>
   );
 }
