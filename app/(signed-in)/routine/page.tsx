@@ -261,6 +261,7 @@ function RoutineContent() {
                   exerciseId: exercise.id,
                   order: 0,
                   workingSetWeights: "[]",
+                  warmupSetWeights: "[]",
                   warmupSets: 0,
                   warmupReps: 0,
                   workingSets: 1,

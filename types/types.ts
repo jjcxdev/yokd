@@ -100,6 +100,7 @@ export interface ExerciseRoutineCardProps {
     exerciseId: string;
     order: number;
     workingSetWeights: string;
+    warmupSetWeights: string;
     warmupSets: number;
     warmupReps: number;
     workingSets: number;

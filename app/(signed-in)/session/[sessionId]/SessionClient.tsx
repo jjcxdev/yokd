@@ -45,13 +45,35 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
           );
 
           // First create sets with initial weights from the routine
-          const workingWeights = JSON.parse(routineExercise.workingSetWeights);
-          const initialSets = Array(routineExercise.workingSets)
-            .fill(null)
-            .map((_, index) => ({
-              weight: workingWeights[index]?.toString() ?? "0",
-              reps: routineExercise.workingReps.toString(),
-            }));
+          let initialSets: ExerciseSet[] = [];
+          try {
+            const workingWeights = JSON.parse(
+              routineExercise.workingSetWeights,
+            );
+            const warmupWeights = JSON.parse(routineExercise.warmupSetWeights);
+
+            // Create warmup sets
+            const warmupSets = Array(routineExercise.warmupSets)
+              .fill(null)
+              .map((_, index) => ({
+                weight: warmupWeights[index]?.toString() ?? "",
+                reps: routineExercise.warmupReps.toString(),
+                isWarmup: true,
+              }));
+
+            // Create working sets
+            const workingSets = Array(routineExercise.workingSets)
+              .fill(null)
+              .map((_, index) => ({
+                weight: workingWeights[index]?.toString() ?? "",
+                reps: routineExercise.workingReps.toString(),
+                isWarmup: false,
+              }));
+
+            initialSets = [...warmupSets, ...workingSets];
+          } catch {
+            initialSets = [];
+          }
 
           // Check for valid previous data
           const hasPreviousData =

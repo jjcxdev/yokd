@@ -20,6 +20,7 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { ExerciseRoutineCardProps, Set, ExerciseData } from "@/types/types";
 import { SetsList } from "./SetsList";
+import { is } from "drizzle-orm";
 
 function debounce<T extends (...args: any[]) => void>(
   func: T,
@@ -64,23 +65,36 @@ export default function ExceriseRoutineCard({
     try {
       // Try tp parse working weights
       let workingWeights = [];
+      let warmupWeights = [];
       try {
         workingWeights = JSON.parse(routineExercise.workingSetWeights);
+        warmupWeights = JSON.parse(routineExercise.warmupSetWeights);
       } catch {
         workingWeights = []; // Default to empty array if parsing fails
+        warmupWeights = [];
       }
 
       if (!routineExercise.workingSets || routineExercise.workingSets < 1) {
         return [defaultSet];
       }
 
-      // Create an array of default sets based on working sets
-      const defaultSets = Array(routineExercise.workingSets)
+      // Create warmup sets array
+      const warmupSets = Array(routineExercise.warmupSets)
         .fill(null)
         .map((_, index) => ({
           id: index + 1,
-          weight: "",
-          reps: "",
+          weight: warmupWeights[index]?.toString() ?? "0",
+          reps: routineExercise.warmupReps.toString(),
+          isWarmup: true,
+        }));
+
+      // Create working sets array
+      const workingSets = Array(routineExercise.workingSets)
+        .fill(null)
+        .map((_, index) => ({
+          id: index + 1,
+          weight: workingWeights[index]?.toString() ?? "0",
+          reps: routineExercise.workingReps.toString(),
           isWarmup: false,
         }));
 
@@ -91,36 +105,22 @@ export default function ExceriseRoutineCard({
           if (Array.isArray(parsedSets) && parsedSets.length > 0) {
             return parsedSets.map((set, index) => ({
               id: index + 1,
-              weight: (
-                set?.weight ??
-                defaultSets[index]?.weight ??
-                "0"
-              ).toString(),
-              reps: (
-                set?.reps ??
-                defaultSets[index]?.reps ??
-                routineExercise.workingReps.toString()
-              ).toString(),
-              isWarmup: false,
+              weight: set?.weight?.toString() || "",
+              reps: set?.reps?.toString() || "",
+              isWarmup: set?.isWarmup || false,
             }));
           }
         } catch {
           // If there's any error parsing previous data, return default sets
-          return defaultSets;
+          return [...warmupSets, ...workingSets];
         }
       }
 
-      return defaultSets;
+      // Return combined sets if no previous data
+      return [...warmupSets, ...workingSets];
     } catch {
       // If anything fails, return a single default set
-      return [
-        {
-          id: 1,
-          weight: "0",
-          reps: routineExercise.workingReps.toString(),
-          isWarmup: false,
-        },
-      ];
+      return [defaultSet];
     }
   }, [routineExercise, previousData]);
 
