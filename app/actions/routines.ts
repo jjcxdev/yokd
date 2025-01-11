@@ -37,11 +37,8 @@ export async function postRoutines({
     await db.insert(routineExercises).values(
       exercises.map((exercise) => ({
         ...exercise,
-        workingSetWeights: JSON.stringify(
-          Array(exercise.workingSets).fill(
-            exercise.workingSetWeights?.[0] || 0,
-          ),
-        ),
+        workingSetWeights: exercise.workingSetWeights,
+        warmupSetWeights: exercise.warmupSetWeights,
         id: nanoid(), // Generate unique ID for each exercise
         routineId: newRoutineId,
       })),

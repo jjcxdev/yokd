@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import _ from "lodash";
+import _, { set } from "lodash";
 import { nanoid } from "nanoid";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
@@ -13,15 +13,9 @@ import { postRoutines } from "@/app/actions/routines";
 import ExerciseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import SaveHeader from "@/app/components/SaveHeader";
 import type { Exercise } from "@/lib/db/schema";
-import type { ExerciseInput } from "@/types/types";
+import type { ExerciseInput, ExerciseData } from "@/types/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-interface ExerciseData {
-  exerciseId: string;
-  notes: string;
-  sets: Array<{ weight: string; reps: string }>;
-}
 
 function RoutineContent() {
   const { user } = useUser();
@@ -131,20 +125,49 @@ function RoutineContent() {
 
     // Transform exerciseData into ExerciseInput array
     const exerciseInputs: ExerciseInput[] = Object.entries(exerciseData).map(
-      ([_, data], index) => ({
-        id: nanoid(),
-        routineId: "",
-        exerciseId: data.exerciseId,
-        order: index,
-        workingSetWeights: data.sets.map((set) => parseInt(set.weight) || 0),
-        targetWeight: 0,
-        warmupSets: 0,
-        warmupReps: 0,
-        workingSets: data.sets.length,
-        workingReps: parseInt(data.sets[0]?.reps || "0"),
-        restTime: 30,
-        notes: data.notes || undefined,
-      }),
+      ([_, data], index) => {
+        // Debug log for sets
+        console.log("Raw exercise data:", data);
+
+        const workingSets = data.sets.filter((set) => !set.isWarmup);
+        const warmupSets = data.sets.filter((set) => set.isWarmup);
+
+        console.log("Working sets:", workingSets);
+        console.log("Warmup sets:", warmupSets);
+
+        const workingWeights = workingSets.map(
+          (set) => parseInt(set.weight) || 0,
+        );
+        const warmupWeights = warmupSets.map(
+          (set) => parseInt(set.weight) || 0,
+        );
+        console.log("Working weights:", workingWeights);
+        console.log("Warmup weights:", warmupWeights);
+
+        console.log(
+          "Stringified working weights:",
+          JSON.stringify(workingWeights),
+        );
+        console.log(
+          "Stringified warmup weights:",
+          JSON.stringify(warmupWeights),
+        );
+
+        return {
+          id: nanoid(),
+          routineId: "",
+          exerciseId: data.exerciseId,
+          order: index,
+          workingSetWeights: JSON.stringify(workingWeights),
+          warmupSetWeights: JSON.stringify(warmupWeights),
+          workingSets: workingSets.length,
+          workingReps: parseInt(workingSets[0]?.reps || "0"),
+          warmupSets: warmupSets.length,
+          warmupReps: parseInt(warmupSets[0]?.reps || "0"),
+          restTime: 30,
+          notes: data.notes || undefined,
+        };
+      },
     );
 
     postRoutines({

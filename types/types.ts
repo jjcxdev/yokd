@@ -53,7 +53,8 @@ export interface ExerciseInput {
   routineId: string;
   exerciseId: string;
   order: number;
-  workingSetWeights: number[];
+  workingSetWeights: string;
+  warmupSetWeights: string;
   warmupSets: number;
   warmupReps: number;
   workingReps: number;
@@ -69,6 +70,8 @@ export interface Set {
   reps: string;
   isWarmup: boolean;
 }
+
+export type ExerciseSet = Omit<Set, "id">;
 
 export interface SetListProps {
   sets: Set[];
@@ -112,9 +115,30 @@ export interface ExerciseRoutineCardProps {
   onRestTimeTrigger: (restTime: number) => void;
 }
 
+export type ExerciseWithRoutine = {
+  exercise: Exercise | null;
+  routineExercise: ExerciseInput;
+  previousData?: {
+    notes: string;
+    sets: string;
+  };
+};
+
 // Data Transfer Types
 export type ExerciseData = {
   exerciseId: string;
   notes: string;
-  sets: Array<Omit<Set, "id">>;
+  sets: ExerciseSet[];
 };
+
+export interface SessionClientProps {
+  sessionData: {
+    exercises: ExerciseWithRoutine[];
+    userId: string;
+    routineId: string;
+    status: "active" | "completed" | "cancelled";
+    startedAt: number;
+    completedAt: number | null;
+    sessionId: string;
+  };
+}

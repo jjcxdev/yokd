@@ -67,7 +67,7 @@ export default function ExceriseRoutineCard({
       try {
         workingWeights = JSON.parse(routineExercise.workingSetWeights);
       } catch {
-        workingWeights = [0]; // Default to 0 if parsing fails
+        workingWeights = []; // Default to empty array if parsing fails
       }
 
       if (!routineExercise.workingSets || routineExercise.workingSets < 1) {
@@ -79,8 +79,8 @@ export default function ExceriseRoutineCard({
         .fill(null)
         .map((_, index) => ({
           id: index + 1,
-          weight: workingWeights[index]?.toString() ?? "0",
-          reps: routineExercise.workingReps.toString() || "0",
+          weight: "",
+          reps: "",
           isWarmup: false,
         }));
 

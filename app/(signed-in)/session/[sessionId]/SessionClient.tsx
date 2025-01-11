@@ -8,44 +8,11 @@ import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import { type Exercise } from "@/lib/db/schema";
 
 import { useSessionContext } from "./SessionContext";
-
-type ExerciseSet = {
-  weight: string;
-  reps: string;
-};
-
-type ExerciseWithRoutine = {
-  exercise: Exercise | null;
-  routineExercise: {
-    id: string;
-    routineId: string;
-    exerciseId: string;
-    order: number;
-    workingSetWeights: string;
-    warmupSets: number;
-    warmupReps: number;
-    workingSets: number;
-    workingReps: number;
-    restTime: number;
-    notes?: string | null;
-  };
-  previousData?: {
-    notes: string;
-    sets: string;
-  };
-};
-
-interface SessionClientProps {
-  sessionData: {
-    exercises: ExerciseWithRoutine[];
-    userId: string;
-    routineId: string;
-    status: "active" | "completed" | "cancelled";
-    startedAt: number;
-    completedAt: number | null;
-    sessionId: string;
-  };
-}
+import {
+  ExerciseSet,
+  ExerciseWithRoutine,
+  SessionClientProps,
+} from "@/types/types";
 
 function isValidExercise(
   exerciseData: ExerciseWithRoutine,

@@ -80,6 +80,7 @@ export const routineExercises = sqliteTable("routine_exercises", {
     .references(() => exercises.id),
   order: integer("order").notNull(),
   workingSetWeights: text("working_set_weights").notNull().default("[]"),
+  warmupSetWeights: text("warmup_set_weights").notNull().default("[]"),
   warmupSets: integer("warmup_sets").notNull().default(0),
   warmupReps: integer("warmup_reps").notNull().default(0),
   workingSets: integer("working_sets").notNull().default(0),
