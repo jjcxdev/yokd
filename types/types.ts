@@ -1,5 +1,14 @@
+// Base Types
 export type ValidType = "cable" | "machine" | "dumbbell";
 
+// User Related
+export interface User {
+  id: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// Exercise Related
 export interface Exercise {
   id: string;
   name: string;
@@ -10,29 +19,7 @@ export interface Exercise {
   createdAt: number;
 }
 
-export interface ExerciseInput {
-  id: string;
-  routineId: string;
-  exerciseId: string;
-  order: number;
-  workingSetWeights: number[];
-  warmupSets: number;
-  warmupReps: number;
-  workingReps: number;
-  workingSets: number;
-  restTime: number;
-  notes?: string;
-}
-
-export interface Folders {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: number;
-  updatedAt: number;
-  description: string | null;
-}
-
+// Folder Related
 export interface Folder {
   id: string;
   name: string;
@@ -42,6 +29,9 @@ export interface Folder {
   description: string | null;
 }
 
+export interface Folders extends Folder {} // Consider removing if identical to Folder
+
+// Routine Related
 export interface Routine {
   id: string;
   name: string;
@@ -58,8 +48,73 @@ export interface RoutineWithExercises extends Routine {
   exercises: Array<{ name: string }>;
 }
 
-export interface User {
+export interface ExerciseInput {
   id: string;
-  createdAt: number;
-  updatedAt: number;
+  routineId: string;
+  exerciseId: string;
+  order: number;
+  workingSetWeights: number[];
+  warmupSets: number;
+  warmupReps: number;
+  workingReps: number;
+  workingSets: number;
+  restTime: number;
+  notes?: string;
 }
+
+// Set Related
+export interface Set {
+  id: number;
+  weight: string;
+  reps: string;
+  isWarmup: boolean;
+}
+
+export interface SetListProps {
+  sets: Set[];
+  updateSet: (id: number, field: keyof Omit<Set, "id">, value: string) => void;
+  handleCheckboxChange: (setId: number) => void;
+  deleteSet: (id: number) => void;
+}
+
+export type WorkoutSet = {
+  exerciseId: string;
+  weight: number;
+  reps: number;
+  isWarmup: number;
+};
+
+export interface DBSet extends Omit<WorkoutSet, "exerciseId"> {
+  exerciseId: string;
+}
+
+// Component Props
+export interface ExerciseRoutineCardProps {
+  exercise: Exercise;
+  routineExercise: {
+    id: string;
+    routineId: string;
+    exerciseId: string;
+    order: number;
+    workingSetWeights: string;
+    warmupSets: number;
+    warmupReps: number;
+    workingSets: number;
+    workingReps: number;
+    restTime: number;
+    notes?: string | null;
+  };
+  previousData?: {
+    notes: string;
+    sets: string;
+  };
+  onUpdate: (exerciseData: ExerciseData) => void;
+  onRestTimeTrigger: (restTime: number) => void;
+}
+
+// Data Transfer Types
+export type ExerciseData = {
+  exerciseId: string;
+  notes: string;
+  sets: Array<Omit<Set, "id">>;
+};

@@ -4,7 +4,6 @@ import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdMore } from "react-icons/io";
 import { IoAddCircle } from "react-icons/io5";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Exercise } from "@/lib/db/schema";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,52 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
-
-interface ExerciseRoutineCardProps {
-  exercise: Exercise;
-  routineExercise: {
-    id: string;
-    routineId: string;
-    exerciseId: string;
-    order: number;
-    workingSetWeights: string;
-    warmupSets: number;
-    warmupReps: number;
-    workingSets: number;
-    workingReps: number;
-    restTime: number;
-    notes?: string | null;
-  };
-  previousData?: {
-    notes: string;
-    sets: string;
-  };
-  onUpdate: (exerciseData: {
-    exerciseId: string;
-    notes: string;
-    sets: Array<{
-      weight: string;
-      reps: string;
-    }>;
-  }) => void;
-  onRestTimeTrigger: (restTime: number) => void;
-}
-
-interface Set {
-  id: number;
-  weight: string;
-  reps: string;
-  isWarmup: boolean;
-}
-
-type ExerciseData = {
-  exerciseId: string;
-  notes: string;
-  sets: Array<{
-    weight: string;
-    reps: string;
-  }>;
-};
+import { ExerciseRoutineCardProps, Set, ExerciseData } from "@/types/types";
+import { SetsList } from "./SetsList";
 
 function debounce<T extends (...args: any[]) => void>(
   func: T,
@@ -101,8 +56,8 @@ export default function ExceriseRoutineCard({
   const initialSets = useMemo(() => {
     const defaultSet = {
       id: 1,
-      weight: "0",
-      reps: "0",
+      weight: "",
+      reps: "",
       isWarmup: false,
     };
 
@@ -184,6 +139,7 @@ export default function ExceriseRoutineCard({
       sets: sets.map((set: Set) => ({
         weight: set.weight,
         reps: set.reps,
+        isWarmup: set.isWarmup,
       })),
     }),
     [sets, notes, exercise.id],
@@ -211,7 +167,7 @@ export default function ExceriseRoutineCard({
     };
   }, [currentData, debouncedOnUpdate]);
 
-  function addSet() {
+  function addWorkingSet() {
     setSets((prevSets: Set[]) => [
       ...prevSets,
       {
@@ -219,6 +175,17 @@ export default function ExceriseRoutineCard({
         weight: "",
         reps: "",
         isWarmup: false,
+      },
+    ]);
+  }
+  function addWarmupSet() {
+    setSets((prevSets: Set[]) => [
+      ...prevSets,
+      {
+        id: prevSets.length + 1,
+        weight: "",
+        reps: "",
+        isWarmup: true,
       },
     ]);
   }
@@ -306,73 +273,31 @@ export default function ExceriseRoutineCard({
             <p>Rest Timer:</p>
             <div>{routineExercise.restTime}</div>
           </div>
-          {/* Set details header */}
-          <div className="flex w-full text-xs uppercase text-dimmed">
-            <div className="flex w-1/5 justify-start">Set</div>
-            <div className="flex w-1/5 justify-center">Lbs</div>
-            <div className="flex w-1/5 justify-center">Reps</div>
-            <div className="flex w-1/5 justify-center">✓</div>
-            <div className="flex w-1/5 justify-center"></div>
-          </div>
-          {/* Dynamic sets */}
-          {sets.map((set: Set) => (
-            <div key={set.id} className="flex w-full">
-              <div className="flex w-1/5 justify-start text-base">{set.id}</div>
-              <div className="flex w-1/5 justify-center">
-                <form className="w-full">
-                  <input
-                    className="w-full bg-transparent text-center text-base"
-                    type="text"
-                    placeholder="-"
-                    value={set.weight}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*(?:\.\d*)?$/.test(value)) {
-                        updateSet(set.id, "weight", value);
-                      }
-                    }}
-                  />
-                </form>
-              </div>
-              <div className="flex w-1/5 justify-center">
-                <form className="w-full">
-                  <input
-                    className="flex w-full bg-transparent text-center text-base"
-                    type="text"
-                    placeholder="-"
-                    value={set.reps}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        updateSet(set.id, "reps", value);
-                      }
-                    }}
-                  />
-                </form>
-              </div>
-              <div className="flex w-1/5 items-center justify-center">
-                <Checkbox
-                  onCheckedChange={() => handleCheckboxChange(set.id)}
-                />
-              </div>
-              {/* Delete Set Button */}
-              <div className="flex w-1/5 justify-center">
-                <button
-                  className="text-base text-remove"
-                  onClick={() => deleteSet(set.id)}
-                  disabled={sets.length <= 1}
-                >
-                  <FaRegTrashCan />
-                </button>
-              </div>
-            </div>
-          ))}
+
+          <SetsList
+            sets={sets}
+            updateSet={updateSet}
+            handleCheckboxChange={handleCheckboxChange}
+            deleteSet={deleteSet}
+          />
           {/* Add Set Button */}
           <div className="flex w-full justify-center">
-            <div className="w-full pt-4">
-              <Button className="w-full" variant="secondary" onClick={addSet}>
+            <div className="flex w-full flex-col gap-2 pt-4">
+              <Button
+                className="w-full bg-blue-900/30"
+                variant="secondary"
+                onClick={addWarmupSet}
+              >
                 <IoAddCircle />
-                Add Set
+                Add Warmup Set
+              </Button>
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={addWorkingSet}
+              >
+                <IoAddCircle />
+                Add Working Set
               </Button>
             </div>
           </div>

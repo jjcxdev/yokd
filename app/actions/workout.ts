@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, desc, eq, is, lt } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -15,6 +15,7 @@ import {
   workoutData,
   workoutSessions,
 } from "@/lib/db/schema";
+import type { DBSet } from "@/types/types";
 
 // GET WORKOUT SESSION FUNCTION
 
@@ -131,14 +132,15 @@ export async function getWorkoutSession(sessionId: string) {
       .limit(1);
 
     // If we found a previous session, get its sets
-    let previousSets: { exerciseId: string; weight: number; reps: number }[] =
-      []; // Initialize with empty array
+    let previousSets: DBSet[] = [];
+    []; // Initialize with empty array
     if (previousSession.length > 0) {
       previousSets = await db
         .select({
           exerciseId: sets.exerciseId,
           weight: sets.weight,
           reps: sets.reps,
+          isWarmup: sets.isWarmup,
         })
         .from(sets)
         .where(eq(sets.sessionId, previousSession[0].id))
@@ -166,6 +168,7 @@ export async function getWorkoutSession(sessionId: string) {
               .map((set) => ({
                 weight: set.weight.toString(),
                 reps: set.reps.toString(),
+                isWarmup: set.isWarmup === 1,
               })),
           ),
         },
@@ -209,7 +212,7 @@ export async function updateWorkoutData(
     sets: Array<{
       weight: string;
       reps: string;
-      isWarmup?: boolean;
+      isWarmup: boolean;
     }>;
   },
 ) {
@@ -253,6 +256,7 @@ export async function updateWorkoutData(
             setNumber: index + 1,
             weight: parseInt(set.weight) || 0,
             reps: parseInt(set.reps) || 0,
+            isWarmup: set.isWarmup ? 1 : 0,
             completedAt: Date.now(),
           })),
         );
