@@ -189,7 +189,7 @@ function RoutineContent() {
           exerciseCount={exercises.length}
         />
 
-        <div>
+        <div className="bg-background">
           <form className="p-2">
             <Input
               className="h-10 w-full border-b-2 border-accent/20 bg-background px-4"

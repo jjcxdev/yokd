@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import YokdLogo from "@/public/favicon.svg";
+import YokdLogo from "@/app/favicon.svg";
 import { EmptyStateProps } from "@/types/types";
 
 export default function EmptyState({
