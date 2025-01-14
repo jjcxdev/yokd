@@ -16,17 +16,12 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import type { RoutineWithExercises } from "@/lib/db/schema";
-import type { Folders } from "@/types/types";
+import type { Folder } from "@/types/types";
 
 import { deleteFolder, deleteRoutine } from "../actions/folders";
 import FolderToggle from "./FolderToggle";
 import RoutineCard from "./RoutineCard";
-
-interface FolderListProps {
-  folders: Folders[];
-  routines?: RoutineWithExercises[];
-  onFolderDeleted?: () => void;
-}
+import { FolderListProps } from "@/types/types";
 
 export default function FolderList({
   folders,

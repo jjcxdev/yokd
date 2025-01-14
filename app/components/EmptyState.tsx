@@ -1,8 +1,9 @@
+import Image from "next/image";
 import React from "react";
 import { BsCollectionFill } from "react-icons/bs";
 import { FaDumbbell } from "react-icons/fa6";
-import Image from "next/image";
-import YokdLogo from "@/public/favicon.svg";
+
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,12 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-
-interface EmptyStateProps {
-  onCreateFolder: () => void;
-  onCreateRoutine: () => void;
-}
+import YokdLogo from "@/public/favicon.svg";
+import { EmptyStateProps } from "@/types/types";
 
 export default function EmptyState({
   onCreateFolder,

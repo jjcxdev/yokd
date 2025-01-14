@@ -5,14 +5,11 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
 import { routineExercises, routines } from "@/lib/db/schema";
-import type { ExerciseInput } from "@/types/types";
+import type { RoutineExercise, Routine } from "@/types/types";
 
-interface RoutineInput {
-  name: string;
-  folderId: string;
-  exercises: ExerciseInput[];
-  userId: string;
-}
+type RoutineInput = Pick<Routine, "name" | "folderId" | "userId"> & {
+  exercises: RoutineExercise[];
+};
 
 export async function postRoutines({
   name,
@@ -37,11 +34,8 @@ export async function postRoutines({
     await db.insert(routineExercises).values(
       exercises.map((exercise) => ({
         ...exercise,
-        workingSetWeights: JSON.stringify(
-          Array(exercise.workingSets).fill(
-            exercise.workingSetWeights?.[0] || 0,
-          ),
-        ),
+        workingSetWeights: exercise.workingSetWeights,
+        warmupSetWeights: exercise.warmupSetWeights,
         id: nanoid(), // Generate unique ID for each exercise
         routineId: newRoutineId,
       })),

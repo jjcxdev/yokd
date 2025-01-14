@@ -1,10 +1,12 @@
 "use client";
 
 import { UserButton } from "@clerk/nextjs";
-import React from "react";
-import YokdLogo from "@/app/favicon.svg";
-import UserName from "./UserName";
 import Image from "next/image";
+import React from "react";
+
+import YokdLogo from "@/app/favicon.svg";
+
+import UserName from "./UserName";
 
 export default function Header() {
   return (

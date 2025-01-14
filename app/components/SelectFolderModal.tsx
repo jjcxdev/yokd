@@ -4,15 +4,10 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { FaRegFolderOpen } from "react-icons/fa";
 
-import type { Folders } from "@/types/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-interface SelectFolderModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  folders: Folders[];
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Folder } from "@/types/types";
+import { SelectFolderModalProps } from "@/types/types";
 
 export default function SelectFolderModal({
   isOpen,

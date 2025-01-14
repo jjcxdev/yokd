@@ -1,10 +1,11 @@
 "use client";
 
-import { MdDashboard } from "react-icons/md";
-import { FaDumbbell } from "react-icons/fa6";
-import Link from "next/link";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { Suspense } from "react";
+import { FaDumbbell } from "react-icons/fa6";
+import { MdDashboard } from "react-icons/md";
+
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ClientUserButton = dynamic(

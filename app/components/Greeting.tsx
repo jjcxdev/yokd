@@ -1,6 +1,7 @@
 import { useUser } from "@clerk/nextjs";
-import YokdLogo from "@/app/favicon.svg";
 import Image from "next/image";
+
+import YokdLogo from "@/app/favicon.svg";
 
 export function Greeting() {
   const { user } = useUser();

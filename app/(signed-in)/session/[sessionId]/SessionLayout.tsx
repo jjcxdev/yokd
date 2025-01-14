@@ -1,15 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import React, { useEffect, useRef, useState } from "react";
 
-interface SessionLayoutProps {
-  onFinish: () => void;
-  restTime: number;
-  isResting: boolean;
-  onRestTimerComplete: () => void;
-  children: React.ReactNode;
-}
+import { Button } from "@/components/ui/button";
+import { SessionLayoutProps } from "@/types/types";
 
 export default function SessionLayout({
   onFinish,

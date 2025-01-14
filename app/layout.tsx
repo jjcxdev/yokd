@@ -7,10 +7,10 @@ import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import { Toaster } from "@/components/ui/toaster";
 
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
 import { AuthWrapper } from "./components/AuthWrapper";
-import { Toaster } from "@/components/ui/toaster";
 
 const helvObl = localFont({
   src: "./fonts/Helv_Black_Ob.woff",

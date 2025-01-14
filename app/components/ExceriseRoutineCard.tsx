@@ -1,10 +1,16 @@
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { is } from "drizzle-orm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BsStopwatch } from "react-icons/bs";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdMore } from "react-icons/io";
 import { IoAddCircle } from "react-icons/io5";
-import { Checkbox } from "@/components/ui/checkbox";
-import type { Exercise } from "@/lib/db/schema";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,58 +19,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
+import type {
+  ExerciseData,
+  ExerciseRoutineCardProps,
+  Set,
+} from "@/types/types";
 
-interface ExerciseRoutineCardProps {
-  exercise: Exercise;
-  routineExercise: {
-    id: string;
-    routineId: string;
-    exerciseId: string;
-    order: number;
-    workingSetWeights: string;
-    warmupSets: number;
-    warmupReps: number;
-    workingSets: number;
-    workingReps: number;
-    restTime: number;
-    notes?: string | null;
-  };
-  previousData?: {
-    notes: string;
-    sets: string;
-  };
-  onUpdate: (exerciseData: {
-    exerciseId: string;
-    notes: string;
-    sets: Array<{
-      weight: string;
-      reps: string;
-    }>;
-  }) => void;
-  onRestTimeTrigger: (restTime: number) => void;
-}
-
-interface Set {
-  id: number;
-  weight: string;
-  reps: string;
-  isWarmup: boolean;
-}
-
-type ExerciseData = {
-  exerciseId: string;
-  notes: string;
-  sets: Array<{
-    weight: string;
-    reps: string;
-  }>;
-};
+import { SetsList } from "./SetsList";
 
 function debounce<T extends (...args: any[]) => void>(
   func: T,
@@ -101,31 +63,58 @@ export default function ExceriseRoutineCard({
   const initialSets = useMemo(() => {
     const defaultSet = {
       id: 1,
-      weight: "0",
-      reps: "0",
+      weight: "-",
+      reps: "-",
       isWarmup: false,
     };
 
     try {
       // Try tp parse working weights
       let workingWeights = [];
+      let warmupWeights = [];
       try {
         workingWeights = JSON.parse(routineExercise.workingSetWeights);
+        warmupWeights = JSON.parse(routineExercise.warmupSetWeights);
       } catch {
-        workingWeights = [0]; // Default to 0 if parsing fails
+        workingWeights = []; // Default to empty array if parsing fails
+        warmupWeights = [];
       }
 
       if (!routineExercise.workingSets || routineExercise.workingSets < 1) {
         return [defaultSet];
       }
 
-      // Create an array of default sets based on working sets
-      const defaultSets = Array(routineExercise.workingSets)
+      // Function to ensure empty or zero values are replaced with "-"
+      const ensureValue = (value: string | number | undefined): string => {
+        if (
+          value === null ||
+          value === undefined ||
+          value === "" ||
+          value === 0 ||
+          value === "0"
+        ) {
+          return "-";
+        }
+        return value.toString();
+      };
+
+      // Create warmup sets array
+      const warmupSets = Array(routineExercise.warmupSets)
         .fill(null)
         .map((_, index) => ({
           id: index + 1,
-          weight: workingWeights[index]?.toString() ?? "0",
-          reps: routineExercise.workingReps.toString() || "0",
+          weight: ensureValue(warmupWeights[index]),
+          reps: ensureValue(routineExercise.warmupReps),
+          isWarmup: true,
+        }));
+
+      // Create working sets array
+      const workingSets = Array(routineExercise.workingSets)
+        .fill(null)
+        .map((_, index) => ({
+          id: index + 1,
+          weight: ensureValue(workingWeights[index]),
+          reps: ensureValue(routineExercise.workingReps),
           isWarmup: false,
         }));
 
@@ -136,36 +125,22 @@ export default function ExceriseRoutineCard({
           if (Array.isArray(parsedSets) && parsedSets.length > 0) {
             return parsedSets.map((set, index) => ({
               id: index + 1,
-              weight: (
-                set?.weight ??
-                defaultSets[index]?.weight ??
-                "0"
-              ).toString(),
-              reps: (
-                set?.reps ??
-                defaultSets[index]?.reps ??
-                routineExercise.workingReps.toString()
-              ).toString(),
-              isWarmup: false,
+              weight: set?.weight?.toString() || "",
+              reps: set?.reps?.toString() || "",
+              isWarmup: set?.isWarmup || false,
             }));
           }
         } catch {
           // If there's any error parsing previous data, return default sets
-          return defaultSets;
+          return [...warmupSets, ...workingSets];
         }
       }
 
-      return defaultSets;
+      // Return combined sets if no previous data
+      return [...warmupSets, ...workingSets];
     } catch {
       // If anything fails, return a single default set
-      return [
-        {
-          id: 1,
-          weight: "0",
-          reps: routineExercise.workingReps.toString(),
-          isWarmup: false,
-        },
-      ];
+      return [defaultSet];
     }
   }, [routineExercise, previousData]);
 
@@ -184,6 +159,7 @@ export default function ExceriseRoutineCard({
       sets: sets.map((set: Set) => ({
         weight: set.weight,
         reps: set.reps,
+        isWarmup: set.isWarmup,
       })),
     }),
     [sets, notes, exercise.id],
@@ -211,14 +187,25 @@ export default function ExceriseRoutineCard({
     };
   }, [currentData, debouncedOnUpdate]);
 
-  function addSet() {
+  function addWorkingSet() {
     setSets((prevSets: Set[]) => [
       ...prevSets,
       {
         id: prevSets.length + 1,
-        weight: "",
-        reps: "",
+        weight: "-",
+        reps: "-",
         isWarmup: false,
+      },
+    ]);
+  }
+  function addWarmupSet() {
+    setSets((prevSets: Set[]) => [
+      ...prevSets,
+      {
+        id: prevSets.length + 1,
+        weight: "-",
+        reps: "-",
+        isWarmup: true,
       },
     ]);
   }
@@ -306,73 +293,31 @@ export default function ExceriseRoutineCard({
             <p>Rest Timer:</p>
             <div>{routineExercise.restTime}</div>
           </div>
-          {/* Set details header */}
-          <div className="flex w-full text-xs uppercase text-dimmed">
-            <div className="flex w-1/5 justify-start">Set</div>
-            <div className="flex w-1/5 justify-center">Lbs</div>
-            <div className="flex w-1/5 justify-center">Reps</div>
-            <div className="flex w-1/5 justify-center">✓</div>
-            <div className="flex w-1/5 justify-center"></div>
-          </div>
-          {/* Dynamic sets */}
-          {sets.map((set: Set) => (
-            <div key={set.id} className="flex w-full">
-              <div className="flex w-1/5 justify-start text-base">{set.id}</div>
-              <div className="flex w-1/5 justify-center">
-                <form className="w-full">
-                  <input
-                    className="w-full bg-transparent text-center text-base"
-                    type="text"
-                    placeholder="-"
-                    value={set.weight}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*(?:\.\d*)?$/.test(value)) {
-                        updateSet(set.id, "weight", value);
-                      }
-                    }}
-                  />
-                </form>
-              </div>
-              <div className="flex w-1/5 justify-center">
-                <form className="w-full">
-                  <input
-                    className="flex w-full bg-transparent text-center text-base"
-                    type="text"
-                    placeholder="-"
-                    value={set.reps}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        updateSet(set.id, "reps", value);
-                      }
-                    }}
-                  />
-                </form>
-              </div>
-              <div className="flex w-1/5 items-center justify-center">
-                <Checkbox
-                  onCheckedChange={() => handleCheckboxChange(set.id)}
-                />
-              </div>
-              {/* Delete Set Button */}
-              <div className="flex w-1/5 justify-center">
-                <button
-                  className="text-base text-remove"
-                  onClick={() => deleteSet(set.id)}
-                  disabled={sets.length <= 1}
-                >
-                  <FaRegTrashCan />
-                </button>
-              </div>
-            </div>
-          ))}
+
+          <SetsList
+            sets={sets}
+            updateSet={updateSet}
+            handleCheckboxChange={handleCheckboxChange}
+            deleteSet={deleteSet}
+          />
           {/* Add Set Button */}
           <div className="flex w-full justify-center">
-            <div className="w-full pt-4">
-              <Button className="w-full" variant="secondary" onClick={addSet}>
+            <div className="flex w-full flex-col gap-2 pt-4">
+              <Button
+                className="w-full bg-blue-900/30"
+                variant="secondary"
+                onClick={addWarmupSet}
+              >
                 <IoAddCircle />
-                Add Set
+                Add Warmup Set
+              </Button>
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={addWorkingSet}
+              >
+                <IoAddCircle />
+                Add Working Set
               </Button>
             </div>
           </div>

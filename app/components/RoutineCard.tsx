@@ -5,6 +5,13 @@ import { FaRegTrashAlt } from "react-icons/fa";
 
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -15,21 +22,7 @@ import {
 } from "@/components/ui/drawer";
 
 import { startWorkoutSession } from "../actions/workout";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-interface RoutineCardProps {
-  id: string;
-  label: string;
-  exercises: Array<{ name: string }>;
-  icon?: JSX.Element;
-  onDelete?: () => void;
-}
+import { RoutineCardProps } from "@/types/types";
 
 export default function RoutineCard({
   id,

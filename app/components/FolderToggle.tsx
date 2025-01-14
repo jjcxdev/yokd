@@ -1,19 +1,11 @@
 import React, { useState } from "react";
 import { BiChevronRight } from "react-icons/bi";
 
-import type { Folders } from "@/types/types";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import type { Folder } from "@/types/types";
 
-interface FolderToggleProps {
-  folder: Folders;
-  folderIcon?: JSX.Element;
-  menuIcon?: JSX.Element;
-  count?: string;
-  deletedFolder?: (folderId: string) => void;
-  onClick?: () => void;
-  children?: React.ReactNode;
-}
+import { FolderToggleProps } from "@/types/types";
 
 export default function FolderToggle({
   folder,

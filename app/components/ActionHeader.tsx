@@ -2,17 +2,7 @@ import React from "react";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-
-interface ActionHeaderProps {
-  title?: string;
-  button: string;
-  count?: number;
-  onAction?: () => void;
-  onCancel?: () => void;
-  isLoading?: boolean;
-  disabled?: boolean;
-  routineName?: string | null;
-}
+import { ActionHeaderProps } from "@/types/types";
 
 export default function ActionHeader({
   count = 0,

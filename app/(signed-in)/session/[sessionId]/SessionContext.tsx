@@ -1,10 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-
-interface SessionContextType {
-  onRestTimeTrigger: (time: number) => void;
-}
+import { SessionContextType } from "@/types/types";
 
 export const SessionContext = createContext<SessionContextType | undefined>(
   undefined,

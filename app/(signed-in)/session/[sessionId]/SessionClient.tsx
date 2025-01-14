@@ -6,46 +6,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { updateWorkoutData } from "@/app/actions/workout";
 import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import { type Exercise } from "@/lib/db/schema";
+import type {
+  ExerciseSet,
+  ExerciseWithRoutine,
+  SessionClientProps,
+} from "@/types/types";
 
 import { useSessionContext } from "./SessionContext";
-
-type ExerciseSet = {
-  weight: string;
-  reps: string;
-};
-
-type ExerciseWithRoutine = {
-  exercise: Exercise | null;
-  routineExercise: {
-    id: string;
-    routineId: string;
-    exerciseId: string;
-    order: number;
-    workingSetWeights: string;
-    warmupSets: number;
-    warmupReps: number;
-    workingSets: number;
-    workingReps: number;
-    restTime: number;
-    notes?: string | null;
-  };
-  previousData?: {
-    notes: string;
-    sets: string;
-  };
-};
-
-interface SessionClientProps {
-  sessionData: {
-    exercises: ExerciseWithRoutine[];
-    userId: string;
-    routineId: string;
-    status: "active" | "completed" | "cancelled";
-    startedAt: number;
-    completedAt: number | null;
-    sessionId: string;
-  };
-}
 
 function isValidExercise(
   exerciseData: ExerciseWithRoutine,
@@ -78,13 +45,35 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
           );
 
           // First create sets with initial weights from the routine
-          const workingWeights = JSON.parse(routineExercise.workingSetWeights);
-          const initialSets = Array(routineExercise.workingSets)
-            .fill(null)
-            .map((_, index) => ({
-              weight: workingWeights[index]?.toString() ?? "0",
-              reps: routineExercise.workingReps.toString(),
-            }));
+          let initialSets: ExerciseSet[] = [];
+          try {
+            const workingWeights = JSON.parse(
+              routineExercise.workingSetWeights,
+            );
+            const warmupWeights = JSON.parse(routineExercise.warmupSetWeights);
+
+            // Create warmup sets
+            const warmupSets = Array(routineExercise.warmupSets)
+              .fill(null)
+              .map((_, index) => ({
+                weight: warmupWeights[index]?.toString() ?? "",
+                reps: routineExercise.warmupReps.toString(),
+                isWarmup: true,
+              }));
+
+            // Create working sets
+            const workingSets = Array(routineExercise.workingSets)
+              .fill(null)
+              .map((_, index) => ({
+                weight: workingWeights[index]?.toString() ?? "",
+                reps: routineExercise.workingReps.toString(),
+                isWarmup: false,
+              }));
+
+            initialSets = [...warmupSets, ...workingSets];
+          } catch {
+            initialSets = [];
+          }
 
           // Check for valid previous data
           const hasPreviousData =
