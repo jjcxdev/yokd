@@ -63,8 +63,8 @@ export default function ExceriseRoutineCard({
   const initialSets = useMemo(() => {
     const defaultSet = {
       id: 1,
-      weight: "-",
-      reps: "-",
+      weight: "",
+      reps: "",
       isWarmup: false,
     };
 
@@ -93,7 +93,7 @@ export default function ExceriseRoutineCard({
           value === 0 ||
           value === "0"
         ) {
-          return "-";
+          return "";
         }
         return value.toString();
       };
@@ -192,8 +192,8 @@ export default function ExceriseRoutineCard({
       ...prevSets,
       {
         id: prevSets.length + 1,
-        weight: "-",
-        reps: "-",
+        weight: "",
+        reps: "",
         isWarmup: false,
       },
     ]);
@@ -203,8 +203,8 @@ export default function ExceriseRoutineCard({
       ...prevSets,
       {
         id: prevSets.length + 1,
-        weight: "-",
-        reps: "-",
+        weight: "",
+        reps: "",
         isWarmup: true,
       },
     ]);

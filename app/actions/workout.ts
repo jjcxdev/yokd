@@ -17,7 +17,9 @@ import {
 } from "@/lib/db/schema";
 import type { DBSet } from "@/types/types";
 
+// ---------------------------
 // GET WORKOUT SESSION FUNCTION
+// ---------------------------
 
 export async function startWorkoutSession(routineId: string) {
   try {
@@ -87,7 +89,9 @@ export async function startWorkoutSession(routineId: string) {
   }
 }
 
+// ---------------------------
 // GET WORKOUT SESSION FUNCTION
+// ---------------------------
 
 export async function getWorkoutSession(sessionId: string) {
   try {
@@ -180,7 +184,9 @@ export async function getWorkoutSession(sessionId: string) {
   }
 }
 
+// ---------------------------
 // COMPLETE WORKOUT SESSION FUNCTION
+// ---------------------------
 
 export async function completeWorkoutSession(sessionId: string) {
   try {
@@ -202,7 +208,9 @@ export async function completeWorkoutSession(sessionId: string) {
   }
 }
 
+// ---------------------------
 // UPDATE WORKOUT DATA FUNCTION
+// ---------------------------
 
 export async function updateWorkoutData(
   sessionId: string,
@@ -219,6 +227,12 @@ export async function updateWorkoutData(
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
+
+    // Validate input
+    function safeParseInt(value: string): number {
+      const parsed = parseInt(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
 
     await db.transaction(async (tx) => {
       // Update notes in workout_data
@@ -254,8 +268,8 @@ export async function updateWorkoutData(
             sessionId,
             exerciseId,
             setNumber: index + 1,
-            weight: parseInt(set.weight) || 0,
-            reps: parseInt(set.reps) || 0,
+            weight: safeParseInt(set.weight),
+            reps: safeParseInt(set.reps),
             isWarmup: set.isWarmup ? 1 : 0,
             completedAt: Date.now(),
           })),

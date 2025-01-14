@@ -5,10 +5,11 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
 import { routineExercises, routines } from "@/lib/db/schema";
-import type { RoutineExercise, Routine } from "@/types/types";
+import type { Routine, ExerciseData } from "@/types/types";
+import { eq } from "drizzle-orm";
 
 type RoutineInput = Pick<Routine, "name" | "folderId" | "userId"> & {
-  exercises: RoutineExercise[];
+  exercises: ExerciseData[];
 };
 
 export async function postRoutines({
@@ -17,36 +18,70 @@ export async function postRoutines({
   exercises,
   userId,
 }: RoutineInput) {
-  try {
-    // Generate routine ID
-    const newRoutineId = nanoid();
+  console.log("Received exercises:", exercises);
 
-    // Create the routine
+  try {
+    const routineId = nanoid();
+
+    // Create routine first
     await db.insert(routines).values({
-      id: newRoutineId,
-      name: name,
-      folderId: folderId,
-      userId: userId,
-      createdAt: Date.now(),
+      id: routineId,
+      name,
+      folderId,
+      userId,
     });
 
-    // Create the exercise entries with the generated routineId
-    await db.insert(routineExercises).values(
-      exercises.map((exercise) => ({
-        ...exercise,
-        workingSetWeights: exercise.workingSetWeights,
-        warmupSetWeights: exercise.warmupSetWeights,
-        id: nanoid(), // Generate unique ID for each exercise
-        routineId: newRoutineId,
-      })),
-    );
+    console.log("Created routine:", routineId);
 
-    // Revalidate the dashboard to show new data
+    // Map the exercises to the database format
+    const transformedExercises = exercises.map((exercise, index) => {
+      // Log the exercise we're processing
+      console.log("Processing exercise:", exercise);
+
+      const workingSets = exercise.sets.filter((set) => !set.isWarmup);
+      const warmupSets = exercise.sets.filter((set) => set.isWarmup);
+
+      // Log the sets after filtering
+      console.log("Working sets:", workingSets);
+      console.log("Warmup sets:", warmupSets);
+
+      const transformed = {
+        id: nanoid(),
+        routineId,
+        exerciseId: exercise.exerciseId,
+        order: index,
+        workingSetWeights: JSON.stringify(
+          workingSets.map((set) => parseFloat(set.weight) || 0),
+        ),
+        warmupSetWeights: JSON.stringify(
+          warmupSets.map((set) => parseFloat(set.weight) || 0),
+        ),
+        warmupSets: warmupSets.length,
+        warmupReps: parseInt(warmupSets[0]?.reps || "0"),
+        workingSets: workingSets.length,
+        workingReps: parseInt(workingSets[0]?.reps || "0"),
+        restTime: 30,
+        notes: exercise.notes || null,
+      };
+
+      // Log the transformed exercise
+      console.log("Transformed exercise:", transformed);
+      return transformed;
+    });
+
+    // Log the query before executing
+    const query = db.insert(routineExercises).values(transformedExercises);
+    const sql = query.toSQL();
+    console.log("SQL to execute:", sql.sql);
+    console.log("SQL parameters:", sql.params);
+
+    // Execute the insert
+    await query;
+
     revalidatePath("/dashboard");
-
     return { success: true };
   } catch (error) {
-    console.error("Error inserting exercises:", error);
-    return { success: false, error: "Failed to create routine" };
+    console.error("Error in postRoutines:", error);
+    return { success: false, error: String(error) };
   }
 }
