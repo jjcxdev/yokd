@@ -6,11 +6,7 @@ import { completeWorkoutSession } from "@/app/actions/workout";
 
 import { SessionContext } from "./SessionContext";
 import SessionLayout from "./SessionLayout";
-
-interface SessionWrapperProps {
-  children: React.ReactNode;
-  sessionId: string;
-}
+import { SessionWrapperProps } from "@/types/types";
 
 export default function SessionWrapper({
   children,

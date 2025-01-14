@@ -5,14 +5,11 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/lib/db";
 import { routineExercises, routines } from "@/lib/db/schema";
-import type { ExerciseInput } from "@/types/types";
+import type { RoutineExercise, Routine } from "@/types/types";
 
-interface RoutineInput {
-  name: string;
-  folderId: string;
-  exercises: ExerciseInput[];
-  userId: string;
-}
+type RoutineInput = Pick<Routine, "name" | "folderId" | "userId"> & {
+  exercises: RoutineExercise[];
+};
 
 export async function postRoutines({
   name,

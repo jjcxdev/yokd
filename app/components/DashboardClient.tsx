@@ -6,24 +6,19 @@ import { useState } from "react";
 import { BsCollectionFill } from "react-icons/bs";
 import { FaDumbbell } from "react-icons/fa6";
 
-import { Button } from "@/components/ui/button";
 import CreateFolderModal from "@/app/components/CreateFolderModal";
+import { Button } from "@/components/ui/button";
 import type { RoutineWithExercises } from "@/lib/db/schema";
-import type { Folders } from "@/types/types";
+import type { Folder } from "@/types/types";
 
 import EmptyState from "./EmptyState";
 import FolderList from "./FolderList";
-import SelectFolderModal from "./SelectFolderModal";
-import { MobileFooter } from "./MobileFooter";
 import { Greeting } from "./Greeting";
+import { MobileFooter } from "./MobileFooter";
 import { PreviousWorkout } from "./PreviousWorkout";
-
+import SelectFolderModal from "./SelectFolderModal";
+import { DashboardClientProps } from "@/types/types";
 const Header = dynamic(() => import("@/app/components/Header"), { ssr: false });
-
-interface DashboardClientProps {
-  initialFolders: Folders[];
-  initialRoutines: RoutineWithExercises[];
-}
 
 export default function Dashboard({
   initialFolders,

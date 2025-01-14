@@ -1,5 +1,6 @@
-import { Checkbox } from "@/components/ui/checkbox";
 import { FaRegTrashCan } from "react-icons/fa6";
+
+import { Checkbox } from "@/components/ui/checkbox";
 import type { Set, SetListProps } from "@/types/types";
 
 export function SetsList({

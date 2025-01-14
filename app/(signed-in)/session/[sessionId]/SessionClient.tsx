@@ -6,13 +6,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { updateWorkoutData } from "@/app/actions/workout";
 import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import { type Exercise } from "@/lib/db/schema";
-
-import { useSessionContext } from "./SessionContext";
-import {
+import type {
   ExerciseSet,
   ExerciseWithRoutine,
   SessionClientProps,
 } from "@/types/types";
+
+import { useSessionContext } from "./SessionContext";
 
 function isValidExercise(
   exerciseData: ExerciseWithRoutine,

@@ -2,19 +2,17 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 import ActionHeader from "@/app/components/ActionHeader";
 import ExerciseCard from "@/app/components/ExerciseCard";
+import { useToast } from "@/hooks/use-toast";
 import type { Exercise } from "@/types/types";
+
+import { ExerciseMuscleFilter } from "./ExerciseMuscleFilter";
 import { ExerciseSearch } from "./ExerciseSearch";
 import { ExerciseSort } from "./ExerciseSort";
-import { ExerciseMuscleFilter } from "./ExerciseMuscleFilter";
 import { ExerciseTypeFilter } from "./ExerciseTypeFilter";
-
-interface ExerciseListProps {
-  initialData: Exercise[];
-}
+import { ExerciseListProps } from "@/types/types";
 
 export default function ExerciseList({ initialData }: ExerciseListProps) {
   const router = useRouter();

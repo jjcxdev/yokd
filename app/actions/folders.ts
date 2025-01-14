@@ -17,7 +17,7 @@ import {
   workoutData,
   workoutSessions,
 } from "@/lib/db/schema";
-import type { Folders } from "@/types/types";
+import type { Folder } from "@/types/types";
 
 //
 // CREATE FOLDER
@@ -307,7 +307,7 @@ export async function deleteRoutine(routineId: string) {
 //
 
 export async function fetchFoldersWithRoutines(): Promise<{
-  folders: Folders[];
+  folders: Folder[];
   routines: RoutineWithExercises[];
 }> {
   try {

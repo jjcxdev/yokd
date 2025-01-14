@@ -1,14 +1,25 @@
-// Base Types
-export type ValidType = "cable" | "machine" | "dumbbell";
+import { ReactNode } from "react";
 
-// User Related
-export interface User {
-  id: string;
+// -------------------
+// Base Types
+// -------------------
+export type ValidType = "cable" | "machine" | "dumbbell";
+export type RoutineStatus = "active" | "archived";
+export type SessionStatus = "active" | "completed" | "cancelled";
+
+interface Timestamps {
   createdAt: number;
   updatedAt: number;
 }
 
-// Exercise Related
+// -------------------
+// Core Data Models
+// -------------------
+
+export interface User extends Timestamps {
+  id: string;
+}
+
 export interface Exercise {
   id: string;
   name: string;
@@ -19,36 +30,24 @@ export interface Exercise {
   createdAt: number;
 }
 
-// Folder Related
-export interface Folder {
+export interface Folder extends Timestamps {
   id: string;
   name: string;
   userId: string;
-  createdAt: number;
-  updatedAt: number;
   description: string | null;
 }
 
-export interface Folders extends Folder {} // Consider removing if identical to Folder
-
-// Routine Related
-export interface Routine {
+export interface Routine extends Timestamps {
   id: string;
   name: string;
   folderId: string;
   userId: string;
-  createdAt: number;
-  updatedAt: number;
   status: "active" | "archived";
   description: string | null;
-  exercises: { name: string }[];
-}
-
-export interface RoutineWithExercises extends Routine {
   exercises: Array<{ name: string }>;
 }
 
-export interface ExerciseInput {
+export interface RoutineExercise {
   id: string;
   routineId: string;
   exerciseId: string;
@@ -60,10 +59,12 @@ export interface ExerciseInput {
   workingReps: number;
   workingSets: number;
   restTime: number;
-  notes?: string;
+  notes?: string | null;
 }
 
+// -------------------
 // Set Related
+// -------------------
 export interface Set {
   id: number;
   weight: string;
@@ -73,41 +74,31 @@ export interface Set {
 
 export type ExerciseSet = Omit<Set, "id">;
 
-export interface SetListProps {
-  sets: Set[];
-  updateSet: (id: number, field: keyof Omit<Set, "id">, value: string) => void;
-  handleCheckboxChange: (setId: number) => void;
-  deleteSet: (id: number) => void;
+export interface SetWithId extends Set {
+  id: number;
 }
 
-export type WorkoutSet = {
+// DB resprentation of a set
+export interface WorkoutSet {
   exerciseId: string;
+  isWarmup: number; // db format
+  weight: number; // db format
+  reps: number; // db format
+}
+
+export interface DBSet {
   weight: number;
   reps: number;
   isWarmup: number;
-};
-
-export interface DBSet extends Omit<WorkoutSet, "exerciseId"> {
   exerciseId: string;
 }
 
-// Component Props
+// -------------------
+// Exercise Components
+// -------------------
 export interface ExerciseRoutineCardProps {
   exercise: Exercise;
-  routineExercise: {
-    id: string;
-    routineId: string;
-    exerciseId: string;
-    order: number;
-    workingSetWeights: string;
-    warmupSetWeights: string;
-    warmupSets: number;
-    warmupReps: number;
-    workingSets: number;
-    workingReps: number;
-    restTime: number;
-    notes?: string | null;
-  };
+  routineExercise: RoutineExercise;
   previousData?: {
     notes: string;
     sets: string;
@@ -116,9 +107,16 @@ export interface ExerciseRoutineCardProps {
   onRestTimeTrigger: (restTime: number) => void;
 }
 
+export interface SetListProps {
+  sets: Set[];
+  updateSet: (id: number, field: keyof Omit<Set, "id">, value: string) => void;
+  handleCheckboxChange: (setId: number) => void;
+  deleteSet: (id: number) => void;
+}
+
 export type ExerciseWithRoutine = {
   exercise: Exercise | null;
-  routineExercise: ExerciseInput;
+  routineExercise: RoutineExercise;
   previousData?: {
     notes: string;
     sets: string;
@@ -129,17 +127,133 @@ export type ExerciseWithRoutine = {
 export type ExerciseData = {
   exerciseId: string;
   notes: string;
-  sets: ExerciseSet[];
+  sets: Omit<Set, "id">[];
 };
+
+// -------------------
+// Session Components
+/// -------------------
+export interface SessionContextType {
+  onRestTimeTrigger: (time: number) => void;
+}
 
 export interface SessionClientProps {
   sessionData: {
     exercises: ExerciseWithRoutine[];
     userId: string;
     routineId: string;
-    status: "active" | "completed" | "cancelled";
+    status: SessionStatus;
     startedAt: number;
     completedAt: number | null;
     sessionId: string;
   };
+}
+
+interface BaseSessionProps {
+  children: ReactNode;
+}
+
+export interface SessionLayoutProps extends BaseSessionProps {
+  onFinish: () => void;
+  restTime: number;
+  isResting: boolean;
+  onRestTimerComplete: () => void;
+}
+export interface SessionWrapperProps extends BaseSessionProps {
+  sessionId: string;
+}
+
+// -------------------
+// Header Components
+// -------------------
+interface BaseHeaderProps {
+  title?: string;
+  button: string;
+  onCancel?: () => void;
+  isLoading?: boolean;
+  disabled?: boolean;
+  routineName?: string | null;
+}
+
+export interface ActionHeaderProps extends BaseHeaderProps {
+  count?: number;
+  onAction?: () => void;
+}
+
+export interface SaveHeaderProps extends BaseHeaderProps {
+  title: string;
+  onSave?: () => void;
+  exerciseCount?: number;
+}
+
+// -------------------
+// Modal Components
+// -------------------
+
+interface BaseModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export interface CreateFolderModalProps extends BaseModalProps {
+  onSuccess?: () => void;
+}
+
+export interface SelectFolderModalProps extends BaseModalProps {
+  folders: Folder[];
+}
+
+// -------------------
+// Other Components
+// -------------------
+
+export interface AuthWrapperProps {
+  children: ReactNode;
+}
+
+export interface DashboardClientProps {
+  initialFolders: Folder[];
+  initialRoutines: Routine[];
+}
+
+export interface EmptyStateProps {
+  onCreateFolder: () => void;
+  onCreateRoutine: () => void;
+}
+
+export interface ExerciseCardProps {
+  title: string;
+  muscleGroup: string;
+  exerciseType: string;
+  isSelected: boolean;
+  onSelect: () => void;
+  disabled?: boolean;
+}
+
+export interface ExerciseListProps {
+  initialData: Exercise[];
+}
+
+export interface FolderListProps {
+  folders: Folder[];
+  routines?: Routine[];
+  onFolderDeleted?: () => void;
+}
+
+export interface FolderToggleProps {
+  folder: Folder;
+  folderIcon?: JSX.Element;
+  menuIcon?: JSX.Element;
+  count?: string;
+  deletedFolder?: (folderId: string) => void;
+  onClick?: () => void;
+  children?: React.ReactNode;
+}
+
+export interface RoutineCardProps {
+  id: string;
+  label: string;
+  exercises: Array<{ name: string }>;
+  icon?: JSX.Element;
+  onDelete?: () => void;
 }

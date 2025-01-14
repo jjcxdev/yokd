@@ -1,17 +1,9 @@
 import React from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 
-interface SaveHeaderProps {
-  title: string;
-  button: string;
-  onSave?: () => void;
-  onCancel?: () => void;
-  isLoading?: boolean;
-  disabled?: boolean;
-  routineName?: string;
-  exerciseCount?: number;
-}
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+
+import { SaveHeaderProps } from "@/types/types";
 
 export default function SaveHeader({
   title,

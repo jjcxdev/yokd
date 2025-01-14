@@ -1,17 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
-interface ExerciseCardProps {
-  title: string;
-  muscleGroup: string;
-  exerciseType: string;
-  isSelected: boolean;
-  onSelect: () => void;
-  disabled?: boolean;
-}
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ExerciseCardProps } from "@/types/types";
 
 export default function ExerciseCard({ ...props }: ExerciseCardProps) {
   const [borderColor, setBorderColor] = useState("border-transparent");

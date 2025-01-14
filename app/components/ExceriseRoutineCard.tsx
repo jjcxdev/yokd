@@ -1,9 +1,16 @@
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { is } from "drizzle-orm";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BsStopwatch } from "react-icons/bs";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdMore } from "react-icons/io";
 import { IoAddCircle } from "react-icons/io5";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,15 +19,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
-import { ExerciseRoutineCardProps, Set, ExerciseData } from "@/types/types";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ExerciseData,ExerciseRoutineCardProps, Set } from "@/types/types";
+
 import { SetsList } from "./SetsList";
-import { is } from "drizzle-orm";
 
 function debounce<T extends (...args: any[]) => void>(
   func: T,

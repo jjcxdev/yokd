@@ -4,9 +4,6 @@ import { useAuth } from "@clerk/nextjs";
 import React, { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-import { createFolder } from "../actions/folders";
 import {
   Card,
   CardContent,
@@ -14,12 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
-interface CreateFolderModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
-}
+import { createFolder } from "../actions/folders";
+import { CreateFolderModalProps } from "@/types/types";
 
 export default function CreateFolderModal({
   isOpen,

@@ -7,15 +7,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { GiWeightLiftingUp } from "react-icons/gi";
 import { IoAddCircle } from "react-icons/io5";
-import { useToast } from "@/hooks/use-toast";
 
 import { postRoutines } from "@/app/actions/routines";
 import ExerciseRoutineCard from "@/app/components/ExceriseRoutineCard";
 import SaveHeader from "@/app/components/SaveHeader";
-import type { Exercise } from "@/lib/db/schema";
-import type { ExerciseInput, ExerciseData } from "@/types/types";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import type { Exercise } from "@/lib/db/schema";
+import type { ExerciseData, RoutineExercise } from "@/types/types";
 
 function RoutineContent() {
   const { user } = useUser();
@@ -124,7 +124,7 @@ function RoutineContent() {
     });
 
     // Transform exerciseData into ExerciseInput array
-    const exerciseInputs: ExerciseInput[] = Object.entries(exerciseData).map(
+    const exerciseInputs: RoutineExercise[] = Object.entries(exerciseData).map(
       ([_, data], index) => {
         // Debug log for sets
         console.log("Raw exercise data:", data);
