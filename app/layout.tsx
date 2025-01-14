@@ -31,10 +31,18 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 
   icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512" },
+    ],
     apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180" },
       { url: "/icons/icon-192x192.png" },
       { url: "/icons/icon-512x512.png" },
     ],
+    shortcut: ["/favicon.ico"],
   },
   title: "YOKD",
   description: "Workout Tracker",
