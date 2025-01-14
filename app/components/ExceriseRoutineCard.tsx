@@ -20,7 +20,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { ExerciseData,ExerciseRoutineCardProps, Set } from "@/types/types";
+import type {
+  ExerciseData,
+  ExerciseRoutineCardProps,
+  Set,
+} from "@/types/types";
 
 import { SetsList } from "./SetsList";
 
@@ -59,8 +63,8 @@ export default function ExceriseRoutineCard({
   const initialSets = useMemo(() => {
     const defaultSet = {
       id: 1,
-      weight: "",
-      reps: "",
+      weight: "-",
+      reps: "-",
       isWarmup: false,
     };
 
@@ -80,13 +84,27 @@ export default function ExceriseRoutineCard({
         return [defaultSet];
       }
 
+      // Function to ensure empty or zero values are replaced with "-"
+      const ensureValue = (value: string | number | undefined): string => {
+        if (
+          value === null ||
+          value === undefined ||
+          value === "" ||
+          value === 0 ||
+          value === "0"
+        ) {
+          return "-";
+        }
+        return value.toString();
+      };
+
       // Create warmup sets array
       const warmupSets = Array(routineExercise.warmupSets)
         .fill(null)
         .map((_, index) => ({
           id: index + 1,
-          weight: warmupWeights[index]?.toString() ?? "0",
-          reps: routineExercise.warmupReps.toString(),
+          weight: ensureValue(warmupWeights[index]),
+          reps: ensureValue(routineExercise.warmupReps),
           isWarmup: true,
         }));
 
@@ -95,8 +113,8 @@ export default function ExceriseRoutineCard({
         .fill(null)
         .map((_, index) => ({
           id: index + 1,
-          weight: workingWeights[index]?.toString() ?? "0",
-          reps: routineExercise.workingReps.toString(),
+          weight: ensureValue(workingWeights[index]),
+          reps: ensureValue(routineExercise.workingReps),
           isWarmup: false,
         }));
 
@@ -174,8 +192,8 @@ export default function ExceriseRoutineCard({
       ...prevSets,
       {
         id: prevSets.length + 1,
-        weight: "",
-        reps: "",
+        weight: "-",
+        reps: "-",
         isWarmup: false,
       },
     ]);
@@ -185,8 +203,8 @@ export default function ExceriseRoutineCard({
       ...prevSets,
       {
         id: prevSets.length + 1,
-        weight: "",
-        reps: "",
+        weight: "-",
+        reps: "-",
         isWarmup: true,
       },
     ]);
