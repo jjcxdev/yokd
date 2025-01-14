@@ -123,72 +123,37 @@ function RoutineContent() {
       description: "Please wait while we save your routine",
     });
 
-    // Transform exerciseData into ExerciseInput array
-    const exerciseInputs: RoutineExercise[] = Object.entries(exerciseData).map(
-      ([_, data], index) => {
-        // Debug log for sets
-        console.log("Raw exercise data:", data);
-
-        const workingSets = data.sets.filter((set) => !set.isWarmup);
-        const warmupSets = data.sets.filter((set) => set.isWarmup);
-
-        console.log("Working sets:", workingSets);
-        console.log("Warmup sets:", warmupSets);
-
-        const workingWeights = workingSets.map(
-          (set) => parseInt(set.weight) || 0,
-        );
-        const warmupWeights = warmupSets.map(
-          (set) => parseInt(set.weight) || 0,
-        );
-        console.log("Working weights:", workingWeights);
-        console.log("Warmup weights:", warmupWeights);
-
-        console.log(
-          "Stringified working weights:",
-          JSON.stringify(workingWeights),
-        );
-        console.log(
-          "Stringified warmup weights:",
-          JSON.stringify(warmupWeights),
-        );
-
+    // Create an array of exercises with their data
+    const exercisesToSave = Object.entries(exerciseData).map(
+      ([exerciseId, data]) => {
+        console.log("Processing exercise data:", data);
         return {
-          id: nanoid(),
-          routineId: "",
-          exerciseId: data.exerciseId,
-          order: index,
-          workingSetWeights: JSON.stringify(workingWeights),
-          warmupSetWeights: JSON.stringify(warmupWeights),
-          workingSets: workingSets.length,
-          workingReps: parseInt(workingSets[0]?.reps || "0"),
-          warmupSets: warmupSets.length,
-          warmupReps: parseInt(warmupSets[0]?.reps || "0"),
-          restTime: 30,
-          notes: data.notes || undefined,
+          exerciseId,
+          notes: data.notes,
+          sets: data.sets, // Keep the original sets array intact
         };
       },
     );
 
+    console.log("Sending exercises to postRoutines:", exercisesToSave);
+
     postRoutines({
       name: routineName,
-      folderId: folderId,
-      exercises: exerciseInputs,
+      folderId,
+      exercises: exercisesToSave,
       userId: user.id,
     })
       .then((result) => {
         if (result.success) {
           toast({
             title: "Routine saved successfully",
-            description: `Created routine "${routineName}" with ${exerciseInputs.length} exercises`,
+            description: `Created routine "${routineName}" with ${exercisesToSave.length} exercises`,
           });
-          // small delay before navigation
           setTimeout(() => {
-            router.refresh(); // Force refresh of the page data
+            router.refresh();
             router.push(`/dashboard`);
           }, 500);
         } else {
-          // Handle error
           throw new Error(result.error);
         }
       })
