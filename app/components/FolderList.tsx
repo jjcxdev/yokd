@@ -30,7 +30,7 @@ export default function FolderList({
 }: FolderListProps) {
   return (
     <div>
-      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <ul className="flex flex-col gap-4">
         {folders.map((folder) => {
           // Filter routines for this specific folder
           const folderRoutines = routines.filter(
@@ -78,7 +78,7 @@ export default function FolderList({
                 folderIcon={<TbLayoutNavbarExpandFilled />}
                 count={folderRoutines.length.toString()}
               >
-                <div className="flex justify-center">
+                <div className="grid grid-cols-1 justify-items-center gap-4 md:grid-cols-2">
                   {folderRoutines.map((routine: RoutineWithExercises) => (
                     <RoutineCard
                       key={routine.id}
