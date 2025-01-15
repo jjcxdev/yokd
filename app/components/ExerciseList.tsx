@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import ActionHeader from "@/app/components/ActionHeader";
 import ExerciseCard from "@/app/components/ExerciseCard";
@@ -22,10 +22,18 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
   const folderId = searchParams.get("folderId");
   const routineName = searchParams.get("routineName");
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(
     new Set(),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Memoized function to filter exercises based on search term
+  const filterdExercises = useMemo(() => {
+    return initialData.filter((exercise) =>
+      exercise.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [initialData, searchTerm]);
 
   function handleExerciseToggle(id: string) {
     if (isSubmitting) return;
@@ -123,21 +131,21 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
 
       {/* Filters & Search */}
 
-      {/* <div className="flex flex-col gap-2 px-4">
-        <ExerciseSearch />
+      <div className="flex flex-col gap-2 px-4">
+        <ExerciseSearch searchTerm={searchTerm} onSearchTerm={setSearchTerm} />
         <ExerciseMuscleFilter />
         <div className="flex items-center gap-2">
           <ExerciseTypeFilter />
           <div className="text-accent">|</div>
           <ExerciseSort />
         </div>
-      </div> */}
+      </div>
 
       {/* Exercise list */}
       <div>
         <div className="p-4">
           <ul className="grid grid-cols-1 md:grid-cols-2">
-            {initialData.map((exercise) => (
+            {filterdExercises.map((exercise) => (
               <li className="" key={exercise.id}>
                 <ExerciseCard
                   title={exercise.name}
