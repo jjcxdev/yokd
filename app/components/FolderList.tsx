@@ -62,7 +62,7 @@ export default function FolderList({
                           }}
                         >
                           <FaRegTrashAlt />
-                          Delete Folder
+                          Delete Program
                         </Button>
                       </div>
                       <DrawerFooter>
