@@ -281,3 +281,19 @@ export async function updateWorkoutData(
     throw error;
   }
 }
+
+// ---------------------------
+// CANCEL WORKOUT SESSION FUNCTION
+// ---------------------------
+export async function cancelWorkoutSession(sessionId: string) {
+  try {
+    await db
+      .update(workoutSessions)
+      .set({ status: "cancelled", completedAt: Date.now() })
+      .where(eq(workoutSessions.id, sessionId));
+    return { success: true };
+  } catch (error) {
+    console.error("Error cancelling workout session:", error);
+    return { success: false, error: "Failed to cancel workout session" };
+  }
+}

@@ -155,6 +155,7 @@ interface BaseSessionProps {
 
 export interface SessionLayoutProps extends BaseSessionProps {
   onFinish: () => void;
+  onCancel: () => void;
   restTime: number;
   isResting: boolean;
   onRestTimerComplete: () => void;
