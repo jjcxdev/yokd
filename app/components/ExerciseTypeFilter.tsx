@@ -1,15 +1,26 @@
-export function ExerciseTypeFilter() {
+export function ExerciseTypeFilter({
+  selectedExerciseType,
+  onExerciseTypeChange,
+}: {
+  selectedExerciseType: string | null;
+  onExerciseTypeChange: (type: string | null) => void;
+}) {
+  const exerciseTypes = ["Free Weight", "Machine", "Cable"];
+
   return (
     <div className="flex flex-wrap items-center gap-1">
-      <button className="rounded-full bg-card px-1 py-[2px] text-xs transition-colors focus:bg-accent focus:text-card">
-        Machine
-      </button>
-      <button className="rounded-full bg-card px-1 py-[2px] text-xs transition-colors focus:bg-accent focus:text-card">
-        Cable
-      </button>
-      <button className="rounded-full bg-card px-1 py-[2px] text-xs transition-colors focus:bg-accent focus:text-card">
-        Free Weight
-      </button>
+      {exerciseTypes.map((type) => (
+        <button
+          type="button"
+          key={type}
+          className={`px-1 py-[2px] text-xs text-dimmed transition-colors ${selectedExerciseType === type ? "rounded-none border-b border-accent" : "border-b border-transparent hover:border-accent/50"}`}
+          onClick={() =>
+            onExerciseTypeChange(selectedExerciseType === type ? null : type)
+          }
+        >
+          {type}
+        </button>
+      ))}
     </div>
   );
 }

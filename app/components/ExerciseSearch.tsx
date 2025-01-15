@@ -1,4 +1,10 @@
-export function ExerciseSearch() {
+export function ExerciseSearch({
+  searchTerm,
+  onSearchTerm,
+}: {
+  searchTerm: string;
+  onSearchTerm: (term: string) => void;
+}) {
   return (
     <>
       <form>
@@ -6,6 +12,8 @@ export function ExerciseSearch() {
           className="rounded-lg border bg-card px-2 py-1 text-accent"
           type="search"
           placeholder="Search"
+          value={searchTerm}
+          onChange={(e) => onSearchTerm(e.target.value)}
         ></input>
       </form>
     </>

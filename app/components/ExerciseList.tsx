@@ -1,16 +1,16 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import ActionHeader from "@/app/components/ActionHeader";
 import ExerciseCard from "@/app/components/ExerciseCard";
 import { useToast } from "@/hooks/use-toast";
-import type { Exercise } from "@/types/types";
+
+import { FREE_WEIGHT_TYPES } from "@/types/types";
 
 import { ExerciseMuscleFilter } from "./ExerciseMuscleFilter";
 import { ExerciseSearch } from "./ExerciseSearch";
-import { ExerciseSort } from "./ExerciseSort";
 import { ExerciseTypeFilter } from "./ExerciseTypeFilter";
 import { ExerciseListProps } from "@/types/types";
 
@@ -22,10 +22,38 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
   const folderId = searchParams.get("folderId");
   const routineName = searchParams.get("routineName");
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedExerciseType, setSelectedExerciseType] = useState<
+    string | null
+  >(null);
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(
+    null,
+  );
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(
     new Set(),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Memoized function to filter exercises based on search term
+  const filteredExercises = useMemo(() => {
+    return initialData.filter((exercise) => {
+      const matchesSearch = exercise.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesMuscleGroup =
+        selectedMuscleGroup === null ||
+        exercise.muscleGroup === selectedMuscleGroup;
+      const matchesExerciseType =
+        selectedExerciseType === null ||
+        (selectedExerciseType === "Free Weight"
+          ? FREE_WEIGHT_TYPES.some(
+              (type) => type.toLowerCase() === exercise.type,
+            )
+          : exercise.type === selectedExerciseType.toLowerCase());
+
+      return matchesSearch && matchesMuscleGroup && matchesExerciseType;
+    });
+  }, [initialData, searchTerm, selectedMuscleGroup, selectedExerciseType]);
 
   function handleExerciseToggle(id: string) {
     if (isSubmitting) return;
@@ -123,21 +151,26 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
 
       {/* Filters & Search */}
 
-      {/* <div className="flex flex-col gap-2 px-4">
-        <ExerciseSearch />
-        <ExerciseMuscleFilter />
-        <div className="flex items-center gap-2">
-          <ExerciseTypeFilter />
-          <div className="text-accent">|</div>
-          <ExerciseSort />
+      <div className="flex w-full flex-col items-center gap-2 px-4">
+        <ExerciseSearch searchTerm={searchTerm} onSearchTerm={setSearchTerm} />
+
+        <div className="flex w-full flex-col items-center gap-2">
+          <ExerciseMuscleFilter
+            selectedMuscleGroup={selectedMuscleGroup}
+            onMuscleGroupChange={setSelectedMuscleGroup}
+          />
+          <ExerciseTypeFilter
+            selectedExerciseType={selectedExerciseType}
+            onExerciseTypeChange={setSelectedExerciseType}
+          />
         </div>
-      </div> */}
+      </div>
 
       {/* Exercise list */}
       <div>
         <div className="p-4">
           <ul className="grid grid-cols-1 md:grid-cols-2">
-            {initialData.map((exercise) => (
+            {filteredExercises.map((exercise) => (
               <li className="" key={exercise.id}>
                 <ExerciseCard
                   title={exercise.name}
