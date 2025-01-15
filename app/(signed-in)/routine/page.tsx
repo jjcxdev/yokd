@@ -35,44 +35,82 @@ function RoutineContent() {
   >({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Load exercises from localStorage on mount if they exist
   useEffect(() => {
-    // When we recive new selected exercises, add them to our existing exercises
-    if (selectedExercisesParam) {
+    try {
+      const storedExercises = localStorage.getItem("routineExercises");
+      if (storedExercises) {
+        const parsedExercises = JSON.parse(storedExercises);
+        setExercises(parsedExercises);
+      }
+    } catch (error) {
+      console.error("Error loading exercises from local storage:", error);
+    }
+  }, []);
+
+  // Handle new selected exercises
+  useEffect(() => {
+    if (!selectedExercisesParam) return;
+
+    try {
+      const newExercises = JSON.parse(
+        decodeURIComponent(selectedExercisesParam),
+      );
+
+      // Get exisiting exercises from localStorage first
+      let existingExercises: Exercise[] = [];
       try {
-        const newExercises = JSON.parse(
-          decodeURIComponent(selectedExercisesParam),
-        );
-        setExercises((prevExercises) => {
-          // Create a set of existing exercise IDs to avoid duplicates
-          const existingIds = new Set(prevExercises.map((e) => e.id));
-
-          // Only add exercises that don't already exist
-          const uniqueNewExercises = newExercises.filter(
-            (exercise: Exercise) => !existingIds.has(exercise.id),
-          );
-
-          return [...prevExercises, ...uniqueNewExercises];
-        });
-
-        // Clean up URL after processing but preserve Routine Name
-        const currentRoutineName = routineName || routineNameParam;
-        if (currentRoutineName) {
-          router.replace(
-            `/routine?folderId=${folderId}&routineName=${encodeURIComponent(currentRoutineName)}`,
-          );
-        } else {
-          router.replace(`/routine?folderId=${folderId}`);
+        const storedExercises = localStorage.getItem("routineExercises");
+        if (storedExercises) {
+          existingExercises = JSON.parse(storedExercises);
         }
       } catch (error) {
-        console.error("Error parsing selected exercises:", error);
-        toast({
-          variant: "destructive",
-          title: "Error adding exercises",
-          description: "Please try again or refresh the page",
-        });
+        console.error("Error loading exercises from local storage:", error);
       }
+
+      // Create a set of existing exercise IDs to avoid duplicates
+      const existingIds = new Set(existingExercises.map((e) => e.id));
+
+      // Filter out duplicates from new exercises
+      const uniqueNewExercises = newExercises.filter(
+        (exercise: Exercise) => !existingIds.has(exercise.id),
+      );
+
+      // Comgine existing and new exercises
+      const combinedExercises = [...existingExercises, ...uniqueNewExercises];
+
+      // Updatda state and localStorage
+      setExercises(combinedExercises);
+      localStorage.setItem(
+        "routineExercises",
+        JSON.stringify(combinedExercises),
+      );
+
+      // Clean up URL after processing
+      const currentRoutineName = routineName || routineNameParam;
+      if (currentRoutineName) {
+        router.replace(
+          `/routine?folderId=${folderId}&routineName=${encodeURIComponent(currentRoutineName)}`,
+        );
+      } else {
+        router.replace(`/routine?folderId=${folderId}`);
+      }
+    } catch (error) {
+      console.error("Error parsing selected exercises:", error);
+      toast({
+        variant: "destructive",
+        title: "Error adding exercises",
+        description: "Please try again or refresh the page",
+      });
     }
-  }, [selectedExercisesParam, router, folderId, routineName, routineNameParam]);
+  }, [
+    selectedExercisesParam,
+    router,
+    folderId,
+    routineName,
+    routineNameParam,
+    toast,
+  ]);
 
   function handleExerciseUpdate(exerciseId: string, data: ExerciseData) {
     setExerciseData((prev) => {
@@ -169,9 +207,20 @@ function RoutineContent() {
       .finally(() => {
         setIsLoading(false);
       });
+
+    try {
+      localStorage.removeItem("routineExercises");
+    } catch (error) {
+      console.error("Error removing exercises from local storage:", error);
+    }
   }
 
   function handleCancel() {
+    try {
+      localStorage.removeItem("routineExercises");
+    } catch (error) {
+      console.error("Error removing exercises from local storage:", error);
+    }
     router.push(`/dashboard`);
   }
 
@@ -243,7 +292,7 @@ function RoutineContent() {
       )}
 
       <div className="flex w-full justify-center">
-        <div className="flex w-full max-w-72 justify-center pb-8">
+        <div className="flex w-full max-w-72 justify-center pb-32">
           <Button variant="outline" onClick={handleAddExercise}>
             <IoAddCircle />
             Add exercise
