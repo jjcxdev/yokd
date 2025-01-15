@@ -3,7 +3,7 @@ export function ExerciseSearch({
   onSearchTerm,
 }: {
   searchTerm: string;
-  onSearchTerm: (searchTerm: string) => void;
+  onSearchTerm: (term: string) => void;
 }) {
   return (
     <>

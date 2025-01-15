@@ -23,17 +23,27 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
   const routineName = searchParams.get("routineName");
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(
+    null,
+  );
   const [selectedExercises, setSelectedExercises] = useState<Set<string>>(
     new Set(),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Memoized function to filter exercises based on search term
-  const filterdExercises = useMemo(() => {
-    return initialData.filter((exercise) =>
-      exercise.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [initialData, searchTerm]);
+  const filteredExercises = useMemo(() => {
+    return initialData.filter((exercise) => {
+      const matchesSearch = exercise.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesMuscleGroup =
+        selectedMuscleGroup === null ||
+        exercise.muscleGroup === selectedMuscleGroup;
+
+      return matchesSearch && matchesMuscleGroup;
+    });
+  }, [initialData, searchTerm, selectedMuscleGroup]);
 
   function handleExerciseToggle(id: string) {
     if (isSubmitting) return;
@@ -131,13 +141,15 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
 
       {/* Filters & Search */}
 
-      <div className="flex flex-col gap-2 px-4">
+      <div className="flex w-full flex-col items-center gap-2 px-4">
         <ExerciseSearch searchTerm={searchTerm} onSearchTerm={setSearchTerm} />
-        <ExerciseMuscleFilter />
-        <div className="flex items-center gap-2">
+
+        <div className="flex w-full flex-col items-center gap-2">
+          <ExerciseMuscleFilter
+            selectedMuscleGroup={selectedMuscleGroup}
+            onMuscleGroupChange={setSelectedMuscleGroup}
+          />
           <ExerciseTypeFilter />
-          <div className="text-accent">|</div>
-          <ExerciseSort />
         </div>
       </div>
 
@@ -145,7 +157,7 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
       <div>
         <div className="p-4">
           <ul className="grid grid-cols-1 md:grid-cols-2">
-            {filterdExercises.map((exercise) => (
+            {filteredExercises.map((exercise) => (
               <li className="" key={exercise.id}>
                 <ExerciseCard
                   title={exercise.name}
