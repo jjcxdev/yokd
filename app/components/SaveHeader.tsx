@@ -41,20 +41,27 @@ export default function SaveHeader({
 
   return (
     <div className="sticky z-50 flex w-full items-baseline justify-between bg-card p-4 md:rounded-t-lg">
-      <div className="flex pt-8 text-sm text-accent">
-        <Button
-          onClick={onCancel}
-          disabled={disabled || isLoading}
-          variant="ghost"
-        >
-          Cancel
-        </Button>
+      <div className="flex-1 pt-8">
+        <div>
+          <Button
+            className="text-sm text-accent"
+            onClick={onCancel}
+            disabled={disabled || isLoading}
+            variant="ghost"
+          >
+            Cancel
+          </Button>
+        </div>
       </div>
-      <div className="flex w-full justify-center">{title}</div>
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={disabled || isLoading}>
-          Save
-        </Button>
+      <div className="flex-1 whitespace-nowrap">
+        <div className="flex w-full justify-center">{title}</div>
+      </div>
+      <div className="flex-1 justify-end">
+        <div className="flex w-full justify-end">
+          <Button onClick={handleSave} disabled={disabled || isLoading}>
+            Save
+          </Button>
+        </div>
       </div>
     </div>
   );
