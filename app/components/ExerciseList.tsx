@@ -94,10 +94,14 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
         selectedExercises.has(exercise.id),
       );
 
+      console.log("Selected exercises:", selectedExercisesData);
+
       // Convert to URL-safe string
       const exercisesParam = encodeURIComponent(
         JSON.stringify(selectedExercisesData),
       );
+
+      console.log("Encoded exercises:", exercisesParam);
 
       // Build URL with all parameters
       let url = `/routine?folderId=${folderId}&selectedExercises=${exercisesParam}`;
