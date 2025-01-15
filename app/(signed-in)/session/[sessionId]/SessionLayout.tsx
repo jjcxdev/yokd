@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SessionLayoutProps } from "@/types/types";
 
 export default function SessionLayout({
+  onCancel,
   onFinish,
   restTime,
   isResting,
@@ -122,26 +123,34 @@ export default function SessionLayout({
   return (
     <div className="flex min-h-screen w-full max-w-3xl flex-col bg-background">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card p-4">
-        <div className="flex w-full items-center justify-between">
-          {/* Duration Time */}
-          <div className="min-w-20">
-            <div className="text-sm text-dimmed">Duration</div>
-            <div className="text-accent">{formatTime(elapsedTime)}</div>
-          </div>
+        <div className="flex w-full flex-col items-center gap-2">
+          <div className="flex w-full items-center justify-between">
+            {/* Duration Time */}
+            <div className="min-w-20">
+              <div className="text-sm text-dimmed">Duration</div>
+              <div className="text-accent">{formatTime(elapsedTime)}</div>
+            </div>
 
-          {/* Rest Time */}
-          <div className="min-w-20 text-center">
-            <div className="text-sm text-dimmed">Rest Time</div>
-            <div className="text-2xl font-bold text-accent">
-              {isResting ? `${currentRestTime}s` : `${restTime}s`}
+            {/* Rest Time */}
+            <div className="min-w-20 text-center">
+              <div className="text-sm text-dimmed">Rest Time</div>
+              <div className="text-2xl font-bold text-accent">
+                {isResting ? `${currentRestTime}s` : `${restTime}s`}
+              </div>
+            </div>
+
+            {/* Finish Button */}
+
+            <div className="flex flex-col justify-center">
+              <Button onClick={onFinish}>Finish</Button>
             </div>
           </div>
-
-          {/* Finish Button */}
-
-          <div className="">
-            <Button onClick={onFinish}>Finish</Button>
-          </div>
+          <button
+            onClick={onCancel}
+            className="w-full rounded-md bg-destructive text-xs text-destructive-foreground"
+          >
+            Cancel Workout
+          </button>
         </div>
       </header>
       <main className="flex w-full justify-center p-4">{children}</main>

@@ -2,7 +2,10 @@
 import { useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 
-import { completeWorkoutSession } from "@/app/actions/workout";
+import {
+  completeWorkoutSession,
+  cancelWorkoutSession,
+} from "@/app/actions/workout";
 
 import { SessionContext } from "./SessionContext";
 import SessionLayout from "./SessionLayout";
@@ -15,6 +18,24 @@ export default function SessionWrapper({
   const router = useRouter();
   const [restTime, setRestTime] = useState(30);
   const [isResting, setIsResting] = useState(false);
+  const [isCancelled, setIsCancelled] = useState(false);
+
+  const handleCancel = useCallback(() => {
+    if (window.confirm("Are you sure you want to cancel the session?")) {
+      cancelWorkoutSession(sessionId)
+        .then((result) => {
+          if (result.success) {
+            router.push("/dashboard");
+          } else {
+            alert("Failed to cancel workout session. Please try again.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error cancelling workout session:", error);
+          alert("Failed to cancel workout session. Please try again.");
+        });
+    }
+  }, [router, sessionId]);
 
   const handleFinish = useCallback(() => {
     if (window.confirm("Are you sure you want to finish the session?")) {
@@ -44,6 +65,7 @@ export default function SessionWrapper({
         onFinish={handleFinish}
         restTime={restTime}
         isResting={isResting}
+        onCancel={handleCancel}
         onRestTimerComplete={handleRestComplete}
       >
         {React.Children.map(children, (child) =>
