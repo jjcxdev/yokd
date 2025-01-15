@@ -29,7 +29,7 @@ export default function ActionHeader({
 
   return (
     <div className="flex w-full items-baseline justify-between bg-card p-4 md:rounded-t-lg">
-      <div className="flex pt-8 text-sm text-accent">
+      <div className="flex w-full justify-start pt-8">
         <Button
           variant="ghost"
           disabled={disabled || isLoading}
@@ -38,7 +38,7 @@ export default function ActionHeader({
           Cancel
         </Button>
       </div>
-      <div className="w-40">
+      <div className="flex w-full justify-end">
         <Button disabled={disabled || isLoading} onClick={handleAction}>
           {getButtonText()}
         </Button>
