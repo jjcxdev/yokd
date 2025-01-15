@@ -1,3 +1,4 @@
+import exp from "constants";
 import { ReactNode } from "react";
 
 // -------------------
@@ -6,6 +7,13 @@ import { ReactNode } from "react";
 export type ValidType = "cable" | "machine" | "dumbbell";
 export type RoutineStatus = "active" | "archived";
 export type SessionStatus = "active" | "completed" | "cancelled";
+export const FREE_WEIGHT_TYPES = [
+  "dumbbell",
+  "barbell",
+  "kettlebell",
+  "plate",
+  "bodyweight",
+];
 
 interface Timestamps {
   createdAt: number;

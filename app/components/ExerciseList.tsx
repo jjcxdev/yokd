@@ -6,11 +6,11 @@ import { useMemo, useState } from "react";
 import ActionHeader from "@/app/components/ActionHeader";
 import ExerciseCard from "@/app/components/ExerciseCard";
 import { useToast } from "@/hooks/use-toast";
-import type { Exercise } from "@/types/types";
+
+import { FREE_WEIGHT_TYPES } from "@/types/types";
 
 import { ExerciseMuscleFilter } from "./ExerciseMuscleFilter";
 import { ExerciseSearch } from "./ExerciseSearch";
-import { ExerciseSort } from "./ExerciseSort";
 import { ExerciseTypeFilter } from "./ExerciseTypeFilter";
 import { ExerciseListProps } from "@/types/types";
 
@@ -23,6 +23,9 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
   const routineName = searchParams.get("routineName");
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedExerciseType, setSelectedExerciseType] = useState<
+    string | null
+  >(null);
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string | null>(
     null,
   );
@@ -40,10 +43,17 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
       const matchesMuscleGroup =
         selectedMuscleGroup === null ||
         exercise.muscleGroup === selectedMuscleGroup;
+      const matchesExerciseType =
+        selectedExerciseType === null ||
+        (selectedExerciseType === "Free Weight"
+          ? FREE_WEIGHT_TYPES.some(
+              (type) => type.toLowerCase() === exercise.type,
+            )
+          : exercise.type === selectedExerciseType.toLowerCase());
 
-      return matchesSearch && matchesMuscleGroup;
+      return matchesSearch && matchesMuscleGroup && matchesExerciseType;
     });
-  }, [initialData, searchTerm, selectedMuscleGroup]);
+  }, [initialData, searchTerm, selectedMuscleGroup, selectedExerciseType]);
 
   function handleExerciseToggle(id: string) {
     if (isSubmitting) return;
@@ -149,7 +159,10 @@ export default function ExerciseList({ initialData }: ExerciseListProps) {
             selectedMuscleGroup={selectedMuscleGroup}
             onMuscleGroupChange={setSelectedMuscleGroup}
           />
-          <ExerciseTypeFilter />
+          <ExerciseTypeFilter
+            selectedExerciseType={selectedExerciseType}
+            onExerciseTypeChange={setSelectedExerciseType}
+          />
         </div>
       </div>
 
