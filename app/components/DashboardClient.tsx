@@ -38,10 +38,7 @@ export default function Dashboard({
 
   return (
     <div className="container min-h-full gap-4">
-      <header className="sticky top-0 z-10 hidden w-full border-b-[1px] border-accent/30 md:flex">
-        <Header />
-      </header>
-      <div className="flex h-full flex-col gap-8 p-4">
+      <div className="container flex h-full flex-col gap-8 p-4">
         <Greeting />
         {hasContent ? (
           <>

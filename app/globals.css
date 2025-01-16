@@ -35,6 +35,14 @@
     --input: 0 0% 53%; /* #868686 */
     --ring: 65 100% 49%; /* #E7FC00 */
     --radius: 0.5rem;
+    --sidebar-background: 260 10% 6%; /* #0E0D10 */
+    --sidebar-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-primary: 65 100% 49%; /* #E7FC00 */
+    --sidebar-primary-foreground: 260 10% 6%; /* #0E0D10 */
+    --sidebar-accent: 65 100% 49%; /* #E7FC00 */
+    --sidebar-accent-foreground: 260 10% 6%; /* #0E0D10 */
+    --sidebar-border: 264 9% 22%; /* #38343E */
+    --sidebar-ring: 65 100% 49%; /* #E7FC00 */
   }
 }
 
