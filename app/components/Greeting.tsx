@@ -9,7 +9,7 @@ export function Greeting() {
   return (
     <div className="flex flex-col justify-between">
       <Image
-        className="rounded-sm"
+        className="rounded-sm md:hidden"
         src={YokdLogo}
         alt="YOKD Logo"
         width={40}
