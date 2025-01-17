@@ -55,7 +55,7 @@ export default function Dashboard({
                   />
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-2 md:flex-row">
+              <div className="flex items-center justify-center gap-2 pt-8 md:flex-row">
                 <Button
                   className="text-background"
                   onClick={() => setIsCreateModalOpen(true)}
