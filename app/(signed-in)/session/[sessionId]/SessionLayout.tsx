@@ -121,7 +121,7 @@ export default function SessionLayout({
   }, [restTime, currentRestTime, isResting]);
 
   return (
-    <div className="flex min-h-screen w-full max-w-3xl flex-col bg-background">
+    <div className="flex min-h-screen w-full max-w-5xl flex-col bg-background">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card p-4">
         <div className="flex w-full flex-col items-center gap-2">
           <div className="flex w-full items-center justify-between">

@@ -37,8 +37,8 @@ export default function Dashboard({
   const hasContent = initialFolders.length > 0 || initialRoutines.length > 0;
 
   return (
-    <div className="container min-h-full gap-4">
-      <div className="container flex h-full flex-col gap-8 p-4">
+    <div className="flex min-h-full w-full justify-center gap-4">
+      <div className="flex h-full w-full flex-col justify-center gap-8 p-4">
         <Greeting />
         {hasContent ? (
           <>

@@ -17,9 +17,13 @@ export default async function Dashboard() {
   }
 
   return (
-    <DashboardClient
-      initialFolders={initialFolders}
-      initialRoutines={initialRoutines}
-    />
+    <main className="flex min-h-full w-full justify-center">
+      <div className="flex h-full w-full max-w-5xl gap-4">
+        <DashboardClient
+          initialFolders={initialFolders}
+          initialRoutines={initialRoutines}
+        />
+      </div>
+    </main>
   );
 }

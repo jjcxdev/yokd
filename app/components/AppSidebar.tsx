@@ -58,17 +58,14 @@ const items = [
 const footer = [
   {
     name: "Privacy",
-    icon: Cookie,
     url: "/privacy",
   },
   {
     name: "About",
-    icon: Info,
     url: "/about",
   },
   {
     name: "Contact",
-    icon: Send,
     url: "mailto:j@jjcx.dev",
   },
 ];
@@ -110,9 +107,8 @@ export function AppSidebar() {
             <SidebarMenu>
               {footer.map((footer) => (
                 <SidebarMenuItem key={footer.name}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton size="sm" className="" asChild>
                     <a href={footer.url}>
-                      <footer.icon />
                       <span>{footer.name}</span>
                     </a>
                   </SidebarMenuButton>

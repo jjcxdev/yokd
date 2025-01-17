@@ -225,78 +225,83 @@ function RoutineContent() {
   }
 
   return (
-    <div className="pb-22 flex min-h-full w-full max-w-3xl flex-col gap-4 bg-background">
-      <div className="sticky top-0 z-10 flex flex-col">
-        <SaveHeader
-          title={"Create Routine"}
-          button={"Cancel"}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          isLoading={isLoading}
-          disabled={isLoading}
-          routineName={routineName}
-          exerciseCount={exercises.length}
-        />
+    <div className="pb-22 flex min-h-full w-full flex-col items-center gap-4">
+      <div className="h-full w-full max-w-5xl bg-background">
+        <div className="sticky top-0 z-10 flex flex-col">
+          <SaveHeader
+            title={"Create Routine"}
+            button={"Cancel"}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            isLoading={isLoading}
+            disabled={isLoading}
+            routineName={routineName}
+            exerciseCount={exercises.length}
+          />
 
-        <div className="bg-background">
-          <form className="p-2">
-            <Input
-              className="h-10 w-full border-b-2 border-accent/20 bg-background px-4"
-              name="routine"
-              type="text"
-              placeholder="Enter Routine Name"
-              value={routineName}
-              onChange={handleRoutineNameChange}
-            />
-          </form>
-        </div>
-      </div>
-
-      {/* Exercise section */}
-
-      {exercises.length === 0 ? (
-        <div className="flex w-full flex-col justify-center p-4">
-          <div className="flex justify-center p-4 text-6xl text-dimmed">
-            <GiWeightLiftingUp />
-          </div>
-          <p className="flex justify-center text-dimmed">
-            Add exercises to your routine
-          </p>
-        </div>
-      ) : (
-        <div className="flex flex-col p-4">
-          {exercises.map((exercise) => (
-            <div className="flex w-full justify-center pb-2" key={exercise.id}>
-              <ExerciseRoutineCard
-                exercise={exercise}
-                routineExercise={{
-                  id: "",
-                  routineId: "",
-                  exerciseId: exercise.id,
-                  order: 0,
-                  workingSetWeights: "[]",
-                  warmupSetWeights: "[]",
-                  warmupSets: 0,
-                  warmupReps: 0,
-                  workingSets: 1,
-                  workingReps: 0,
-                  restTime: 0,
-                  notes: "",
-                }}
-                onUpdate={(data) => memoizedUpdate(exercise.id, data)}
-                onRestTimeTrigger={() => {}}
+          <div className="bg-background">
+            <form className="p-2">
+              <Input
+                className="h-10 w-full border-b-2 border-accent/20 bg-background px-4"
+                name="routine"
+                type="text"
+                placeholder="Enter Routine Name"
+                value={routineName}
+                onChange={handleRoutineNameChange}
               />
-            </div>
-          ))}
+            </form>
+          </div>
         </div>
-      )}
 
-      <div className="flex w-full justify-center">
-        <div className="flex w-full max-w-72 justify-center pb-32">
-          <Button variant="outline" onClick={handleAddExercise}>
-            <IoAddCircle />
-            Add exercise
-          </Button>
+        {/* Exercise section */}
+
+        {exercises.length === 0 ? (
+          <div className="flex w-full flex-col justify-center p-4">
+            <div className="flex justify-center p-4 text-6xl text-dimmed">
+              <GiWeightLiftingUp />
+            </div>
+            <p className="flex justify-center text-dimmed">
+              Add exercises to your routine
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col p-4">
+            {exercises.map((exercise) => (
+              <div
+                className="flex w-full justify-center pb-2"
+                key={exercise.id}
+              >
+                <ExerciseRoutineCard
+                  exercise={exercise}
+                  routineExercise={{
+                    id: "",
+                    routineId: "",
+                    exerciseId: exercise.id,
+                    order: 0,
+                    workingSetWeights: "[]",
+                    warmupSetWeights: "[]",
+                    warmupSets: 0,
+                    warmupReps: 0,
+                    workingSets: 1,
+                    workingReps: 0,
+                    restTime: 0,
+                    notes: "",
+                  }}
+                  onUpdate={(data) => memoizedUpdate(exercise.id, data)}
+                  onRestTimeTrigger={() => {}}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex w-full justify-center">
+          <div className="flex w-full max-w-72 justify-center pb-32">
+            <Button variant="outline" onClick={handleAddExercise}>
+              <IoAddCircle />
+              Add exercise
+            </Button>
+          </div>
         </div>
       </div>
     </div>
