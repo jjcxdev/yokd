@@ -10,15 +10,15 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex min-h-screen w-full justify-center bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-background to-card text-white md:px-10">
+    <section className="flex min-h-screen w-full justify-center bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-background to-card text-white lg:px-10">
       <SidebarProvider>
         <AppSidebar />
-        <div className="hidden md:flex md:h-screen md:items-center">
-          <SidebarTrigger />
+        <div className="hidden pt-8 lg:flex lg:h-screen">
+          <SidebarTrigger className="text-accent" />
         </div>
         {children}
         {/* Mobile Footer section */}
-        <footer className="fixed bottom-0 w-full bg-background p-4 text-dimmed md:hidden">
+        <footer className="fixed bottom-0 w-full bg-background p-4 text-dimmed lg:hidden">
           <MobileFooter />
         </footer>
       </SidebarProvider>

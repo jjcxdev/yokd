@@ -35,9 +35,11 @@ export default async function SessionPage({
     };
 
     return (
-      <SessionWrapper sessionId={sessionData.sessionId}>
-        <SessionClient sessionData={sessionData} />
-      </SessionWrapper>
+      <div className="flex w-full justify-center">
+        <SessionWrapper sessionId={sessionData.sessionId}>
+          <SessionClient sessionData={sessionData} />
+        </SessionWrapper>
+      </div>
     );
   } catch (error) {
     console.error("Error in session page:", error);
