@@ -14,7 +14,7 @@ This project was developed as the final project for Harvard University's CS50 In
 
 ## Project Overview
 
-YOKD is a comprehensive web application designed to streamline workout tracking and management. Developed as a solution to the challenge of maintaining consistent workout logs, the app provides an intuitive platform for fitness enthusiasts to log, track, and optimize their workout routines.
+YOKD is what happens when a developer who lifts gets tired of overcomplicated fitness apps. Built for lifters by someone who actually lifts, it strips away the bloat to focus on what matters: tracking your sets, seeing your progress, and getting stronger. No gimmicks, no 'revolutionary AI workout plans' - just a clean, fast way to log your lifts and track your gains.
 
 ## Key Features
 
