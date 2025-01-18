@@ -54,3 +54,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+::selection {
+  background: #e7fc00;
+  color: #0e0d10;
+}
+
+a::selection {
+  color: orangered;
+  font-weight: bold;
+}
