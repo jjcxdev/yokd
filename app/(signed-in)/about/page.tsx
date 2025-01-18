@@ -29,7 +29,7 @@ YOKD is proudly built in Canada 🇨🇦
 
 export default function About() {
   return (
-    <div className="flex w-full justify-center">
+    <div className="flex w-full justify-center px-2 pb-20">
       <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto w-full max-w-5xl">
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={MDXComponents}>
           {markdownContent}
