@@ -107,7 +107,7 @@ We retain your personal information for as long as necessary to provide our serv
 
 export default function Privacy() {
   return (
-    <div className="flex w-full justify-center">
+    <div className="flex w-full justify-center px-2 pb-20">
       <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl mx-auto w-full max-w-5xl">
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={MDXComponents}>
           {markdownContent}
