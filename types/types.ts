@@ -63,8 +63,8 @@ export interface RoutineExercise {
   workingSetWeights: string;
   warmupSetWeights: string;
   warmupSets: number;
-  warmupReps: number;
-  workingReps: number;
+  warmupReps: number | null;
+  workingReps: number | null;
   workingSets: number;
   restTime: number;
   notes?: string | null;
