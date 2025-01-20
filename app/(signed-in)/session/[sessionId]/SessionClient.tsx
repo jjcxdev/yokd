@@ -56,8 +56,14 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
             const warmupSets = Array(routineExercise.warmupSets)
               .fill(null)
               .map((_, index) => ({
-                weight: warmupWeights[index]?.toString() ?? "",
-                reps: routineExercise.warmupReps.toString(),
+                weight:
+                  warmupWeights[index] === null
+                    ? ""
+                    : (warmupWeights[index]?.toString() ?? ""),
+                reps:
+                  routineExercise.warmupReps === null
+                    ? ""
+                    : routineExercise.warmupReps.toString(),
                 isWarmup: true,
               }));
 
@@ -65,8 +71,14 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
             const workingSets = Array(routineExercise.workingSets)
               .fill(null)
               .map((_, index) => ({
-                weight: workingWeights[index]?.toString() ?? "",
-                reps: routineExercise.workingReps.toString(),
+                weight:
+                  workingWeights[index] === null
+                    ? ""
+                    : (workingWeights[index]?.toString() ?? ""),
+                reps:
+                  routineExercise.workingReps === null
+                    ? ""
+                    : routineExercise.workingReps.toString(),
                 isWarmup: false,
               }));
 
@@ -116,32 +128,50 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
 
   const handleExerciseUpdate = useCallback(
     (exerciseId: string, data: { notes: string; sets: Array<ExerciseSet> }) => {
-      console.log(`Exercise update for ${exerciseId}`, {
-        initialRender: initialRenderRef.current,
-        data,
-      });
-
-      // Skip if this is not the initial render
-      if (!initialRenderRef.current) {
-        console.log("Processing update - not initial render");
-      } else {
+      if (initialRenderRef.current) {
         console.log("Skipping update - initial render");
         initialRenderRef.current = false;
         return;
       }
+      console.log("Raw incoming sets data:", data.sets);
+
+      console.log("Processing exercise update - not initial render");
+
+      // Add IDs back to sets before storing
+      const setsWithIds = data.sets.map((set, index) => {
+        const newId = set.isWarmup ? index + 1 : index + 100;
+        console.log(`Mapping set ${index}:`, { set, newId });
+        return {
+          ...set,
+          id: newId,
+        };
+      });
+
+      console.log("Mapped sets with IDs:", setsWithIds);
 
       const dataToSet = {
         notes: data.notes,
-        sets: JSON.stringify(data.sets),
+        sets: JSON.stringify(setsWithIds),
       };
 
       // Parse both current and new data for comparison
       const currentData = exerciseData[exerciseId];
-      const currentSets = JSON.parse(currentData.sets);
-      const newSets = data.sets;
+      const currentSets = JSON.parse(currentData.sets) as Array<
+        ExerciseSet & { id: number }
+      >;
+
+      // Compare data excluding IDs
+      const setsAreEqual = isEqual(
+        currentSets.map((s: ExerciseSet & { id: number }) => ({
+          weight: s.weight,
+          reps: s.reps,
+          isWarmup: s.isWarmup,
+        })),
+        data.sets,
+      );
 
       // Only update state if data has changed
-      if (currentData.notes === data.notes && isEqual(currentSets, newSets)) {
+      if (currentData.notes === data.notes && setsAreEqual) {
         console.log("Skipping update - data is the same");
         return;
       }

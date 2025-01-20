@@ -82,9 +82,9 @@ export const routineExercises = sqliteTable("routine_exercises", {
   workingSetWeights: text("working_set_weights").notNull().default("[]"),
   warmupSetWeights: text("warmup_set_weights").notNull().default("[]"),
   warmupSets: integer("warmup_sets").notNull().default(0),
-  warmupReps: integer("warmup_reps").notNull().default(0),
+  warmupReps: integer("warmup_reps"),
   workingSets: integer("working_sets").notNull().default(0),
-  workingReps: integer("working_reps").notNull().default(0),
+  workingReps: integer("working_reps"),
   restTime: integer("rest_time").notNull().default(60),
   notes: text("notes"),
 });

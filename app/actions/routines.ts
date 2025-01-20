@@ -45,21 +45,27 @@ export async function postRoutines({
       console.log("Working sets:", workingSets);
       console.log("Warmup sets:", warmupSets);
 
+      const handleEmptyValue = (value: string) => {
+        if (!value || value === "") return null;
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? null : parsed;
+      };
+
       const transformed = {
         id: nanoid(),
         routineId,
         exerciseId: exercise.exerciseId,
         order: index,
         workingSetWeights: JSON.stringify(
-          workingSets.map((set) => parseFloat(set.weight) || 0),
+          workingSets.map((set) => parseFloat(set.weight)),
         ),
         warmupSetWeights: JSON.stringify(
-          warmupSets.map((set) => parseFloat(set.weight) || 0),
+          warmupSets.map((set) => parseFloat(set.weight)),
         ),
         warmupSets: warmupSets.length,
-        warmupReps: parseInt(warmupSets[0]?.reps || "0"),
+        warmupReps: handleEmptyValue(warmupSets[0]?.reps) ?? null,
         workingSets: workingSets.length,
-        workingReps: parseInt(workingSets[0]?.reps || "0"),
+        workingReps: handleEmptyValue(workingSets[0]?.reps) ?? null,
         restTime: 30,
         notes: exercise.notes || null,
       };
