@@ -28,11 +28,13 @@ export function SetsList({
             placeholder="-"
             value={set.weight}
             onChange={(e) => {
+              console.log("Input change", e.target.value);
               const value = e.target.value;
               if (/^\d*(?:\.\d*)?$/.test(value)) {
                 updateSet(set.id, "weight", value);
               }
             }}
+            data-set-id={set.id}
           />
         </form>
       </div>
@@ -44,11 +46,13 @@ export function SetsList({
             placeholder="-"
             value={set.reps}
             onChange={(e) => {
+              console.log("Input change", e.target.value);
               const value = e.target.value;
               if (/^\d*(?:\.\d*)?$/.test(value)) {
                 updateSet(set.id, "reps", value);
               }
             }}
+            data-set-id={set.id}
           />
         </form>
       </div>

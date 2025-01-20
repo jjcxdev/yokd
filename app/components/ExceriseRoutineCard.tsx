@@ -27,6 +27,7 @@ import type {
 } from "@/types/types";
 
 import { SetsList } from "./SetsList";
+import { zip } from "lodash";
 
 function debounce<T extends (...args: any[]) => void>(
   func: T,
@@ -70,53 +71,60 @@ export default function ExceriseRoutineCard({
 
     try {
       // Try tp parse working weights
-      let workingWeights = [];
-      let warmupWeights = [];
+      let workingWeights: (number | null)[] = [];
+      let warmupWeights: (number | null)[] = [];
       try {
         workingWeights = JSON.parse(routineExercise.workingSetWeights);
         warmupWeights = JSON.parse(routineExercise.warmupSetWeights);
       } catch {
+        console.warn("Failed to parse wights, using empty array");
         workingWeights = []; // Default to empty array if parsing fails
         warmupWeights = [];
       }
 
-      if (!routineExercise.workingSets || routineExercise.workingSets < 1) {
+      // If no sets defined, return default set
+      if (
+        routineExercise.workingSets === 0 &&
+        routineExercise.warmupSets === 0
+      ) {
         return [defaultSet];
       }
 
       // Function to ensure empty or zero values are replaced with "-"
-      const ensureValue = (value: string | number | undefined): string => {
-        if (
-          value === null ||
-          value === undefined ||
-          value === "" ||
-          value === 0 ||
-          value === "0"
-        ) {
+      const ensureValue = (value: number | null | undefined): string => {
+        if (value === null || value === undefined || value === 0) {
           return "";
         }
         return value.toString();
       };
 
       // Create warmup sets array
-      const warmupSets = Array(routineExercise.warmupSets)
-        .fill(null)
-        .map((_, index) => ({
+      const warmupSets: Set[] = Array.from(
+        { length: routineExercise.warmupSets },
+        (_, index) => ({
           id: index + 1,
-          weight: ensureValue(warmupWeights[index]),
+          weight: ensureValue(
+            warmupWeights[index] === null ? undefined : warmupWeights[index],
+          ),
           reps: ensureValue(routineExercise.warmupReps),
           isWarmup: true,
-        }));
+        }),
+      );
 
       // Create working sets array
-      const workingSets = Array(routineExercise.workingSets)
-        .fill(null)
-        .map((_, index) => ({
-          id: index + 1,
-          weight: ensureValue(workingWeights[index]),
+      const workingSets: Set[] = Array.from(
+        { length: routineExercise.workingSets },
+        (_, index) => ({
+          id: index + 100,
+          weight: ensureValue(
+            workingWeights[index] === null ? undefined : workingWeights[index],
+          ),
           reps: ensureValue(routineExercise.workingReps),
           isWarmup: false,
-        }));
+        }),
+      );
+
+      const combinedSets = [...warmupSets, ...workingSets];
 
       // Only override with previous data if it exists and is valid
       if (previousData?.sets && previousData.sets !== "[]") {
@@ -125,26 +133,26 @@ export default function ExceriseRoutineCard({
           if (Array.isArray(parsedSets) && parsedSets.length > 0) {
             return parsedSets.map((set, index) => ({
               id: index + 1,
-              weight: set?.weight?.toString() || "",
-              reps: set?.reps?.toString() || "",
-              isWarmup: set?.isWarmup || false,
+              weight: ensureValue(Number(set.weight) || 0),
+              reps: ensureValue(Number(set.reps) || 0),
+              isWarmup: Boolean(set.isWarmup),
             }));
           }
-        } catch {
-          // If there's any error parsing previous data, return default sets
-          return [...warmupSets, ...workingSets];
+        } catch (error) {
+          console.warn("Failed to parse previous data sets, using default");
         }
       }
 
       // Return combined sets if no previous data
-      return [...warmupSets, ...workingSets];
-    } catch {
+      return combinedSets;
+    } catch (error) {
+      console.error("Failed to initialize sets:", error);
       // If anything fails, return a single default set
       return [defaultSet];
     }
   }, [routineExercise, previousData]);
 
-  const [sets, setSets] = useState(initialSets);
+  const [sets, setSets] = useState<Set[]>(initialSets);
   const [notes, setNotes] = useState<string>(
     previousData?.notes || routineExercise.notes || "",
   );
@@ -188,26 +196,35 @@ export default function ExceriseRoutineCard({
   }, [currentData, debouncedOnUpdate]);
 
   function addWorkingSet() {
-    setSets((prevSets: Set[]) => [
-      ...prevSets,
-      {
-        id: prevSets.length + 1,
-        weight: "",
-        reps: "",
-        isWarmup: false,
-      },
-    ]);
+    setSets((prevSets) => {
+      // Count existing sets and add 1 to get new id
+      const workingSetCount = prevSets.filter((set) => set.isWarmup).length;
+      return [
+        ...prevSets,
+        {
+          id: 100 + workingSetCount,
+          weight: "",
+          reps: "",
+          isWarmup: false,
+        },
+      ];
+    });
   }
+
   function addWarmupSet() {
-    setSets((prevSets: Set[]) => [
-      ...prevSets,
-      {
-        id: prevSets.length + 1,
-        weight: "",
-        reps: "",
-        isWarmup: true,
-      },
-    ]);
+    setSets((prevSets) => {
+      // Count existing sets and add 1 to get new id
+      const warmupSetCount = prevSets.filter((set) => set.isWarmup).length;
+      return [
+        ...prevSets,
+        {
+          id: warmupSetCount + 1,
+          weight: "",
+          reps: "",
+          isWarmup: true,
+        },
+      ];
+    });
   }
 
   function updateSet(
@@ -215,11 +232,19 @@ export default function ExceriseRoutineCard({
     field: keyof Omit<Set, "id">,
     value: string,
   ): void {
-    setSets(
-      sets.map((set: Set) =>
-        set.id === id ? { ...set, [field]: value } : set,
-      ),
-    );
+    console.log(`Updating set ${id}, field ${field} to ${value}`);
+
+    setSets((prevSets) => {
+      const newSets = prevSets.map((set) => {
+        if (set.id === id) {
+          console.log(`Foung matching set:`, set);
+          return { ...set, [field]: value };
+        }
+        return set;
+      });
+      console.log("Updated sets:", newSets);
+      return newSets;
+    });
   }
 
   function deleteSet(id: number): void {
