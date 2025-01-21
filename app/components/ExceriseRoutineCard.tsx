@@ -1,14 +1,14 @@
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
-import { is } from "drizzle-orm";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BsStopwatch } from "react-icons/bs";
-import { FaRegTrashCan } from "react-icons/fa6";
-import { IoMdMore } from "react-icons/io";
 import { IoAddCircle } from "react-icons/io5";
 
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import type {
   ExerciseData,
   ExerciseRoutineCardProps,
@@ -27,7 +26,8 @@ import type {
 } from "@/types/types";
 
 import { SetsList } from "./SetsList";
-import { zip } from "lodash";
+import { BiDotsHorizontalRounded } from "react-icons/bi";
+import { FaRegTrashAlt } from "react-icons/fa";
 
 function debounce<T extends (...args: any[]) => void>(
   func: T,
@@ -59,7 +59,12 @@ export default function ExceriseRoutineCard({
   previousData,
   onUpdate,
   onRestTimeTrigger,
+  onExerciseRemoved,
 }: ExerciseRoutineCardProps) {
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   // Initialize sets based on routineExercise data and previous data
   const initialSets = useMemo(() => {
     const defaultSet = {
@@ -274,6 +279,14 @@ export default function ExceriseRoutineCard({
     onRestTimeTrigger(routineExercise.restTime);
   };
 
+  const handleDelete = () => {
+    onExerciseRemoved?.(exercise.id);
+  };
+
+  const handleEdit = () => {
+    setIsEditMode(!isEditMode);
+    setIsDrawerOpen(false);
+  };
   return (
     <>
       <Card>
@@ -281,16 +294,44 @@ export default function ExceriseRoutineCard({
         <CardHeader>
           <CardTitle className="flex w-full justify-between">
             {exercise.name}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button>
-                  <IoMdMore />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-full">
-                <DropdownMenuItem>Edit</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+
+            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+              <DrawerTrigger asChild>
+                <span className="cursor-pointer hover:text-accent">
+                  <BiDotsHorizontalRounded size={20} />
+                </span>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>{exercise.name}</DrawerTitle>
+                </DrawerHeader>
+                <div className="flex flex-col gap-4 p-4">
+                  <Button
+                    className="flex w-full items-center justify-center gap-2"
+                    onClick={handleEdit}
+                    variant={isEditMode ? "default" : "secondary"}
+                  >
+                    {isEditMode ? "Update" : "Edit Exercise"}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="flex w-full items-center justify-center gap-2"
+                    onClick={handleDelete}
+                  >
+                    <FaRegTrashAlt />
+                    Delete Exercise
+                  </Button>
+                </div>
+
+                <DrawerFooter>
+                  <DrawerClose asChild>
+                    <Button variant="outline" className="w-full">
+                      Cancel
+                    </Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </DrawerContent>
+            </Drawer>
           </CardTitle>
           <CardDescription>
             <form className="h-full w-full">
@@ -324,6 +365,7 @@ export default function ExceriseRoutineCard({
             updateSet={updateSet}
             handleCheckboxChange={handleCheckboxChange}
             deleteSet={deleteSet}
+            isEditMode={isEditMode}
           />
           {/* Add Set Button */}
           <div className="flex w-full justify-center">

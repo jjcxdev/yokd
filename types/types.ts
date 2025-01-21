@@ -113,6 +113,7 @@ export interface ExerciseRoutineCardProps {
   };
   onUpdate: (exerciseData: ExerciseData) => void;
   onRestTimeTrigger: (restTime: number) => void;
+  onExerciseRemoved?:(exerciseId: string) => void;
 }
 
 export interface SetListProps {
@@ -120,6 +121,8 @@ export interface SetListProps {
   updateSet: (id: number, field: keyof Omit<Set, "id">, value: string) => void;
   handleCheckboxChange: (setId: number) => void;
   deleteSet: (id: number) => void;
+  showCheckbox?: boolean;
+  isEditMode?: boolean;
 }
 
 export type ExerciseWithRoutine = {
