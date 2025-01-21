@@ -2,13 +2,23 @@ import { FaRegTrashCan } from "react-icons/fa6";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Set, SetListProps } from "@/types/types";
+import { usePathname } from "next/navigation";
 
 export function SetsList({
   sets,
   updateSet,
   handleCheckboxChange,
   deleteSet,
+  showCheckbox,
 }: SetListProps) {
+  const pathname = usePathname();
+  // Hide checkbox if were in the routine route
+  const isRoutinePage = pathname?.includes("/routine");
+  const shouldShowCheckbox = !isRoutinePage && showCheckbox;
+
+  // Dynamic width class based on checkbox visibility
+  const columnWidth = shouldShowCheckbox ? "w-1/5" : "w-1/4";
+
   // Get warmup and working sets
   const warmupSets = sets.filter((set) => set.isWarmup);
   const workingSets = sets.filter((set) => !set.isWarmup);
@@ -19,8 +29,10 @@ export function SetsList({
       key={set.id}
       className={`flex w-full rounded-sm ${set.isWarmup ? "mb-1 bg-blue-900/30" : ""}`}
     >
-      <div className="flex w-1/5 justify-center text-base">{displayNumber}</div>
-      <div className="flex w-1/5 justify-center">
+      <div className={`flex ${columnWidth} justify-center text-base`}>
+        {displayNumber}
+      </div>
+      <div className={`flex ${columnWidth} justify-center`}>
         <form className="w-full">
           <input
             className="w-full bg-transparent text-center text-base"
@@ -38,7 +50,7 @@ export function SetsList({
           />
         </form>
       </div>
-      <div className="flex w-1/5 justify-center">
+      <div className={`flex ${columnWidth} justify-center`}>
         <form className="w-full">
           <input
             className="w-full bg-transparent text-center text-base"
@@ -56,10 +68,12 @@ export function SetsList({
           />
         </form>
       </div>
-      <div className="flex w-1/5 items-center justify-center">
-        <Checkbox onCheckedChange={() => handleCheckboxChange(set.id)} />
-      </div>
-      <div className="flex w-1/5 items-center justify-center">
+      {shouldShowCheckbox && (
+        <div className={`flex ${columnWidth} items-center justify-center`}>
+          <Checkbox onCheckedChange={() => handleCheckboxChange(set.id)} />
+        </div>
+      )}
+      <div className={`flex ${columnWidth} items-center justify-center`}>
         <button
           className="text-base text-remove"
           onClick={() => deleteSet(set.id)}
@@ -75,11 +89,13 @@ export function SetsList({
     <>
       {/* Set Details Header */}
       <div className="flex w-full text-xs uppercase text-dimmed">
-        <div className="flex w-1/5 justify-center">Set</div>
-        <div className="flex w-1/5 justify-center">Lbs</div>
-        <div className="flex w-1/5 justify-center">Reps</div>
-        <div className="flex w-1/5 justify-center">✓</div>
-        <div className="flex w-1/5 justify-center"></div>
+        <div className={`flex ${columnWidth} justify-center`}>Set</div>
+        <div className={`flex ${columnWidth} justify-center`}>Lbs</div>
+        <div className={`flex ${columnWidth} justify-center`}>Reps</div>
+        {shouldShowCheckbox && (
+          <div className={`flex ${columnWidth} justify-center`}>✓</div>
+        )}
+        <div className={`flex ${columnWidth} justify-center`}></div>
       </div>
 
       {/* Warmup Sets */}

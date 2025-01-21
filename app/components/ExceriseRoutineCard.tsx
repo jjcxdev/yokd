@@ -9,8 +9,6 @@ import {
 } from "@/components/ui/drawer";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BsStopwatch } from "react-icons/bs";
-import { FaRegTrashCan } from "react-icons/fa6";
-import { IoMdMore } from "react-icons/io";
 import { IoAddCircle } from "react-icons/io5";
 
 import { Button } from "@/components/ui/button";
@@ -21,7 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import type {
   ExerciseData,
   ExerciseRoutineCardProps,
@@ -29,7 +26,6 @@ import type {
 } from "@/types/types";
 
 import { SetsList } from "./SetsList";
-import { zip } from "lodash";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { FaRegTrashAlt } from "react-icons/fa";
 

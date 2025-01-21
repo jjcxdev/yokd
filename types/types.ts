@@ -121,6 +121,7 @@ export interface SetListProps {
   updateSet: (id: number, field: keyof Omit<Set, "id">, value: string) => void;
   handleCheckboxChange: (setId: number) => void;
   deleteSet: (id: number) => void;
+  showCheckbox?: boolean;
 }
 
 export type ExerciseWithRoutine = {
