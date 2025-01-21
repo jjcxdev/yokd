@@ -63,6 +63,7 @@ export default function ExceriseRoutineCard({
 }: ExerciseRoutineCardProps) {
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Initialize sets based on routineExercise data and previous data
   const initialSets = useMemo(() => {
@@ -284,6 +285,7 @@ export default function ExceriseRoutineCard({
 
   const handleEdit = () => {
     setIsEditMode(!isEditMode);
+    setIsDrawerOpen(false);
   };
   return (
     <>
@@ -293,7 +295,7 @@ export default function ExceriseRoutineCard({
           <CardTitle className="flex w-full justify-between">
             {exercise.name}
 
-            <Drawer>
+            <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
               <DrawerTrigger asChild>
                 <span className="cursor-pointer hover:text-accent">
                   <BiDotsHorizontalRounded size={20} />
@@ -307,9 +309,9 @@ export default function ExceriseRoutineCard({
                   <Button
                     className="flex w-full items-center justify-center gap-2"
                     onClick={handleEdit}
-                    variant={isEditMode ? "secondary" : "default"}
+                    variant={isEditMode ? "default" : "secondary"}
                   >
-                    Edit
+                    {isEditMode ? "Update" : "Edit Exercise"}
                   </Button>
                   <Button
                     variant="destructive"
