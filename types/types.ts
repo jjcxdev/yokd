@@ -113,6 +113,7 @@ export interface ExerciseRoutineCardProps {
   };
   onUpdate: (exerciseData: ExerciseData) => void;
   onRestTimeTrigger: (restTime: number) => void;
+  onExerciseRemoved?:(exerciseId: string) => void;
 }
 
 export interface SetListProps {

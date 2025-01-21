@@ -224,6 +224,33 @@ function RoutineContent() {
     router.push(`/dashboard`);
   }
 
+  function handleExerciseRemoved(exerciseId: string): void {
+    // Remove exercise from state
+    setExercises((currentExercises) =>
+      currentExercises.filter((exercise) => exercise.id !== exerciseId),
+    );
+
+    // Remove exercise from exerciseData state
+    setExerciseData((currentData) => {
+      const newData = { ...currentData };
+      delete newData[exerciseId];
+      return newData;
+    });
+
+    // Update localStorage
+    try {
+      const updatedExercises = exercises.filter(
+        (exercise) => exercise.id !== exerciseId,
+      );
+      localStorage.setItem(
+        "routineExercises",
+        JSON.stringify(updatedExercises),
+      );
+    } catch (error) {
+      console.error("Error updating exercises in local storage:", error);
+    }
+  }
+
   return (
     <div className="pb-22 flex min-h-full w-full flex-col items-center gap-4">
       <div className="h-full w-full max-w-5xl bg-background">
@@ -289,6 +316,7 @@ function RoutineContent() {
                   }}
                   onUpdate={(data) => memoizedUpdate(exercise.id, data)}
                   onRestTimeTrigger={() => {}}
+                  onExerciseRemoved={handleExerciseRemoved}
                 />
               </div>
             ))}
