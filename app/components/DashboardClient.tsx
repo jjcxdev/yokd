@@ -43,9 +43,23 @@ export default function Dashboard({
         {hasContent ? (
           <>
             {/* <PreviousWorkout /> */}
-            <div className="flex h-full flex-col justify-between pb-20">
+            <div className="flex h-full flex-col pb-20">
               {/* Folders section */}
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col justify-start gap-4">
+                <div className="flex items-center justify-center gap-2 py-8 md:flex-row">
+                  <Button
+                    className="text-background"
+                    onClick={() => setIsCreateModalOpen(true)}
+                  >
+                    <BsCollectionFill /> New Program
+                  </Button>
+                  <Button
+                    className="text-background"
+                    onClick={() => setIsSelectModalOpen(true)}
+                  >
+                    <FaDumbbell /> New Routine
+                  </Button>
+                </div>
                 Choose Routine
                 <div>
                   <FolderList
@@ -54,20 +68,6 @@ export default function Dashboard({
                     onFolderDeleted={() => router.refresh()}
                   />
                 </div>
-              </div>
-              <div className="flex items-center justify-center gap-2 pt-8 md:flex-row">
-                <Button
-                  className="text-background"
-                  onClick={() => setIsCreateModalOpen(true)}
-                >
-                  <BsCollectionFill /> New Program
-                </Button>
-                <Button
-                  className="text-background"
-                  onClick={() => setIsSelectModalOpen(true)}
-                >
-                  <FaDumbbell /> New Routine
-                </Button>
               </div>
             </div>
           </>
