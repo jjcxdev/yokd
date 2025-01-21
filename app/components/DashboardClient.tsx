@@ -60,7 +60,7 @@ export default function Dashboard({
                     <FaDumbbell /> New Routine
                   </Button>
                 </div>
-                Choose Routine
+                Programs and Routines
                 <div>
                   <FolderList
                     folders={initialFolders}
