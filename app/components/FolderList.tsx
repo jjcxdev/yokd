@@ -78,20 +78,22 @@ export default function FolderList({
                 folderIcon={<TbLayoutNavbarExpandFilled />}
                 count={folderRoutines.length.toString()}
               >
-                <div className="grid grid-cols-1 justify-items-center gap-4 md:grid-cols-2">
-                  {folderRoutines.map((routine: RoutineWithExercises) => (
-                    <RoutineCard
-                      key={routine.id}
-                      id={routine.id}
-                      label={routine.name}
-                      exercises={routine.exercises}
-                      onDelete={() => {
-                        deleteRoutine(routine.id);
-                        onFolderDeleted?.();
-                      }}
-                    />
-                  ))}
-                </div>
+                {folderRoutines.length > 0 && (
+                  <div className="grid grid-cols-1 justify-items-center gap-4 md:grid-cols-2">
+                    {folderRoutines.map((routine: RoutineWithExercises) => (
+                      <RoutineCard
+                        key={routine.id}
+                        id={routine.id}
+                        label={routine.name}
+                        exercises={routine.exercises}
+                        onDelete={() => {
+                          deleteRoutine(routine.id);
+                          onFolderDeleted?.();
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </FolderToggle>
             </li>
           );
