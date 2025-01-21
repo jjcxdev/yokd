@@ -61,6 +61,9 @@ export default function ExceriseRoutineCard({
   onRestTimeTrigger,
   onExerciseRemoved,
 }: ExerciseRoutineCardProps) {
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false);
+
   // Initialize sets based on routineExercise data and previous data
   const initialSets = useMemo(() => {
     const defaultSet = {
@@ -278,6 +281,10 @@ export default function ExceriseRoutineCard({
   const handleDelete = () => {
     onExerciseRemoved?.(exercise.id);
   };
+
+  const handleEdit = () => {
+    setIsEditMode(!isEditMode);
+  };
   return (
     <>
       <Card>
@@ -296,7 +303,14 @@ export default function ExceriseRoutineCard({
                 <DrawerHeader>
                   <DrawerTitle>{exercise.name}</DrawerTitle>
                 </DrawerHeader>
-                <div className="p-4">
+                <div className="flex flex-col gap-4 p-4">
+                  <Button
+                    className="flex w-full items-center justify-center gap-2"
+                    onClick={handleEdit}
+                    variant={isEditMode ? "secondary" : "default"}
+                  >
+                    Edit
+                  </Button>
                   <Button
                     variant="destructive"
                     className="flex w-full items-center justify-center gap-2"
@@ -306,6 +320,7 @@ export default function ExceriseRoutineCard({
                     Delete Exercise
                   </Button>
                 </div>
+
                 <DrawerFooter>
                   <DrawerClose asChild>
                     <Button variant="outline" className="w-full">
@@ -348,6 +363,7 @@ export default function ExceriseRoutineCard({
             updateSet={updateSet}
             handleCheckboxChange={handleCheckboxChange}
             deleteSet={deleteSet}
+            isEditMode={isEditMode}
           />
           {/* Add Set Button */}
           <div className="flex w-full justify-center">

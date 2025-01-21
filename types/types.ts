@@ -122,6 +122,7 @@ export interface SetListProps {
   handleCheckboxChange: (setId: number) => void;
   deleteSet: (id: number) => void;
   showCheckbox?: boolean;
+  isEditMode?: boolean;
 }
 
 export type ExerciseWithRoutine = {

@@ -10,6 +10,7 @@ export function SetsList({
   handleCheckboxChange,
   deleteSet,
   showCheckbox,
+  isEditMode = false,
 }: SetListProps) {
   const pathname = usePathname();
   // Hide checkbox if were in the routine route
@@ -17,7 +18,13 @@ export function SetsList({
   const shouldShowCheckbox = !isRoutinePage && showCheckbox;
 
   // Dynamic width class based on checkbox visibility
-  const columnWidth = shouldShowCheckbox ? "w-1/5" : "w-1/4";
+  const getColumnWidth = () => {
+    if (shouldShowCheckbox) return "w-1/5";
+    if (isEditMode) return "w-1/4";
+    return "w-1/3";
+  };
+
+  const columnWidth = getColumnWidth();
 
   // Get warmup and working sets
   const warmupSets = sets.filter((set) => set.isWarmup);
@@ -73,15 +80,19 @@ export function SetsList({
           <Checkbox onCheckedChange={() => handleCheckboxChange(set.id)} />
         </div>
       )}
-      <div className={`flex ${columnWidth} items-center justify-center`}>
-        <button
-          className="text-base text-remove"
-          onClick={() => deleteSet(set.id)}
-          disabled={!set.isWarmup && workingSets.length <= 1}
-        >
-          <FaRegTrashCan />
-        </button>
-      </div>
+      {(isEditMode || shouldShowCheckbox) && (
+        <div className={`flex ${columnWidth} items-center justify-center`}>
+          {isEditMode && (
+            <button
+              className="text-base text-remove"
+              onClick={() => deleteSet(set.id)}
+              disabled={!set.isWarmup && workingSets.length <= 1}
+            >
+              <FaRegTrashCan />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 
@@ -95,7 +106,9 @@ export function SetsList({
         {shouldShowCheckbox && (
           <div className={`flex ${columnWidth} justify-center`}>✓</div>
         )}
-        <div className={`flex ${columnWidth} justify-center`}></div>
+        {(isEditMode || shouldShowCheckbox) && (
+          <div className={`flex ${columnWidth} justify-center`}></div>
+        )}
       </div>
 
       {/* Warmup Sets */}
