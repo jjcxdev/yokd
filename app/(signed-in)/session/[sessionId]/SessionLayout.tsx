@@ -170,7 +170,7 @@ export default function SessionLayout({
 
           <button
             onClick={onCancel}
-            className="w-full rounded-md bg-destructive text-xs text-destructive-foreground"
+            className="w-fit pt-2 text-xs text-destructive"
           >
             Cancel Workout
           </button>
