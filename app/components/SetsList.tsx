@@ -3,6 +3,7 @@ import { FaRegTrashCan } from "react-icons/fa6";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Set, SetListProps } from "@/types/types";
 import { usePathname } from "next/navigation";
+import { SetCheckbox } from "./SetCheckbox";
 
 export function SetsList({
   sets,
@@ -79,7 +80,7 @@ export function SetsList({
 
       {showCheckbox && (
         <div className={`flex ${columnWidth} items-center justify-center`}>
-          <Checkbox onCheckedChange={() => handleCheckboxChange(set.id)} />
+          <SetCheckbox onCheckedChange={handleCheckboxChange} setId={set.id} />
         </div>
       )}
 

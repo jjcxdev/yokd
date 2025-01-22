@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 // -------------------
 // Base Types
 // -------------------
+
 export type ValidType = "cable" | "machine" | "dumbbell";
 export type RoutineStatus = "active" | "archived";
 export type SessionStatus = "active" | "completed" | "cancelled";
@@ -73,6 +74,7 @@ export interface RoutineExercise {
 // -------------------
 // Set Related
 // -------------------
+
 export interface Set {
   id: number;
   weight: string;
@@ -84,6 +86,11 @@ export type ExerciseSet = Omit<Set, "id">;
 
 export interface SetWithId extends Set {
   id: number;
+}
+
+export interface SetCheckboxProps {
+  onCheckedChange: (setId: number) => void;
+  setId: number;
 }
 
 // DB resprentation of a set
