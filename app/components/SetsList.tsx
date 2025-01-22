@@ -9,18 +9,17 @@ export function SetsList({
   updateSet,
   handleCheckboxChange,
   deleteSet,
-  showCheckbox,
   isEditMode = false,
 }: SetListProps) {
   const pathname = usePathname();
   // Hide checkbox if were in the routine route
   const isRoutinePage = pathname?.includes("/routine");
-  const shouldShowCheckbox = !isRoutinePage && showCheckbox;
+  const showCheckbox = !isRoutinePage;
 
   // Dynamic width class based on checkbox visibility
   const getColumnWidth = () => {
-    if (shouldShowCheckbox) return "w-1/5";
-    if (isEditMode) return "w-1/4";
+    if (showCheckbox && isEditMode) return "w-1/5";
+    if (showCheckbox || isEditMode) return "w-1/4";
     return "w-1/3";
   };
 
@@ -75,12 +74,18 @@ export function SetsList({
           />
         </form>
       </div>
-      {shouldShowCheckbox && (
+
+      {/* Checkbox - shown everywhere except Routine route */}
+
+      {showCheckbox && (
         <div className={`flex ${columnWidth} items-center justify-center`}>
           <Checkbox onCheckedChange={() => handleCheckboxChange(set.id)} />
         </div>
       )}
-      {(isEditMode || shouldShowCheckbox) && (
+
+      {/* Delete Button - only shown in edit mode */}
+
+      {isEditMode && (
         <div className={`flex ${columnWidth} items-center justify-center`}>
           {isEditMode && (
             <button
@@ -103,10 +108,10 @@ export function SetsList({
         <div className={`flex ${columnWidth} justify-center`}>Set</div>
         <div className={`flex ${columnWidth} justify-center`}>Lbs</div>
         <div className={`flex ${columnWidth} justify-center`}>Reps</div>
-        {shouldShowCheckbox && (
+        {showCheckbox && (
           <div className={`flex ${columnWidth} justify-center`}>✓</div>
         )}
-        {(isEditMode || shouldShowCheckbox) && (
+        {isEditMode && (
           <div className={`flex ${columnWidth} justify-center`}></div>
         )}
       </div>

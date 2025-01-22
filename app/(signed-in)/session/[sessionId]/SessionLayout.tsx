@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SessionLayoutProps } from "@/types/types";
+import { Progress } from "@/components/ui/progress";
 
 export default function SessionLayout({
   onCancel,
@@ -18,6 +19,8 @@ export default function SessionLayout({
   const [currentRestTime, setCurrentRestTime] = useState<number>(restTime);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isAudioInitialized = useRef<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const restStartTimeRef = useRef<number>(0);
 
   // Session duration timer
   useEffect(() => {
@@ -70,6 +73,17 @@ export default function SessionLayout({
     }
     return () => clearInterval(restTimer);
   }, [isResting, restTime, onRestTimerComplete]);
+
+  // Rest timer progress bar
+  useEffect(() => {
+    if (isResting) {
+      const progressPercentage =
+        ((restTime - currentRestTime) / restTime) * 100;
+      setProgress(progressPercentage);
+    } else {
+      setProgress(0);
+    }
+  }, [currentRestTime, restTime, isResting]);
 
   // Rest current rest time when rest timer changes
   useEffect(() => {
@@ -126,12 +140,14 @@ export default function SessionLayout({
         <div className="flex w-full flex-col items-center gap-2">
           <div className="flex w-full items-center justify-between">
             {/* Duration Time */}
+
             <div className="min-w-20">
               <div className="text-sm text-dimmed">Duration</div>
               <div className="text-accent">{formatTime(elapsedTime)}</div>
             </div>
 
             {/* Rest Time */}
+
             <div className="min-w-20 text-center">
               <div className="text-sm text-dimmed">Rest Time</div>
               <div className="text-2xl font-bold text-accent">
@@ -145,6 +161,13 @@ export default function SessionLayout({
               <Button onClick={onFinish}>Finish</Button>
             </div>
           </div>
+
+          {/* Progress Bar */}
+
+          <Progress value={progress} />
+
+          {/* Cancel Button */}
+
           <button
             onClick={onCancel}
             className="w-full rounded-md bg-destructive text-xs text-destructive-foreground"
