@@ -22,6 +22,9 @@ export default function SessionWrapper({
 
   const handleCancel = useCallback(() => {
     if (window.confirm("Are you sure you want to cancel the session?")) {
+      const sessionKey = `session-${sessionId}`;
+      localStorage.removeItem(sessionKey);
+
       cancelWorkoutSession(sessionId)
         .then((result) => {
           if (result.success) {
@@ -39,8 +42,11 @@ export default function SessionWrapper({
 
   const handleFinish = useCallback(() => {
     if (window.confirm("Are you sure you want to finish the session?")) {
-      completeWorkoutSession(sessionId)
+      const sessionKey = `session-${sessionId}`;
+      const clientData = JSON.parse(localStorage.getItem(sessionKey) || "{}");
+      completeWorkoutSession(sessionId, clientData)
         .then(() => {
+          localStorage.removeItem(sessionKey);
           router.push("/dashboard");
         })
         .catch((error) => {

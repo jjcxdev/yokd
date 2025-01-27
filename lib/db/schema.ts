@@ -6,6 +6,7 @@ import {
   text,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
+import { rest } from "lodash";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
@@ -118,6 +119,7 @@ export const workoutData = sqliteTable(
       .references(() => exercises.id),
     notes: text("notes"),
     sets: text("sets"),
+    restTime: integer("rest_time").default(30),
     updatedAt: integer("updated_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),

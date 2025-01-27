@@ -117,10 +117,11 @@ export interface ExerciseRoutineCardProps {
   previousData?: {
     notes: string;
     sets: string;
+    restTime?: number;
   };
   onUpdate: (exerciseData: ExerciseData) => void;
   onRestTimeTrigger: (restTime: number) => void;
-  onExerciseRemoved?:(exerciseId: string) => void;
+  onExerciseRemoved?: (exerciseId: string) => void;
 }
 
 export interface SetListProps {
@@ -138,6 +139,7 @@ export type ExerciseWithRoutine = {
   previousData?: {
     notes: string;
     sets: string;
+    restTime?: number;
   };
 };
 
@@ -146,6 +148,7 @@ export type ExerciseData = {
   exerciseId: string;
   notes: string;
   sets: Omit<Set, "id">[];
+  restTime?: number;
 };
 
 // -------------------

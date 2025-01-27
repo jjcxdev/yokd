@@ -30,19 +30,24 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
 
   // Initialize with previous data if available
   const [exerciseData, setExerciseData] = useState<
-    Record<string, { notes: string; sets: string }>
+    Record<string, { notes: string; sets: string; restTime?: number }>
   >(() => {
     console.log("Initializing exercise data:", sessionData.exercises);
-    const initialData: Record<string, { notes: string; sets: string }> = {};
+    const initialData: Record<
+      string,
+      { notes: string; sets: string; restTime?: number }
+    > = {};
 
     sessionData.exercises.forEach(
       ({ exercise, routineExercise, previousData }) => {
         if (exercise) {
-          console.log(
-            `Initializing exercise data for ${exercise.id}`,
+          console.log(`Initializing exercise data for ${exercise.id}`, {
+            id: exercise.id,
             previousData,
             routineExercise,
-          );
+            workoutDataRestTime: previousData?.restTime,
+            routineRestTime: routineExercise.restTime,
+          });
 
           // First create sets with initial weights from the routine
           let initialSets: ExerciseSet[] = [];
@@ -99,14 +104,18 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
               previousData,
             );
             initialData[exercise.id] = {
-              notes: previousData.notes,
-              sets: previousData.sets,
+              notes: previousData?.notes || routineExercise.notes || "",
+              sets: previousData?.sets || JSON.stringify(initialSets),
+              restTime:
+                previousData?.restTime ?? routineExercise.restTime ?? 30,
             };
           } else {
             console.log(`Using initial working sets for ${exercise.id}`);
             initialData[exercise.id] = {
               notes: routineExercise.notes || "",
               sets: JSON.stringify(initialSets),
+              restTime:
+                previousData?.restTime ?? routineExercise.restTime ?? 30,
             };
           }
         }
@@ -127,7 +136,14 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
   }, []);
 
   const handleExerciseUpdate = useCallback(
-    (exerciseId: string, data: { notes: string; sets: Array<ExerciseSet> }) => {
+    (
+      exerciseId: string,
+      data: { notes: string; sets: Array<ExerciseSet>; restTime?: number },
+    ) => {
+      if (typeof window === "undefined") {
+        return; // Exit if running on server
+      }
+
       if (initialRenderRef.current) {
         console.log("Skipping update - initial render");
         initialRenderRef.current = false;
@@ -152,6 +168,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
       const dataToSet = {
         notes: data.notes,
         sets: JSON.stringify(setsWithIds),
+        restTime: data.restTime,
       };
 
       // Parse both current and new data for comparison
@@ -170,8 +187,13 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
         data.sets,
       );
 
-      // Only update state if data has changed
-      if (currentData.notes === data.notes && setsAreEqual) {
+      // Inclue restTime in equality check
+      const dataHasChanged =
+        currentData.notes !== data.notes ||
+        !setsAreEqual ||
+        currentData.restTime !== data.restTime;
+
+      if (!dataHasChanged) {
         console.log("Skipping update - data is the same");
         return;
       }
@@ -219,6 +241,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
               previousData={{
                 notes: exerciseData[exercise.id].notes,
                 sets: exerciseData[exercise.id].sets,
+                restTime: exerciseData[exercise.id].restTime,
               }}
               onUpdate={(data) => handleExerciseUpdate(exercise.id, data)}
               onRestTimeTrigger={onRestTimeTrigger}

@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { routineExercises, routines } from "@/lib/db/schema";
 import type { Routine, ExerciseData } from "@/types/types";
-import { eq } from "drizzle-orm";
 
 type RoutineInput = Pick<Routine, "name" | "folderId" | "userId"> & {
   exercises: ExerciseData[];
@@ -66,7 +65,7 @@ export async function postRoutines({
         warmupReps: handleEmptyValue(warmupSets[0]?.reps) ?? null,
         workingSets: workingSets.length,
         workingReps: handleEmptyValue(workingSets[0]?.reps) ?? null,
-        restTime: 30,
+        restTime: exercise.restTime ?? 30,
         notes: exercise.notes || null,
       };
 

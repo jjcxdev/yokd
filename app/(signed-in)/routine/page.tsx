@@ -169,6 +169,7 @@ function RoutineContent() {
           exerciseId,
           notes: data.notes,
           sets: data.sets, // Keep the original sets array intact
+          restTime: data.restTime,
         };
       },
     );

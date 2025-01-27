@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { and, desc, eq, is, lt } from "drizzle-orm";
+import { and, desc, eq, is, lt, not } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -16,9 +16,15 @@ import {
   workoutSessions,
 } from "@/lib/db/schema";
 import type { DBSet } from "@/types/types";
+import { update } from "lodash";
+
+function safeParseInt(value: string): number {
+  const parsed = parseInt(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 
 // ---------------------------
-// GET WORKOUT SESSION FUNCTION
+// START WORKOUT SESSION FUNCTION
 // ---------------------------
 
 export async function startWorkoutSession(routineId: string) {
@@ -43,6 +49,21 @@ export async function startWorkoutSession(routineId: string) {
       throw new Error("Routine not found or unauthorized");
     }
 
+        // Fetch exercises for this routine
+        const routineExerciseList = await db
+        .select({
+          exercise: exercises,
+          routineExercise: routineExercises,
+        })
+        .from(routineExercises)
+        .where(eq(routineExercises.routineId, routineId))
+        .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+        .orderBy(routineExercises.order);
+
+      if (!routineExerciseList.length) {
+        console.log("Warning: No exercises found for routine", routineId);
+      }
+
     const sessionId = nanoid();
     const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
 
@@ -65,22 +86,39 @@ export async function startWorkoutSession(routineId: string) {
       completedAt: null,
     });
 
+    for (const { exercise, routineExercise } of routineExerciseList){
+      if (exercise) {
+        console.log('Creating workout data for exercise:', {
+          id: exercise.id,
+          restTime: routineExercise.restTime,
+        });
+
+        // First get the most recent workout_data for this exercise
+        const previousWorkoutData = await db
+        .select({restTime: workoutData.restTime})
+        .from(workoutData)
+        .where(eq(workoutData.exerciseId, exercise.id))
+        .orderBy(desc(workoutData.updatedAt))
+        .limit(1);
+
+        // Use the previous rest time if it exists, otherwise use the default
+        const restTime = previousWorkoutData.length > 0
+        ? previousWorkoutData[0].restTime
+        : routineExercise.restTime ?? 30;
+
+        await db.insert(workoutData).values({
+          id: nanoid(),
+          sessionId,
+          exerciseId: exercise.id,
+          notes: "",
+          restTime,
+          updatedAt: Date.now(),
+        })
+      }
+    }
+
     console.log("Session created successfully:", sessionId);
 
-    // Fetch exercises for this routine
-    const routineExerciseList = await db
-      .select({
-        exercise: exercises,
-        routineExercise: routineExercises,
-      })
-      .from(routineExercises)
-      .where(eq(routineExercises.routineId, routineId))
-      .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
-      .orderBy(routineExercises.order);
-
-    if (!routineExerciseList.length) {
-      console.log("Warning: No exercises found for routine", routineId);
-    }
 
     redirect(`/session/${sessionId}`);
   } catch (error) {
@@ -98,6 +136,8 @@ export async function getWorkoutSession(sessionId: string) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
+    console.log('Getting workout session with ID:', sessionId);
+
     const session = await db
       .select()
       .from(workoutSessions)
@@ -109,16 +149,33 @@ export async function getWorkoutSession(sessionId: string) {
       throw new Error("Unauthorized session access");
     }
 
+
+
     // Get exercises for this routine
     const exercisesList = await db
       .select({
         exercise: exercises,
         routineExercise: routineExercises,
+        workoutData: {
+          notes: workoutData.notes,
+          sets: workoutData.sets,
+          restTime: workoutData.restTime,
+          updatedAt: workoutData.updatedAt,
+        }
       })
       .from(routineExercises)
       .where(eq(routineExercises.routineId, session[0].routineId))
       .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+      .leftJoin(
+        workoutData,
+        and(
+          eq(workoutData.sessionId, sessionId),
+          eq(workoutData.exerciseId, routineExercises.exerciseId),
+        ),
+      )
       .orderBy(routineExercises.order);
+
+      console.log('Raw exercisesList from database:', exercisesList);
 
     // Get the most recent completed session for this user/routine before this session
     const previousSession = await db
@@ -137,7 +194,6 @@ export async function getWorkoutSession(sessionId: string) {
 
     // If we found a previous session, get its sets
     let previousSets: DBSet[] = [];
-    []; // Initialize with empty array
     if (previousSession.length > 0) {
       previousSets = await db
         .select({
@@ -151,32 +207,41 @@ export async function getWorkoutSession(sessionId: string) {
         .orderBy(sets.exerciseId, sets.setNumber);
     }
 
-    // Get previous workout notes
-    const previousWorkoutData = await db
-      .select()
-      .from(workoutData)
-      .where(eq(workoutData.sessionId, previousSession[0]?.id ?? ""));
-
     return {
       session: session[0],
-      exercises: exercisesList.map((exercise) => ({
+      exercises: exercisesList.map((exercise) => {
+        console.log('Exercise data:', {
+          id: exercise.exercise?.id,
+          workoutData: exercise.workoutData,
+          routineExercise: exercise.routineExercise,
+        });
+
+        return {
         ...exercise,
-        previousData: {
-          notes:
-            previousWorkoutData.find(
-              (w) => w.exerciseId === exercise.exercise?.id,
-            )?.notes || "",
-          sets: JSON.stringify(
-            previousSets
-              .filter((set) => set.exerciseId === exercise.exercise?.id)
-              .map((set) => ({
-                weight: set.weight.toString(),
-                reps: set.reps.toString(),
-                isWarmup: set.isWarmup === 1,
-              })),
-          ),
-        },
-      })),
+        previousData: exercise.workoutData
+          ? {
+              notes: exercise.workoutData.notes || "",
+              sets: JSON.stringify(
+                previousSets
+                  .filter((set) => set.exerciseId === exercise.exercise?.id)
+                  .map((set) => ({
+                    weight: set.weight.toString(),
+                    reps: set.reps.toString(),
+                    isWarmup: set.isWarmup === 1,
+                  })),
+              ),
+              restTime:
+                exercise.workoutData.restTime ??
+                exercise.routineExercise.restTime ??
+                30, // Default to 30 seconds
+            }
+          : {
+              notes: "",
+              sets: "[]",
+              restTime: exercise.routineExercise.restTime || 30,
+            },
+          }
+      }),
     };
   } catch (error) {
     console.error("Error fetching workout session:", error);
@@ -188,17 +253,80 @@ export async function getWorkoutSession(sessionId: string) {
 // COMPLETE WORKOUT SESSION FUNCTION
 // ---------------------------
 
-export async function completeWorkoutSession(sessionId: string) {
+export async function completeWorkoutSession(
+  sessionId: string,
+  clientData: Record<
+    string,
+    {
+      notes: string;
+      sets: Array<{ weight: string; reps: string; isWarmup: boolean }>;
+      restTime?: number;
+    }
+  >,
+) {
   try {
     const { userId } = await auth();
     if (!userId) {
       throw new Error("Unauthorized");
     }
 
-    await db
-      .update(workoutSessions)
-      .set({ status: "completed", completedAt: Date.now() })
-      .where(eq(workoutSessions.id, sessionId));
+    // Send all changes to the database
+    await Promise.all(
+      Object.entries(clientData).map(async ([exerciseId, data]) => {
+        await db.transaction(async (tx) => {
+          // Update notes ans rest_time in workout_data
+          await tx
+            .insert(workoutData)
+            .values({
+              id: nanoid(),
+              sessionId,
+              exerciseId,
+              notes: data.notes,
+              restTime: data.restTime ?? 30,
+              updatedAt: Date.now(),
+            })
+            .onConflictDoUpdate({
+              target: [workoutData.sessionId, workoutData.exerciseId],
+              set: {
+                notes: data.notes,
+                restTime: data.restTime ?? 30,
+                updatedAt: Date.now(),
+              },
+            });
+
+          // Delete existing sets
+          await tx
+            .delete(sets)
+            .where(
+              and(
+                eq(sets.sessionId, sessionId),
+                eq(sets.exerciseId, exerciseId),
+              ),
+            );
+
+          // Insert new sets
+          if (data.sets.length > 0) {
+            await tx.insert(sets).values(
+              data.sets.map((set, index) => ({
+                id: nanoid(),
+                sessionId,
+                exerciseId,
+                setNumber: index + 1,
+                weight: safeParseInt(set.weight),
+                reps: safeParseInt(set.reps),
+                isWarmup: set.isWarmup ? 1 : 0,
+                completedAt: Date.now(),
+              })),
+            );
+          }
+        });
+      }),
+    ),
+      // Mark the session as completed
+      await db
+        .update(workoutSessions)
+        .set({ status: "completed", completedAt: Date.now() })
+        .where(eq(workoutSessions.id, sessionId));
 
     revalidatePath("/dashboard");
     return { success: true };
@@ -222,46 +350,48 @@ export async function updateWorkoutData(
       reps: string;
       isWarmup: boolean;
     }>;
+    restTime?: number;
   },
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
-    // Validate input
-    function safeParseInt(value: string): number {
-      const parsed = parseInt(value);
-      return Number.isFinite(parsed) ? parsed : 0;
+    if (!userId) {
+      throw new Error("Unauthorized");
     }
 
     await db.transaction(async (tx) => {
-      // Update notes in workout_data
-      await tx
-        .insert(workoutData)
-        .values({
-          id: nanoid(),
-          sessionId,
-          exerciseId,
-          notes: data.notes,
-          updatedAt: Date.now(),
-        })
-        .onConflictDoUpdate({
-          target: [workoutData.sessionId, workoutData.exerciseId],
-          set: {
+      // Handle workout data updates (notes, rest time)
+      if (data.notes !== undefined || data.restTime !== undefined) {
+        await tx
+          .insert(workoutData)
+          .values({
+            id: nanoid(),
+            sessionId,
+            exerciseId,
             notes: data.notes,
+            restTime: data.restTime ?? 30,
             updatedAt: Date.now(),
-          },
-        });
+          })
+          .onConflictDoUpdate({
+            target: [workoutData.sessionId, workoutData.exerciseId],
+            set: {
+              ...(data.notes !== undefined && { notes: data.notes }),
+              ...(data.restTime !== undefined && {
+                restTime: data.restTime ?? 30,
+              }),
+              updatedAt: Date.now(),
+            },
+          });
+      }
 
-      // Delete existing sets
-      await tx
-        .delete(sets)
-        .where(
-          and(eq(sets.sessionId, sessionId), eq(sets.exerciseId, exerciseId)),
-        );
+      // Handle set updates
+      if (data.sets) {
+        await tx
+          .delete(sets)
+          .where(
+            and(eq(sets.sessionId, sessionId), eq(sets.exerciseId, exerciseId)),
+          );
 
-      // Insert new sets
-      if (data.sets.length > 0) {
         await tx.insert(sets).values(
           data.sets.map((set, index) => ({
             id: nanoid(),
@@ -276,6 +406,8 @@ export async function updateWorkoutData(
         );
       }
     });
+
+    return { success: true };
   } catch (error) {
     console.error("Error updating workout data:", error);
     throw error;
@@ -285,12 +417,20 @@ export async function updateWorkoutData(
 // ---------------------------
 // CANCEL WORKOUT SESSION FUNCTION
 // ---------------------------
+
 export async function cancelWorkoutSession(sessionId: string) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Mark the session as cancelled
     await db
       .update(workoutSessions)
       .set({ status: "cancelled", completedAt: Date.now() })
       .where(eq(workoutSessions.id, sessionId));
+
     return { success: true };
   } catch (error) {
     console.error("Error cancelling workout session:", error);

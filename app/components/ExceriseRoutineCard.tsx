@@ -64,6 +64,9 @@ export default function ExceriseRoutineCard({
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [restTime, setRestTime] = useState(
+    previousData?.restTime ?? routineExercise.restTime ?? 30,
+  );
 
   // Initialize sets based on routineExercise data and previous data
   const initialSets = useMemo(() => {
@@ -169,13 +172,14 @@ export default function ExceriseRoutineCard({
     () => ({
       exerciseId: exercise.id,
       notes,
+      restTime,
       sets: sets.map((set: Set) => ({
         weight: set.weight,
         reps: set.reps,
         isWarmup: set.isWarmup,
       })),
     }),
-    [sets, notes, exercise.id],
+    [sets, notes, exercise.id, restTime],
   );
 
   const debouncedOnUpdate = useCallback(
@@ -273,10 +277,14 @@ export default function ExceriseRoutineCard({
     }
   }, [notes]);
 
+  const handleRestTimeChange = (newTime: number) => {
+    setRestTime(newTime);
+  };
+
   const handleCheckboxChange = (setId: number) => {
     // Trigger rest timer countdown logic
     console.log(`Set ${setId} completed. Trigger rest timer countdown.`);
-    onRestTimeTrigger(routineExercise.restTime);
+    onRestTimeTrigger(restTime);
   };
 
   const handleDelete = () => {
@@ -356,8 +364,14 @@ export default function ExceriseRoutineCard({
           {/* Rest Timer */}
           <div className="flex items-center gap-2 py-4 text-accent">
             <BsStopwatch />
-            <p>Rest Timer:</p>
-            <div>{routineExercise.restTime}</div>
+            <p className="whitespace-nowrap">Rest Timer:</p>
+            <input
+              className="w-12 bg-transparent text-start text-base"
+              type="number"
+              placeholder="30"
+              value={restTime || ""}
+              onChange={(e) => handleRestTimeChange(Number(e.target.value))}
+            />
           </div>
 
           <SetsList
