@@ -122,6 +122,7 @@ export interface ExerciseRoutineCardProps {
   onUpdate: (exerciseData: ExerciseData) => void;
   onRestTimeTrigger: (restTime: number) => void;
   onExerciseRemoved?: (exerciseId: string) => void;
+  isCancelling?: boolean;
 }
 
 export interface SetListProps {
@@ -156,6 +157,7 @@ export type ExerciseData = {
 /// -------------------
 export interface SessionContextType {
   onRestTimeTrigger: (time: number) => void;
+  isCancelling: boolean;
 }
 
 export interface SessionClientProps {
@@ -167,7 +169,10 @@ export interface SessionClientProps {
     startedAt: number;
     completedAt: number | null;
     sessionId: string;
+
   };
+  isCancelled?: boolean;
+  setClearTimeout?: (fn: () => void) => void;
 }
 
 interface BaseSessionProps {

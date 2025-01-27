@@ -28,6 +28,7 @@ import type {
 import { SetsList } from "./SetsList";
 import { BiDotsHorizontalRounded } from "react-icons/bi";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { isEqual, rest } from "lodash";
 
 function debounce<T extends (...args: any[]) => void>(
   func: T,
@@ -60,6 +61,7 @@ export default function ExceriseRoutineCard({
   onUpdate,
   onRestTimeTrigger,
   onExerciseRemoved,
+  isCancelling = false,
 }: ExerciseRoutineCardProps) {
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
@@ -167,6 +169,40 @@ export default function ExceriseRoutineCard({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const isInitialRender = useRef(true);
 
+  const [initialData] = useState(() => ({
+    notes: previousData?.notes || routineExercise.notes || "",
+    restTime: previousData?.restTime ?? routineExercise.restTime ?? 30,
+    sets: initialSets.map((set) => ({
+      weight: set.weight,
+      reps: set.reps,
+      isWarmup: set.isWarmup,
+    })),
+  }));
+
+  const hasChanges = useMemo(() => {
+    const currentSets = sets.map((set) => ({
+      weight: set.weight,
+      reps: set.reps,
+      isWarmup: set.isWarmup,
+    }));
+
+    const changes = {
+      notesChanged: notes !== initialData.notes,
+      restTimeChanged: restTime !== initialData.restTime,
+      setsChanged: !isEqual(currentSets, initialData.sets),
+    };
+
+    console.log("Change detection:", {
+      initialData,
+      current: { notes, restTime, sets: currentSets },
+      changes,
+    });
+
+    return (
+      changes.notesChanged || changes.restTimeChanged || changes.setsChanged
+    );
+  }, [notes, restTime, sets, initialData]);
+
   // Memoize the data transformation
   const currentData = useMemo(
     () => ({
@@ -191,18 +227,23 @@ export default function ExceriseRoutineCard({
 
   // Only update parent on user changes, not initial render
   useEffect(() => {
-    // Skip very first render
-    if (isInitialRender.current) {
+    console.log("Effect triggered:", {
+      isInitialRender: isInitialRender.current,
+      isCancelling,
+      hasChanges,
+    });
+
+    if (isInitialRender.current || isCancelling || !hasChanges) {
       isInitialRender.current = false;
       return;
     }
-
+    console.log("sending update:", currentData);
     debouncedOnUpdate(currentData);
 
     return () => {
       debouncedOnUpdate.cancel();
     };
-  }, [currentData, debouncedOnUpdate]);
+  }, [currentData, debouncedOnUpdate, isCancelling, hasChanges]);
 
   function addWorkingSet() {
     setSets((prevSets) => {
@@ -241,22 +282,36 @@ export default function ExceriseRoutineCard({
     field: keyof Omit<Set, "id">,
     value: string,
   ): void {
-    console.log(`Updating set ${id}, field ${field} to ${value}`);
+    // console.log(`Updating set ${id}, field ${field} to ${value}`);
+    if (isCancelling) return;
 
     setSets((prevSets) => {
       const newSets = prevSets.map((set) => {
         if (set.id === id) {
-          console.log(`Foung matching set:`, set);
+          // console.log(`Foung matching set:`, set);
           return { ...set, [field]: value };
         }
         return set;
       });
-      console.log("Updated sets:", newSets);
+
+      // Trigger the onUpdate callback with the updated sets
+      onUpdate({
+        exerciseId: exercise.id,
+        notes,
+        restTime,
+        sets: newSets.map((set) => ({
+          weight: set.weight,
+          reps: set.reps,
+          isWarmup: set.isWarmup,
+        })),
+      });
+      // console.log("Updated sets:", newSets);
       return newSets;
     });
   }
 
   function deleteSet(id: number): void {
+    if (isCancelling) return;
     if (sets.length <= 1) return;
 
     const filteredSets = sets.filter((set: Set) => set.id !== id);
@@ -278,12 +333,13 @@ export default function ExceriseRoutineCard({
   }, [notes]);
 
   const handleRestTimeChange = (newTime: number) => {
+    if (isCancelling) return;
     setRestTime(newTime);
   };
 
   const handleCheckboxChange = (setId: number) => {
     // Trigger rest timer countdown logic
-    console.log(`Set ${setId} completed. Trigger rest timer countdown.`);
+    // console.log(`Set ${setId} completed. Trigger rest timer countdown.`);
     onRestTimeTrigger(restTime);
   };
 

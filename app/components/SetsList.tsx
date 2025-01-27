@@ -47,7 +47,7 @@ export function SetsList({
             placeholder="-"
             value={set.weight}
             onChange={(e) => {
-              console.log("Input change", e.target.value);
+              // console.log("Input change", e.target.value);
               const value = e.target.value;
               if (/^\d*(?:\.\d*)?$/.test(value)) {
                 updateSet(set.id, "weight", value);
@@ -65,7 +65,7 @@ export function SetsList({
             placeholder="-"
             value={set.reps}
             onChange={(e) => {
-              console.log("Input change", e.target.value);
+              // console.log("Input change", e.target.value);
               const value = e.target.value;
               if (/^\d*(?:\.\d*)?$/.test(value)) {
                 updateSet(set.id, "reps", value);

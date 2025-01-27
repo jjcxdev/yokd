@@ -2,6 +2,7 @@
 
 import { isEqual } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { updateLocalStorage } from "@/app/actions/clientActions";
 
 import { updateWorkoutData } from "@/app/actions/workout";
 import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
@@ -21,7 +22,7 @@ function isValidExercise(
 }
 
 export default function SessionClient({ sessionData }: SessionClientProps) {
-  const { onRestTimeTrigger } = useSessionContext();
+  const { onRestTimeTrigger, isCancelling } = useSessionContext();
 
   // Keep track of pending updates
   const updateTimeoutRef = useRef<NodeJS.Timeout>();
@@ -32,7 +33,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
   const [exerciseData, setExerciseData] = useState<
     Record<string, { notes: string; sets: string; restTime?: number }>
   >(() => {
-    console.log("Initializing exercise data:", sessionData.exercises);
+    // console.log("Initializing exercise data:", sessionData.exercises);
     const initialData: Record<
       string,
       { notes: string; sets: string; restTime?: number }
@@ -41,13 +42,13 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
     sessionData.exercises.forEach(
       ({ exercise, routineExercise, previousData }) => {
         if (exercise) {
-          console.log(`Initializing exercise data for ${exercise.id}`, {
-            id: exercise.id,
-            previousData,
-            routineExercise,
-            workoutDataRestTime: previousData?.restTime,
-            routineRestTime: routineExercise.restTime,
-          });
+          // console.log(`Initializing exercise data for ${exercise.id}`, {
+          //   id: exercise.id,
+          //   previousData,
+          //   routineExercise,
+          //   workoutDataRestTime: previousData?.restTime,
+          //   routineRestTime: routineExercise.restTime,
+          // });
 
           // First create sets with initial weights from the routine
           let initialSets: ExerciseSet[] = [];
@@ -99,10 +100,10 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
             JSON.parse(previousData.sets).length > 0;
 
           if (hasPreviousData) {
-            console.log(
-              `Found previous data with non-empty sets for ${exercise.id}`,
-              previousData,
-            );
+            // console.log(
+            //   `Found previous data with non-empty sets for ${exercise.id}`,
+            //   previousData,
+            // );
             initialData[exercise.id] = {
               notes: previousData?.notes || routineExercise.notes || "",
               sets: previousData?.sets || JSON.stringify(initialSets),
@@ -110,7 +111,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
                 previousData?.restTime ?? routineExercise.restTime ?? 30,
             };
           } else {
-            console.log(`Using initial working sets for ${exercise.id}`);
+            // console.log(`Using initial working sets for ${exercise.id}`);
             initialData[exercise.id] = {
               notes: routineExercise.notes || "",
               sets: JSON.stringify(initialSets),
@@ -122,7 +123,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
       },
     );
 
-    console.log("Final initialized exercise data:", initialData);
+    // console.log("Final initialized exercise data:", initialData);
     return initialData;
   });
 
@@ -140,30 +141,33 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
       exerciseId: string,
       data: { notes: string; sets: Array<ExerciseSet>; restTime?: number },
     ) => {
-      if (typeof window === "undefined") {
+      if (typeof window === "undefined" || isCancelling) {
+        if (updateTimeoutRef.current) {
+          clearTimeout(updateTimeoutRef.current);
+        }
         return; // Exit if running on server
       }
 
       if (initialRenderRef.current) {
-        console.log("Skipping update - initial render");
+        // console.log("Skipping update - initial render");
         initialRenderRef.current = false;
         return;
       }
-      console.log("Raw incoming sets data:", data.sets);
+      // console.log("Raw incoming sets data:", data.sets);
 
-      console.log("Processing exercise update - not initial render");
+      // console.log("Processing exercise update - not initial render");
 
       // Add IDs back to sets before storing
       const setsWithIds = data.sets.map((set, index) => {
         const newId = set.isWarmup ? index + 1 : index + 100;
-        console.log(`Mapping set ${index}:`, { set, newId });
+        // console.log(`Mapping set ${index}:`, { set, newId });
         return {
           ...set,
           id: newId,
         };
       });
 
-      console.log("Mapped sets with IDs:", setsWithIds);
+      // console.log("Mapped sets with IDs:", setsWithIds);
 
       const dataToSet = {
         notes: data.notes,
@@ -194,16 +198,23 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
         currentData.restTime !== data.restTime;
 
       if (!dataHasChanged) {
-        console.log("Skipping update - data is the same");
+        // console.log("Skipping update - data is the same");
         return;
       }
 
-      console.log(`Updating exercise data for ${exerciseId}`, dataToSet);
+      // console.log(`Updating exercise data for ${exerciseId}`, dataToSet);
 
       setExerciseData((prev) => ({
         ...prev,
         [exerciseId]: dataToSet,
       }));
+
+      // Update local storage
+      updateLocalStorage(sessionData.sessionId, exerciseId, {
+        notes: data.notes,
+        sets: data.sets,
+        restTime: data.restTime,
+      });
 
       // Clear any pending update
       if (updateTimeoutRef.current) {
@@ -212,11 +223,11 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
 
       // Set new timeout for update
       updateTimeoutRef.current = setTimeout(() => {
-        console.log("Sending workout data to server:", {
-          sessionId: sessionData.sessionId,
-          exerciseId,
-          data,
-        });
+        // console.log("Sending workout data to server:", {
+        //   sessionId: sessionData.sessionId,
+        //   exerciseId,
+        //   data,
+        // });
 
         updateWorkoutData(sessionData.sessionId, exerciseId, data).catch(
           (error) => {
@@ -225,7 +236,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
         );
       }, 1000);
     },
-    [sessionData.sessionId, exerciseData],
+    [sessionData.sessionId, exerciseData, isCancelling],
   );
 
   return (
@@ -245,6 +256,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
               }}
               onUpdate={(data) => handleExerciseUpdate(exercise.id, data)}
               onRestTimeTrigger={onRestTimeTrigger}
+              isCancelling={isCancelling}
             />
           ))}
       </div>

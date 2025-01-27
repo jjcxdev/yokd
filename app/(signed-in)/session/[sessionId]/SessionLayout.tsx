@@ -102,7 +102,7 @@ export default function SessionLayout({
     if (audioRef.current && isAudioInitialized.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch((error) => {
-        console.log("Failed to play audio:", error);
+        // console.log("Failed to play audio:", error);
       });
     }
 
@@ -129,9 +129,9 @@ export default function SessionLayout({
   };
 
   useEffect(() => {
-    console.log("Rest Time:", restTime);
-    console.log("Current Rest Time:", currentRestTime);
-    console.log("Is Resting:", isResting);
+    // console.log("Rest Time:", restTime);
+    // console.log("Current Rest Time:", currentRestTime);
+    // console.log("Is Resting:", isResting);
   }, [restTime, currentRestTime, isResting]);
 
   return (

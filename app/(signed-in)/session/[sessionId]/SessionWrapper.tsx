@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 
 import {
   completeWorkoutSession,
@@ -18,10 +18,11 @@ export default function SessionWrapper({
   const router = useRouter();
   const [restTime, setRestTime] = useState(30);
   const [isResting, setIsResting] = useState(false);
-  const [isCancelled, setIsCancelled] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const handleCancel = useCallback(() => {
     if (window.confirm("Are you sure you want to cancel the session?")) {
+      setIsCancelling(true);
       const sessionKey = `session-${sessionId}`;
       localStorage.removeItem(sessionKey);
 
@@ -66,7 +67,9 @@ export default function SessionWrapper({
   }, []);
 
   return (
-    <SessionContext.Provider value={{ onRestTimeTrigger: handleRestTimer }}>
+    <SessionContext.Provider
+      value={{ onRestTimeTrigger: handleRestTimer, isCancelling }}
+    >
       <SessionLayout
         onFinish={handleFinish}
         restTime={restTime}

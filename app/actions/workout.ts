@@ -16,7 +16,6 @@ import {
   workoutSessions,
 } from "@/lib/db/schema";
 import type { DBSet } from "@/types/types";
-import { update } from "lodash";
 
 function safeParseInt(value: string): number {
   const parsed = parseInt(value);
@@ -30,7 +29,7 @@ function safeParseInt(value: string): number {
 export async function startWorkoutSession(routineId: string) {
   try {
     const { userId } = await auth();
-    console.log("Starting session with userId:", userId);
+    // console.log("Starting session with userId:", userId);
 
     if (!userId) {
       throw new Error("Unauthorized");
@@ -43,7 +42,7 @@ export async function startWorkoutSession(routineId: string) {
       .where(eq(routines.id, routineId))
       .limit(1);
 
-    console.log("Found routine:", routine);
+    // console.log("Found routine:", routine);
 
     if (!routine.length || routine[0].userId !== userId) {
       throw new Error("Routine not found or unauthorized");
@@ -61,20 +60,20 @@ export async function startWorkoutSession(routineId: string) {
         .orderBy(routineExercises.order);
 
       if (!routineExerciseList.length) {
-        console.log("Warning: No exercises found for routine", routineId);
+        // console.log("Warning: No exercises found for routine", routineId);
       }
 
     const sessionId = nanoid();
     const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
 
-    console.log("Creating session with dat:", {
-      id: sessionId,
-      userId,
-      routineId,
-      status: "active",
-      startedAt: timestamp,
-      completedAt: null,
-    });
+    // console.log("Creating session with dat:", {
+    //   id: sessionId,
+    //   userId,
+    //   routineId,
+    //   status: "active",
+    //   startedAt: timestamp,
+    //   completedAt: null,
+    // });
 
     // Create new workout session
     await db.insert(workoutSessions).values({
@@ -88,10 +87,10 @@ export async function startWorkoutSession(routineId: string) {
 
     for (const { exercise, routineExercise } of routineExerciseList){
       if (exercise) {
-        console.log('Creating workout data for exercise:', {
-          id: exercise.id,
-          restTime: routineExercise.restTime,
-        });
+        // console.log('Creating workout data for exercise:', {
+        //   id: exercise.id,
+        //   restTime: routineExercise.restTime,
+        // });
 
         // First get the most recent workout_data for this exercise
         const previousWorkoutData = await db
@@ -117,7 +116,7 @@ export async function startWorkoutSession(routineId: string) {
       }
     }
 
-    console.log("Session created successfully:", sessionId);
+    // console.log("Session created successfully:", sessionId);
 
 
     redirect(`/session/${sessionId}`);
@@ -136,7 +135,7 @@ export async function getWorkoutSession(sessionId: string) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    console.log('Getting workout session with ID:', sessionId);
+    // console.log('Getting workout session with ID:', sessionId);
 
     const session = await db
       .select()
@@ -175,7 +174,7 @@ export async function getWorkoutSession(sessionId: string) {
       )
       .orderBy(routineExercises.order);
 
-      console.log('Raw exercisesList from database:', exercisesList);
+      // console.log('Raw exercisesList from database:', exercisesList);
 
     // Get the most recent completed session for this user/routine before this session
     const previousSession = await db
@@ -210,11 +209,11 @@ export async function getWorkoutSession(sessionId: string) {
     return {
       session: session[0],
       exercises: exercisesList.map((exercise) => {
-        console.log('Exercise data:', {
-          id: exercise.exercise?.id,
-          workoutData: exercise.workoutData,
-          routineExercise: exercise.routineExercise,
-        });
+        // console.log('Exercise data:', {
+        //   id: exercise.exercise?.id,
+        //   workoutData: exercise.workoutData,
+        //   routineExercise: exercise.routineExercise,
+        // });
 
         return {
         ...exercise,
@@ -344,8 +343,8 @@ export async function updateWorkoutData(
   sessionId: string,
   exerciseId: string,
   data: {
-    notes: string;
-    sets: Array<{
+    notes?: string;
+    sets?: Array<{
       weight: string;
       reps: string;
       isWarmup: boolean;
@@ -355,37 +354,87 @@ export async function updateWorkoutData(
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) {
-      throw new Error("Unauthorized");
+    if (!userId) throw new Error("Unauthorized");
+
+      // If no data is provided to update, don't do anything
+      if (!data.notes && !data.sets && data.restTime === undefined) {
+        return { success: true};
     }
 
     await db.transaction(async (tx) => {
-      // Handle workout data updates (notes, rest time)
+      // Only if we have notes or restTime to update
       if (data.notes !== undefined || data.restTime !== undefined) {
+        // Get current workout data if it exists
+        const currentData = await tx
+        .select()
+        .from(workoutData)
+        .where(
+          and(
+            eq(workoutData.sessionId, sessionId),
+            eq(workoutData.exerciseId, exerciseId),
+          )
+        )
+        .limit(1);
+
+        // Only update if data has changed
+        const notesChanged = data.notes !== undefined && (!currentData.length || currentData[0].notes !== data.notes );
+        const restTimeChanged = data.restTime !== undefined && (!currentData.length || currentData[0].restTime !== data.restTime);
+
+        if (notesChanged || restTimeChanged) {
+          const updateValues: any = {};
+          if (notesChanged) updateValues.notes = data.notes;
+          if (restTimeChanged) updateValues.restTime = data.restTime;
+          updateValues.updatedAt = Date.now();
+
         await tx
           .insert(workoutData)
           .values({
+            ...currentData[0],
+            ...updateValues,
             id: nanoid(),
             sessionId,
             exerciseId,
-            notes: data.notes,
-            restTime: data.restTime ?? 30,
-            updatedAt: Date.now(),
           })
           .onConflictDoUpdate({
             target: [workoutData.sessionId, workoutData.exerciseId],
-            set: {
-              ...(data.notes !== undefined && { notes: data.notes }),
-              ...(data.restTime !== undefined && {
-                restTime: data.restTime ?? 30,
-              }),
-              updatedAt: Date.now(),
-            },
+            set: updateValues,
           });
+        }
       }
 
-      // Handle set updates
+      // Only update sets if they're provided
       if (data.sets) {
+        const currentSets = await tx
+        .select({
+          weight: sets.weight,
+          reps: sets.reps,
+          isWarmup: sets.isWarmup,
+            setNumber: sets.setNumber,
+        }).from(sets)
+        .where(
+          and(eq(sets.sessionId, sessionId), eq(sets.exerciseId, exerciseId)),
+        )
+        .orderBy(sets.setNumber);
+
+        // Compare sets by converting weight and reps to strings and booleans
+        const normalizedCurrentSets = currentSets.map((set) => ({
+          weight: set.weight.toString(),
+          reps: set.reps.toString(),
+          isWarmup: set.isWarmup === 1,
+        }));
+
+        const setsChanged =
+        normalizedCurrentSets.length !== data.sets.length ||
+        !normalizedCurrentSets.every((set, index) =>{
+          const newSet = data.sets![index];
+          return (
+            set.weight === newSet.weight &&
+            set.reps === newSet.reps &&
+            set.isWarmup === newSet.isWarmup
+          );
+        });
+
+        if (setsChanged) {
         await tx
           .delete(sets)
           .where(
@@ -405,6 +454,7 @@ export async function updateWorkoutData(
           })),
         );
       }
+    }
     });
 
     return { success: true };
@@ -428,7 +478,7 @@ export async function cancelWorkoutSession(sessionId: string) {
     // Mark the session as cancelled
     await db
       .update(workoutSessions)
-      .set({ status: "cancelled", completedAt: Date.now() })
+      .set({ status: "cancelled" })
       .where(eq(workoutSessions.id, sessionId));
 
     return { success: true };

@@ -17,7 +17,7 @@ export async function postRoutines({
   exercises,
   userId,
 }: RoutineInput) {
-  console.log("Received exercises:", exercises);
+ //console.log("Received exercises:", exercises);
 
   try {
     const routineId = nanoid();
@@ -30,19 +30,19 @@ export async function postRoutines({
       userId,
     });
 
-    console.log("Created routine:", routineId);
+ //console.log("Created routine:", routineId);
 
     // Map the exercises to the database format
     const transformedExercises = exercises.map((exercise, index) => {
       // Log the exercise we're processing
-      console.log("Processing exercise:", exercise);
+ //console.log("Processing exercise:", exercise);
 
       const workingSets = exercise.sets.filter((set) => !set.isWarmup);
       const warmupSets = exercise.sets.filter((set) => set.isWarmup);
 
       // Log the sets after filtering
-      console.log("Working sets:", workingSets);
-      console.log("Warmup sets:", warmupSets);
+ //console.log("Working sets:", workingSets);
+ //console.log("Warmup sets:", warmupSets);
 
       const handleEmptyValue = (value: string) => {
         if (!value || value === "") return null;
@@ -70,15 +70,15 @@ export async function postRoutines({
       };
 
       // Log the transformed exercise
-      console.log("Transformed exercise:", transformed);
+ //console.log("Transformed exercise:", transformed);
       return transformed;
     });
 
     // Log the query before executing
     const query = db.insert(routineExercises).values(transformedExercises);
     const sql = query.toSQL();
-    console.log("SQL to execute:", sql.sql);
-    console.log("SQL parameters:", sql.params);
+ //console.log("SQL to execute:", sql.sql);
+ //console.log("SQL parameters:", sql.params);
 
     // Execute the insert
     await query;

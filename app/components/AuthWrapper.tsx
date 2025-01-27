@@ -13,11 +13,11 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   useEffect(() => {
     if (!isSignedIn) {
       localStorage.clear();
-      console.log("Clearing localStorage:", localStorage);
+      // console.log("Clearing localStorage:", localStorage);
       sessionStorage.clear();
-      console.log("Clearing sessionStorage:", sessionStorage);
+      // console.log("Clearing sessionStorage:", sessionStorage);
       router.refresh();
-      console.log("Refreshing router:", router);
+      // console.log("Refreshing router:", router);
     }
   }, [isSignedIn, router]);
 

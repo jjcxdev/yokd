@@ -19,8 +19,8 @@ export default function FolderToggle({
 
   function handleToggle(e: React.MouseEvent) {
     if (!hasChildren) return;
-    console.log("button pressed:", handleToggle);
-    console.log("children:", children);
+    // console.log("button pressed:", handleToggle);
+    // console.log("children:", children);
     e.stopPropagation();
     setIsExpanded(!isExpanded);
     props.onClick?.();

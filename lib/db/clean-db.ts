@@ -21,7 +21,7 @@ async function cleanDb() {
     await db.delete(folders);
     await db.delete(users);
 
-    console.log("Successfully cleaned database");
+ //console.log("Successfully cleaned database");
   } catch (error) {
     console.error("Error cleaning database:", error);
   }

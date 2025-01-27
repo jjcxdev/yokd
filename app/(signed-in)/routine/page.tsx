@@ -164,7 +164,7 @@ function RoutineContent() {
     // Create an array of exercises with their data
     const exercisesToSave = Object.entries(exerciseData).map(
       ([exerciseId, data]) => {
-        console.log("Processing exercise data:", data);
+        // console.log("Processing exercise data:", data);
         return {
           exerciseId,
           notes: data.notes,
@@ -174,7 +174,7 @@ function RoutineContent() {
       },
     );
 
-    console.log("Sending exercises to postRoutines:", exercisesToSave);
+    // console.log("Sending exercises to postRoutines:", exercisesToSave);
 
     postRoutines({
       name: routineName,
