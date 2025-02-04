@@ -1,7 +1,7 @@
 "use client";
 
 import { isEqual } from "lodash";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { updateWorkoutData } from "@/app/actions/workout";
 import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
@@ -21,19 +21,21 @@ function isValidExercise(
 }
 
 export default function SessionClient({ sessionData }: SessionClientProps) {
+  const updateTimeoutsRef = useRef<{ [key: string]: NodeJS.Timeout }>({});
+
   const { onRestTimeTrigger } = useSessionContext();
 
-  // Keep track of pending updates
-  const updateTimeoutRef = useRef<NodeJS.Timeout>();
-  const hasInitialized = useRef(false);
   const initialRenderRef = useRef(true);
 
-  // Initialize with previous data if available
+  // Initialize state with empty object first
   const [exerciseData, setExerciseData] = useState<
-    Record<string, { notes: string; sets: string }>
-  >(() => {
-    console.log("Initializing exercise data:", sessionData.exercises);
-    const initialData: Record<string, { notes: string; sets: string }> = {};
+    Record<string, { notes: string; sets: ExerciseSet[] }>
+  >({});
+
+  // Move initialization logic to useEffect
+  useEffect(() => {
+    const initialData: Record<string, { notes: string; sets: ExerciseSet[] }> =
+      {};
 
     sessionData.exercises.forEach(
       ({ exercise, routineExercise, previousData }) => {
@@ -83,46 +85,78 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
               }));
 
             initialSets = [...warmupSets, ...workingSets];
-          } catch {
-            initialSets = [];
+          } catch (error) {
+            console.error("Failed to create initial sets:", error);
           }
 
-          // Check for valid previous data
-          const hasPreviousData =
-            previousData?.sets &&
-            previousData.sets !== "[]" &&
-            JSON.parse(previousData.sets).length > 0;
+          // Merge routine defaults with previous workout data if available.
+          let mergedSets = initialSets;
+          let mergedNotes = routineExercise.notes || "";
 
-          if (hasPreviousData) {
-            console.log(
-              `Found previous data with non-empty sets for ${exercise.id}`,
-              previousData,
-            );
-            initialData[exercise.id] = {
-              notes: previousData.notes,
-              sets: previousData.sets,
-            };
-          } else {
-            console.log(`Using initial working sets for ${exercise.id}`);
-            initialData[exercise.id] = {
-              notes: routineExercise.notes || "",
-              sets: JSON.stringify(initialSets),
-            };
+          if (previousData) {
+            try {
+              // Parse the stored JSON string from previous data
+              const previousSets = previousData.sets
+                ? JSON.parse(previousData.sets)
+                : [];
+
+              // Prioritize previous session's data as the base
+              mergedSets = previousSets.length > 0 ? previousSets : initialSets;
+              mergedNotes = previousData.notes || routineExercise.notes || "";
+            } catch (error) {
+              console.error("Error applying previous data:", error);
+            }
           }
+
+          // Prepare local data
+          const localData = {
+            notes: mergedNotes,
+            sets: mergedSets,
+          };
+          // Prepare the data to send (sets is already an array)
+          const dataToSend = {
+            notes: mergedNotes,
+            sets: mergedSets,
+          };
+
+          // Update the local state
+          initialData[exercise.id] = localData;
+
+          // Clear any pending timeout for this exercise...
+          if (updateTimeoutsRef.current[exercise.id]) {
+            clearTimeout(updateTimeoutsRef.current[exercise.id]);
+          }
+
+          // Set up an update call with a delay for this exercise.
+          updateTimeoutsRef.current[exercise.id] = setTimeout(() => {
+            console.log("Sending workout data to server:", {
+              sessionId: sessionData.sessionId,
+              exerciseId: exercise.id,
+              data: dataToSend,
+            });
+            updateWorkoutData(
+              sessionData.sessionId,
+              exercise.id,
+              dataToSend,
+            ).catch((error) => {
+              console.error("Error updating workout data:", error);
+            });
+            delete updateTimeoutsRef.current[exercise.id];
+          }, 1000);
         }
       },
     );
 
-    console.log("Final initialized exercise data:", initialData);
-    return initialData;
-  });
+    // Set initial data in one operation
+    setExerciseData(initialData);
+  }, [sessionData.exercises, sessionData.sessionId]);
 
-  // Cleanup timeout on unmount
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
-      if (updateTimeoutRef.current) {
-        clearTimeout(updateTimeoutRef.current);
-      }
+      Object.values(updateTimeoutsRef.current).forEach((timeout) =>
+        clearTimeout(timeout),
+      );
     };
   }, []);
 
@@ -149,20 +183,12 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
 
       console.log("Mapped sets with IDs:", setsWithIds);
 
-      const dataToSet = {
-        notes: data.notes,
-        sets: JSON.stringify(setsWithIds),
-      };
-
-      // Parse both current and new data for comparison
       const currentData = exerciseData[exerciseId];
-      const currentSets = JSON.parse(currentData.sets) as Array<
-        ExerciseSet & { id: number }
-      >;
+      const currentSets = currentData?.sets ?? [];
 
       // Compare data excluding IDs
       const setsAreEqual = isEqual(
-        currentSets.map((s: ExerciseSet & { id: number }) => ({
+        currentSets.map((s: ExerciseSet) => ({
           weight: s.weight,
           reps: s.reps,
           isWarmup: s.isWarmup,
@@ -170,11 +196,15 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
         data.sets,
       );
 
-      // Only update state if data has changed
-      if (currentData.notes === data.notes && setsAreEqual) {
+      if (currentData?.notes === data.notes && setsAreEqual) {
         console.log("Skipping update - data is the same");
         return;
       }
+
+      const dataToSet = {
+        notes: data.notes,
+        sets: setsWithIds,
+      };
 
       console.log(`Updating exercise data for ${exerciseId}`, dataToSet);
 
@@ -183,24 +213,24 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
         [exerciseId]: dataToSet,
       }));
 
-      // Clear any pending update
-      if (updateTimeoutRef.current) {
-        clearTimeout(updateTimeoutRef.current);
+      // Clear any existing timeout for this exercise.
+      if (updateTimeoutsRef.current[exerciseId]) {
+        clearTimeout(updateTimeoutsRef.current[exerciseId]);
       }
 
-      // Set new timeout for update
-      updateTimeoutRef.current = setTimeout(() => {
+      // Set a new timeout for updating this exercise.
+      updateTimeoutsRef.current[exerciseId] = setTimeout(() => {
         console.log("Sending workout data to server:", {
           sessionId: sessionData.sessionId,
           exerciseId,
           data,
         });
-
         updateWorkoutData(sessionData.sessionId, exerciseId, data).catch(
           (error) => {
             console.error("Error updating workout data:", error);
           },
         );
+        delete updateTimeoutsRef.current[exerciseId];
       }, 1000);
     },
     [sessionData.sessionId, exerciseData],
@@ -217,8 +247,8 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
               exercise={exercise}
               routineExercise={routineExercise}
               previousData={{
-                notes: exerciseData[exercise.id].notes,
-                sets: exerciseData[exercise.id].sets,
+                notes: exerciseData[exercise.id]?.notes || "",
+                sets: exerciseData[exercise.id]?.sets || [],
               }}
               onUpdate={(data) => handleExerciseUpdate(exercise.id, data)}
               onRestTimeTrigger={onRestTimeTrigger}

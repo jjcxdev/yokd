@@ -24,11 +24,7 @@ import type { DBSet } from "@/types/types";
 export async function startWorkoutSession(routineId: string) {
   try {
     const { userId } = await auth();
-    console.log("Starting session with userId:", userId);
-
-    if (!userId) {
-      throw new Error("Unauthorized");
-    }
+    if (!userId) throw new Error("Unauthorized");
 
     // First verify the routine exists and belongs to this user
     const routine = await db
@@ -37,37 +33,14 @@ export async function startWorkoutSession(routineId: string) {
       .where(eq(routines.id, routineId))
       .limit(1);
 
-    console.log("Found routine:", routine);
-
     if (!routine.length || routine[0].userId !== userId) {
       throw new Error("Routine not found or unauthorized");
     }
 
     const sessionId = nanoid();
-    const timestamp = Math.floor(Date.now() / 1000); // Unix timestamp in seconds
+    const timestamp = Math.floor(Date.now() / 1000);
 
-    console.log("Creating session with dat:", {
-      id: sessionId,
-      userId,
-      routineId,
-      status: "active",
-      startedAt: timestamp,
-      completedAt: null,
-    });
-
-    // Create new workout session
-    await db.insert(workoutSessions).values({
-      id: sessionId,
-      userId,
-      routineId,
-      status: "active",
-      startedAt: timestamp,
-      completedAt: null,
-    });
-
-    console.log("Session created successfully:", sessionId);
-
-    // Fetch exercises for this routine
+    // Get the routine exercises with their data
     const routineExerciseList = await db
       .select({
         exercise: exercises,
@@ -78,13 +51,74 @@ export async function startWorkoutSession(routineId: string) {
       .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
       .orderBy(routineExercises.order);
 
-    if (!routineExerciseList.length) {
-      console.log("Warning: No exercises found for routine", routineId);
-    }
+    // Start a transaction to create everything at once
+    await db.transaction(async (tx) => {
+      // Create new workout session
+      await tx.insert(workoutSessions).values({
+        id: sessionId,
+        userId,
+        routineId,
+        status: "active",
+        startedAt: timestamp,
+        completedAt: null,
+      });
+
+      // For each exercise, create workout_data and sets
+      for (const { exercise, routineExercise } of routineExerciseList) {
+        if (!exercise) continue;
+
+        // Create workout_data entry
+        await tx.insert(workoutData).values({
+          id: nanoid(),
+          sessionId,
+          exerciseId: exercise.id,
+          notes: routineExercise.notes ?? "",
+          updatedAt: Date.now(),
+        });
+
+        // Parse weights and create sets
+        const warmupWeights = JSON.parse(routineExercise.warmupSetWeights);
+        const workingWeights = JSON.parse(routineExercise.workingSetWeights);
+        const setsToCreate = [];
+
+        // Add warmup sets
+        for (let i = 0; i < routineExercise.warmupSets; i++) {
+          setsToCreate.push({
+            id: nanoid(),
+            sessionId,
+            exerciseId: exercise.id,
+            setNumber: setsToCreate.length + 1,
+            weight: warmupWeights[i] ?? 0,
+            reps: routineExercise.warmupReps ?? 0,
+            isWarmup: 1,
+            completedAt: 0,
+          });
+        }
+
+        // Add working sets
+        for (let i = 0; i < routineExercise.workingSets; i++) {
+          setsToCreate.push({
+            id: nanoid(),
+            sessionId,
+            exerciseId: exercise.id,
+            setNumber: setsToCreate.length + 1,
+            weight: workingWeights[i] ?? 0,
+            reps: routineExercise.workingReps ?? 0,
+            isWarmup: 0,
+            completedAt: 0,
+          });
+        }
+
+        // Insert all sets if we have any
+        if (setsToCreate.length > 0) {
+          await tx.insert(sets).values(setsToCreate);
+        }
+      }
+    });
 
     redirect(`/session/${sessionId}`);
   } catch (error) {
-    console.error("Detailed error in  startWorkoutSessionsf:", error);
+    console.error("Detailed error in startWorkoutSession:", error);
     throw error;
   }
 }
@@ -195,9 +229,26 @@ export async function completeWorkoutSession(sessionId: string) {
       throw new Error("Unauthorized");
     }
 
+    // First verify the session belongs to this user
+    const session = await db
+      .select()
+      .from(workoutSessions)
+      .where(eq(workoutSessions.id, sessionId))
+      .limit(1);
+
+    if (
+      !session.length ||
+      session[0].userId.toLowerCase() !== userId.toLowerCase()
+    ) {
+      throw new Error("Session not found or unauthorized");
+    }
+
     await db
       .update(workoutSessions)
-      .set({ status: "completed", completedAt: Date.now() })
+      .set({
+        status: "completed",
+        completedAt: Math.floor(Date.now() / 1000),
+      })
       .where(eq(workoutSessions.id, sessionId));
 
     revalidatePath("/dashboard");
@@ -235,45 +286,61 @@ export async function updateWorkoutData(
     }
 
     await db.transaction(async (tx) => {
-      // Update notes in workout_data
-      await tx
-        .insert(workoutData)
-        .values({
+      // Get existing workout_data for this exercise
+      const existingData = await tx
+        .select()
+        .from(workoutData)
+        .where(
+          and(
+            eq(workoutData.sessionId, sessionId),
+            eq(workoutData.exerciseId, exerciseId),
+          ),
+        )
+        .limit(1);
+      // Insert or update workout_data entry to store notes (our snapshot metadata)
+      if (existingData.length > 0) {
+        await tx
+          .update(workoutData)
+          .set({
+            notes: data.notes,
+            updatedAt: Date.now(),
+          })
+          .where(
+            and(
+              eq(workoutData.sessionId, sessionId),
+              eq(workoutData.exerciseId, exerciseId),
+            ),
+          );
+      } else {
+        await tx.insert(workoutData).values({
           id: nanoid(),
           sessionId,
           exerciseId,
           notes: data.notes,
           updatedAt: Date.now(),
-        })
-        .onConflictDoUpdate({
-          target: [workoutData.sessionId, workoutData.exerciseId],
-          set: {
-            notes: data.notes,
-            updatedAt: Date.now(),
-          },
         });
+      }
 
-      // Delete existing sets
+      // Always update the sets snapshot.
+      const newSets = data.sets.map((set, index) => ({
+        id: nanoid(),
+        sessionId,
+        exerciseId,
+        setNumber: index + 1,
+        weight: safeParseInt(set.weight),
+        reps: safeParseInt(set.reps),
+        isWarmup: set.isWarmup ? 1 : 0,
+        completedAt: Date.now(),
+      }));
+
+      // Delete existing sets and insert new snapshot
       await tx
         .delete(sets)
         .where(
           and(eq(sets.sessionId, sessionId), eq(sets.exerciseId, exerciseId)),
         );
-
-      // Insert new sets
-      if (data.sets.length > 0) {
-        await tx.insert(sets).values(
-          data.sets.map((set, index) => ({
-            id: nanoid(),
-            sessionId,
-            exerciseId,
-            setNumber: index + 1,
-            weight: safeParseInt(set.weight),
-            reps: safeParseInt(set.reps),
-            isWarmup: set.isWarmup ? 1 : 0,
-            completedAt: Date.now(),
-          })),
-        );
+      if (newSets.length > 0) {
+        await tx.insert(sets).values(newSets);
       }
     });
   } catch (error) {

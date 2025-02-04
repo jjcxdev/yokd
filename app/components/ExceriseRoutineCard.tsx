@@ -132,9 +132,9 @@ export default function ExceriseRoutineCard({
       const combinedSets = [...warmupSets, ...workingSets];
 
       // Only override with previous data if it exists and is valid
-      if (previousData?.sets && previousData.sets !== "[]") {
+      if (previousData?.sets && previousData.sets.length > 0) {
         try {
-          const parsedSets = JSON.parse(previousData.sets);
+          const parsedSets = previousData.sets;
           if (Array.isArray(parsedSets) && parsedSets.length > 0) {
             return parsedSets.map((set, index) => ({
               id: index + 1,
@@ -199,6 +199,10 @@ export default function ExceriseRoutineCard({
       debouncedOnUpdate.cancel();
     };
   }, [currentData, debouncedOnUpdate]);
+
+  useEffect(() => {
+    setNotes(previousData?.notes || routineExercise.notes || "");
+  }, [previousData?.notes, routineExercise.notes]);
 
   function addWorkingSet() {
     setSets((prevSets) => {
