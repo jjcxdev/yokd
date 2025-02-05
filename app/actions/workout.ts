@@ -185,30 +185,31 @@ export async function getWorkoutSession(sessionId: string) {
           json_object(
             'weight', CAST(${sets.weight} AS TEXT),
             'reps', CAST(${sets.reps} AS TEXT),
-            'isWarmup', CAST(${sets.isWarmup} AS TEXT),
-            'setNumber', CAST(${sets.setNumber} AS TEXT)
+            'isWarmup', ${sets.isWarmup}
           )
-        )`,
+        )`.as("sets"),
       },
     })
-    .from(routineExercises)
-    .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+    .from(exercises)
+    .innerJoin(
+      routineExercises,
+      and(
+        eq(routineExercises.exerciseId, exercises.id),
+        eq(routineExercises.routineId, session.routineId),
+      ),
+    )
     .leftJoin(
       workoutData,
       and(
-        eq(workoutData.exerciseId, routineExercises.exerciseId),
-        eq(workoutData.sessionId, previousSession?.id ?? "no-session"),
+        eq(workoutData.exerciseId, exercises.id),
+        eq(workoutData.sessionId, sessionId),
       ),
     )
     .leftJoin(
       sets,
-      and(
-        eq(sets.exerciseId, routineExercises.exerciseId),
-        eq(sets.sessionId, previousSession?.id ?? "no-session"),
-      ),
+      and(eq(sets.exerciseId, exercises.id), eq(sets.sessionId, sessionId)),
     )
-    .groupBy(routineExercises.id)
-    .orderBy(routineExercises.order);
+    .groupBy(exercises.id);
   console.log("Raw query results from sets and workout_data:", exercisesQuery);
   const exerciseResults = exercisesQuery as unknown as QueryResult[];
 
