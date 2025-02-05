@@ -49,13 +49,16 @@ export async function postRoutines({
         return isNaN(parsed) ? null : parsed;
       };
 
-      // Convert weights to arrays of strings (to match schema type)
-      const workingSetWeights = workingSets.map((set) =>
-        String(parseFloat(set.weight) || 0),
-      );
-      const warmupSetWeights = warmupSets.map((set) =>
-        String(parseFloat(set.weight) || 0),
-      );
+      // Extract weights and convert arrays to strings
+      const workingSetWeights = workingSets
+        .map((set) => set.weight)
+        .filter((weight) => weight !== "")
+        .join(",");
+
+      const warmupSetWeights = warmupSets
+        .map((set) => set.weight)
+        .filter((weight) => weight !== "")
+        .join(",");
 
       return {
         id: nanoid(),

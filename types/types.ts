@@ -123,7 +123,8 @@ export interface ExerciseRoutineCardProps {
 
 export interface SetListProps {
   sets: ExerciseSet[];
-  previousSets?: ExerciseSet[]; // Add this line
+  previousSets?: ExerciseSet[];
+  routineExercise: RoutineExercise;
   updateSet: (
     id: number,
     field: keyof Omit<ExerciseSet, "id">,

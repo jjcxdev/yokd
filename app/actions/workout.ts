@@ -31,6 +31,34 @@ const convertToBoolean = (value: unknown): boolean => {
 // GET WORKOUT SESSION FUNCTION
 // ---------------------------
 
+const parseWeightsArray = (weightsString: string | null): number[] => {
+  if (!weightsString) return [];
+  try {
+    // If it's already a number, return it as a single-item array
+    if (!isNaN(Number(weightsString))) {
+      return [Number(weightsString)];
+    }
+
+    // If it's a comma-separated string
+    if (weightsString.includes(",")) {
+      return weightsString
+        .split(",")
+        .map(Number)
+        .filter((n) => !isNaN(n));
+    }
+
+    // Try parsing as JSON
+    const parsed = JSON.parse(weightsString);
+    if (Array.isArray(parsed)) {
+      return parsed.map(Number).filter((n) => !isNaN(n));
+    }
+
+    return [];
+  } catch {
+    return [];
+  }
+};
+
 export async function startWorkoutSession(routineId: string) {
   try {
     const { userId } = await auth();
@@ -58,21 +86,10 @@ export async function startWorkoutSession(routineId: string) {
     // Create initial sets for each exercise
     for (const routineExercise of exercisesList) {
       // Parse weights arrays from JSON strings - they're stored as stringified arrays of numbers
-      const warmupWeights = routineExercise.warmupSetWeights
-        ? (
-            JSON.parse(
-              String(routineExercise.warmupSetWeights), // Add String() conversion
-            ) as number[]
-          ).filter(Number.isFinite) // Filter out invalid values
-        : [];
-
-      const workingWeights = routineExercise.workingSetWeights
-        ? (
-            JSON.parse(
-              String(routineExercise.workingSetWeights), // Add String() conversion
-            ) as number[]
-          ).filter(Number.isFinite) // Filter out invalid values
-        : [];
+      const warmupWeights = parseWeightsArray(routineExercise.warmupSetWeights);
+      const workingWeights = parseWeightsArray(
+        routineExercise.workingSetWeights,
+      );
 
       const timestamp = Math.floor(Date.now() / 1000);
 

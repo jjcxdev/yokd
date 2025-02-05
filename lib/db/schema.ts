@@ -79,14 +79,8 @@ export const routineExercises = sqliteTable("routine_exercises", {
     .notNull()
     .references(() => exercises.id),
   order: integer("order").notNull(),
-  workingSetWeights: text("working_set_weights")
-    .notNull()
-    .default("[]")
-    .$type<string[]>(),
-  warmupSetWeights: text("warmup_set_weights")
-    .notNull()
-    .default("[]")
-    .$type<string[]>(),
+  workingSetWeights: text("working_set_weights"),
+  warmupSetWeights: text("warmup_set_weights"),
   warmupSets: integer("warmup_sets").notNull().default(0),
   warmupReps: integer("warmup_reps"),
   workingSets: integer("working_sets").notNull().default(0),
