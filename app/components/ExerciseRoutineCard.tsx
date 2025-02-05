@@ -134,11 +134,15 @@ export default function ExerciseRoutineCard({
     previousData?.notes || routineExercise.notes || "",
   );
 
-  // Reset state when previousData changes
+  // Replace the existing useEffect
   useEffect(() => {
-    setNotes(previousData?.notes || routineExercise.notes || "");
-    setSets(getInitialSets());
-  }, [previousData, routineExercise, getInitialSets]);
+    // Only reset state on initial mount or when exercise changes
+    if (isInitialRender.current || !sets.length) {
+      setNotes(previousData?.notes || routineExercise.notes || "");
+      setSets(getInitialSets());
+      isInitialRender.current = false;
+    }
+  }, [exercise.id]); // Only depend on exercise.id instead of previousData
 
   // Memoize currentData
   const currentData = useMemo(() => {
@@ -238,31 +242,25 @@ export default function ExerciseRoutineCard({
 
   function addWorkingSet() {
     setSets((prevSets: ExerciseSet[]) => {
-      const workingSetCount = prevSets.filter(
-        (set: ExerciseSet) => !set.isWarmup,
-      ).length;
-      return [
-        ...prevSets,
-        {
-          id: 100 + workingSetCount,
-          weight: "",
-          reps: "",
-          isWarmup: false,
-        },
-      ];
+      const newSet = {
+        id: Date.now(), // Use timestamp for unique ID
+        weight: "",
+        reps: "",
+        isWarmup: false,
+      };
+      return [...prevSets, newSet];
     });
   }
+
   function addWarmupSet() {
     setSets((prevSets: ExerciseSet[]) => {
-      return [
-        ...prevSets,
-        {
-          id: Date.now() + Math.floor(Math.random() * 1000),
-          weight: "",
-          reps: "",
-          isWarmup: true,
-        },
-      ];
+      const newSet = {
+        id: Date.now(), // Use timestamp for unique ID
+        weight: "",
+        reps: "",
+        isWarmup: true,
+      };
+      return [...prevSets, newSet];
     });
   }
 
