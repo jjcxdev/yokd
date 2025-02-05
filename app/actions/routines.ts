@@ -35,13 +35,11 @@ export async function postRoutines({
 
     // Map the exercises to the database format
     const transformedExercises = exercises.map((exercise, index) => {
-      // Log the exercise we're processing
       console.log("Processing exercise:", exercise);
 
       const workingSets = exercise.sets.filter((set) => !set.isWarmup);
       const warmupSets = exercise.sets.filter((set) => set.isWarmup);
 
-      // Log the sets after filtering
       console.log("Working sets:", workingSets);
       console.log("Warmup sets:", warmupSets);
 
@@ -51,17 +49,21 @@ export async function postRoutines({
         return isNaN(parsed) ? null : parsed;
       };
 
-      const transformed = {
+      // Convert weights to arrays of strings (to match schema type)
+      const workingSetWeights = workingSets.map((set) =>
+        String(parseFloat(set.weight) || 0),
+      );
+      const warmupSetWeights = warmupSets.map((set) =>
+        String(parseFloat(set.weight) || 0),
+      );
+
+      return {
         id: nanoid(),
         routineId,
         exerciseId: exercise.exerciseId,
         order: index,
-        workingSetWeights: JSON.stringify(
-          workingSets.map((set) => parseFloat(set.weight)),
-        ),
-        warmupSetWeights: JSON.stringify(
-          warmupSets.map((set) => parseFloat(set.weight)),
-        ),
+        workingSetWeights,
+        warmupSetWeights,
         warmupSets: warmupSets.length,
         warmupReps: handleEmptyValue(warmupSets[0]?.reps) ?? null,
         workingSets: workingSets.length,
@@ -69,20 +71,10 @@ export async function postRoutines({
         restTime: 30,
         notes: exercise.notes || null,
       };
-
-      // Log the transformed exercise
-      console.log("Transformed exercise:", transformed);
-      return transformed;
     });
 
-    // Log the query before executing
-    const query = db.insert(routineExercises).values(transformedExercises);
-    const sql = query.toSQL();
-    console.log("SQL to execute:", sql.sql);
-    console.log("SQL parameters:", sql.params);
-
     // Execute the insert
-    await query;
+    await db.insert(routineExercises).values(transformedExercises);
 
     revalidatePath("/dashboard");
     return { success: true };

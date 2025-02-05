@@ -22,17 +22,7 @@ export default async function SessionPage({
 
     // Access sessionId after auth check
     const { sessionId } = resolvedParams;
-    const { session, exercises } = await getWorkoutSession(sessionId);
-
-    const sessionData = {
-      exercises,
-      userId: session.userId,
-      routineId: session.routineId,
-      status: session.status,
-      startedAt: session.startedAt,
-      completedAt: session.completedAt,
-      sessionId: session.id,
-    };
+    const sessionData = await getWorkoutSession(sessionId);
 
     return (
       <div className="flex w-full justify-center">
