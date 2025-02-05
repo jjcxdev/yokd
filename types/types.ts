@@ -68,23 +68,21 @@ export interface RoutineExercise {
   workingReps: number | null;
   workingSets: number;
   restTime: number;
-  notes?: string | null;
+  notes: string | null;
 }
 
 // -------------------
 // Set Related
 // -------------------
 
-export interface Set {
+export interface ExerciseSet {
   id: number;
   weight: string;
   reps: string;
   isWarmup: boolean;
 }
 
-export type ExerciseSet = Omit<Set, "id">;
-
-export interface SetWithId extends Set {
+export interface SetWithId extends ExerciseSet {
   id: number;
 }
 
@@ -124,8 +122,13 @@ export interface ExerciseRoutineCardProps {
 }
 
 export interface SetListProps {
-  sets: Set[];
-  updateSet: (id: number, field: keyof Omit<Set, "id">, value: string) => void;
+  sets: ExerciseSet[];
+  previousSets?: ExerciseSet[]; // Add this line
+  updateSet: (
+    id: number,
+    field: keyof Omit<ExerciseSet, "id">,
+    value: string,
+  ) => void;
   handleCheckboxChange: (setId: number) => void;
   deleteSet: (id: number) => void;
   showCheckbox?: boolean;
@@ -134,10 +137,23 @@ export interface SetListProps {
 
 export type ExerciseWithRoutine = {
   exercise: Exercise | null;
-  routineExercise: RoutineExercise;
+  routineExercise: {
+    id: string;
+    routineId: string;
+    exerciseId: string;
+    order: number;
+    workingSetWeights: string;
+    warmupSetWeights: string;
+    warmupSets: number;
+    warmupReps: number | null;
+    workingSets: number;
+    workingReps: number | null;
+    restTime: number;
+    notes: string | null;
+  };
   previousData?: {
     notes: string;
-    sets: string;
+    sets: ExerciseSet[];
   };
 };
 
@@ -145,7 +161,7 @@ export type ExerciseWithRoutine = {
 export type ExerciseData = {
   exerciseId: string;
   notes: string;
-  sets: Omit<Set, "id">[];
+  sets: Omit<ExerciseSet, "id">[];
 };
 
 // -------------------
@@ -275,4 +291,18 @@ export interface RoutineCardProps {
   exercises: Array<{ name: string }>;
   icon?: JSX.Element;
   onDelete?: () => void;
+}
+
+export interface SessionStorage {
+  sessionId: string;
+  exercises: {
+    [exerciseId: string]: {
+      notes: string;
+      sets: Array<{
+        weight: string;
+        reps: string;
+        isWarmup: boolean;
+      }>;
+    };
+  };
 }

@@ -3,13 +3,17 @@
 import { isEqual } from "lodash";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { updateWorkoutData } from "@/app/actions/workout";
-import ExceriseRoutineCard from "@/app/components/ExceriseRoutineCard";
+import {
+  updateWorkoutData,
+  bulkUpdateWorkoutData,
+} from "@/app/actions/workout";
+import ExceriseRoutineCard from "@/app/components/ExerciseRoutineCard";
 import { type Exercise } from "@/lib/db/schema";
 import type {
   ExerciseSet,
   ExerciseWithRoutine,
   SessionClientProps,
+  ExerciseData,
 } from "@/types/types";
 
 import { useSessionContext } from "./SessionContext";
@@ -29,127 +33,47 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
 
   // Initialize state with empty object first
   const [exerciseData, setExerciseData] = useState<
-    Record<string, { notes: string; sets: ExerciseSet[] }>
+    Record<string, ExerciseData>
   >({});
 
-  // Move initialization logic to useEffect
+  // Always initialize the exerciseData using sessionData.
+  // We no longer check localStorage here.
   useEffect(() => {
-    const initialData: Record<string, { notes: string; sets: ExerciseSet[] }> =
-      {};
+    const initialData: Record<string, ExerciseData> = {};
+    sessionData.exercises.forEach((exercise) => {
+      if (exercise.exercise) {
+        const parsedSets = (() => {
+          const setsData = exercise.previousData?.sets;
+          if (!setsData) return [];
 
-    sessionData.exercises.forEach(
-      ({ exercise, routineExercise, previousData }) => {
-        if (exercise) {
-          console.log(
-            `Initializing exercise data for ${exercise.id}`,
-            previousData,
-            routineExercise,
-          );
-
-          // First create sets with initial weights from the routine
-          let initialSets: ExerciseSet[] = [];
           try {
-            const workingWeights = JSON.parse(
-              routineExercise.workingSetWeights,
-            );
-            const warmupWeights = JSON.parse(routineExercise.warmupSetWeights);
-
-            // Create warmup sets
-            const warmupSets = Array(routineExercise.warmupSets)
-              .fill(null)
-              .map((_, index) => ({
-                weight:
-                  warmupWeights[index] === null
-                    ? ""
-                    : (warmupWeights[index]?.toString() ?? ""),
-                reps:
-                  routineExercise.warmupReps === null
-                    ? ""
-                    : routineExercise.warmupReps.toString(),
-                isWarmup: true,
-              }));
-
-            // Create working sets
-            const workingSets = Array(routineExercise.workingSets)
-              .fill(null)
-              .map((_, index) => ({
-                weight:
-                  workingWeights[index] === null
-                    ? ""
-                    : (workingWeights[index]?.toString() ?? ""),
-                reps:
-                  routineExercise.workingReps === null
-                    ? ""
-                    : routineExercise.workingReps.toString(),
-                isWarmup: false,
-              }));
-
-            initialSets = [...warmupSets, ...workingSets];
+            const parsed =
+              typeof setsData === "string" ? JSON.parse(setsData) : setsData;
+            return Array.isArray(parsed)
+              ? parsed.map((set) => ({
+                  id: set.setNumber,
+                  weight: set.weight.toString(),
+                  reps: set.reps.toString(),
+                  isWarmup: Boolean(set.isWarmup),
+                }))
+              : [];
           } catch (error) {
-            console.error("Failed to create initial sets:", error);
+            console.error("Error parsing sets:", error);
+            return [];
           }
-
-          // Merge routine defaults with previous workout data if available.
-          let mergedSets = initialSets;
-          let mergedNotes = routineExercise.notes || "";
-
-          if (previousData) {
-            try {
-              // Parse the stored JSON string from previous data
-              const previousSets = previousData.sets
-                ? JSON.parse(previousData.sets)
-                : [];
-
-              // Prioritize previous session's data as the base
-              mergedSets = previousSets.length > 0 ? previousSets : initialSets;
-              mergedNotes = previousData.notes || routineExercise.notes || "";
-            } catch (error) {
-              console.error("Error applying previous data:", error);
-            }
-          }
-
-          // Prepare local data
-          const localData = {
-            notes: mergedNotes,
-            sets: mergedSets,
-          };
-          // Prepare the data to send (sets is already an array)
-          const dataToSend = {
-            notes: mergedNotes,
-            sets: mergedSets,
-          };
-
-          // Update the local state
-          initialData[exercise.id] = localData;
-
-          // Clear any pending timeout for this exercise...
-          if (updateTimeoutsRef.current[exercise.id]) {
-            clearTimeout(updateTimeoutsRef.current[exercise.id]);
-          }
-
-          // Set up an update call with a delay for this exercise.
-          updateTimeoutsRef.current[exercise.id] = setTimeout(() => {
-            console.log("Sending workout data to server:", {
-              sessionId: sessionData.sessionId,
-              exerciseId: exercise.id,
-              data: dataToSend,
-            });
-            updateWorkoutData(
-              sessionData.sessionId,
-              exercise.id,
-              dataToSend,
-            ).catch((error) => {
-              console.error("Error updating workout data:", error);
-            });
-            delete updateTimeoutsRef.current[exercise.id];
-          }, 1000);
-        }
-      },
-    );
-
-    // Set initial data in one operation
+        })();
+        initialData[exercise.exercise.id] = {
+          exerciseId: exercise.exercise.id,
+          notes: exercise.previousData?.notes || "",
+          sets: parsedSets,
+        };
+      }
+    });
     setExerciseData(initialData);
-  }, [sessionData.exercises, sessionData.sessionId]);
+
+    // Clear any local storage cache for this session, as it is not used at startup.
+    localStorage.removeItem(`session-${sessionData.sessionId}`);
+  }, [sessionData]);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -160,81 +84,60 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
     };
   }, []);
 
-  const handleExerciseUpdate = useCallback(
-    (exerciseId: string, data: { notes: string; sets: Array<ExerciseSet> }) => {
-      if (initialRenderRef.current) {
-        console.log("Skipping update - initial render");
-        initialRenderRef.current = false;
-        return;
-      }
-      console.log("Raw incoming sets data:", data.sets);
-
-      console.log("Processing exercise update - not initial render");
-
-      // Add IDs back to sets before storing
-      const setsWithIds = data.sets.map((set, index) => {
-        const newId = set.isWarmup ? index + 1 : index + 100;
-        console.log(`Mapping set ${index}:`, { set, newId });
-        return {
-          ...set,
-          id: newId,
-        };
-      });
-
-      console.log("Mapped sets with IDs:", setsWithIds);
-
-      const currentData = exerciseData[exerciseId];
-      const currentSets = currentData?.sets ?? [];
-
-      // Compare data excluding IDs
-      const setsAreEqual = isEqual(
-        currentSets.map((s: ExerciseSet) => ({
-          weight: s.weight,
-          reps: s.reps,
-          isWarmup: s.isWarmup,
-        })),
-        data.sets,
-      );
-
-      if (currentData?.notes === data.notes && setsAreEqual) {
-        console.log("Skipping update - data is the same");
-        return;
-      }
-
-      const dataToSet = {
-        notes: data.notes,
-        sets: setsWithIds,
-      };
-
-      console.log(`Updating exercise data for ${exerciseId}`, dataToSet);
-
-      setExerciseData((prev) => ({
-        ...prev,
-        [exerciseId]: dataToSet,
-      }));
-
-      // Clear any existing timeout for this exercise.
-      if (updateTimeoutsRef.current[exerciseId]) {
-        clearTimeout(updateTimeoutsRef.current[exerciseId]);
-      }
-
-      // Set a new timeout for updating this exercise.
-      updateTimeoutsRef.current[exerciseId] = setTimeout(() => {
-        console.log("Sending workout data to server:", {
-          sessionId: sessionData.sessionId,
-          exerciseId,
-          data,
-        });
-        updateWorkoutData(sessionData.sessionId, exerciseId, data).catch(
-          (error) => {
-            console.error("Error updating workout data:", error);
-          },
+  useEffect(() => {
+    const saveTimeout = setTimeout(() => {
+      if (Object.keys(exerciseData).length > 0) {
+        bulkUpdateWorkoutData(sessionData.sessionId, exerciseData).catch(
+          console.error,
         );
-        delete updateTimeoutsRef.current[exerciseId];
-      }, 1000);
+      }
+    }, 1000);
+
+    return () => clearTimeout(saveTimeout);
+  }, [exerciseData, sessionData]);
+
+  const validateExerciseData = (data: Record<string, ExerciseData>) => {
+    return Object.entries(data).every(([_, exercise]) => {
+      return (
+        exercise &&
+        typeof exercise === "object" &&
+        Array.isArray(exercise.sets) &&
+        typeof exercise.exerciseId === "string"
+      );
+    });
+  };
+
+  const handleExerciseUpdate = useCallback(
+    (exerciseId: string, data: ExerciseData) => {
+      setExerciseData((prev) => {
+        const newData = {
+          ...prev,
+          [exerciseId]: data,
+        };
+
+        if (validateExerciseData(newData)) {
+          // Only update if data is valid
+          localStorage.setItem(
+            `session-${sessionData.sessionId}`,
+            JSON.stringify(newData),
+          );
+          return newData;
+        }
+        return prev;
+      });
     },
-    [sessionData.sessionId, exerciseData],
+    [sessionData.sessionId],
   );
+
+  // Change the helper function to handle potential missing IDs while preserving types
+  const ensureSetsHaveIds = (
+    sets: Array<Omit<ExerciseSet, "id"> & { id?: number }>,
+  ): ExerciseSet[] => {
+    return sets.map((set, index) => ({
+      ...set,
+      id: set.id || index + 1, // Use existing ID if present, otherwise generate
+    }));
+  };
 
   return (
     <div className="flex min-h-full w-full flex-col items-center justify-center gap-4 pb-20">
@@ -248,7 +151,7 @@ export default function SessionClient({ sessionData }: SessionClientProps) {
               routineExercise={routineExercise}
               previousData={{
                 notes: exerciseData[exercise.id]?.notes || "",
-                sets: exerciseData[exercise.id]?.sets || [],
+                sets: ensureSetsHaveIds(exerciseData[exercise.id]?.sets || []),
               }}
               onUpdate={(data) => handleExerciseUpdate(exercise.id, data)}
               onRestTimeTrigger={onRestTimeTrigger}

@@ -79,8 +79,14 @@ export const routineExercises = sqliteTable("routine_exercises", {
     .notNull()
     .references(() => exercises.id),
   order: integer("order").notNull(),
-  workingSetWeights: text("working_set_weights").notNull().default("[]"),
-  warmupSetWeights: text("warmup_set_weights").notNull().default("[]"),
+  workingSetWeights: text("working_set_weights")
+    .notNull()
+    .default("[]")
+    .$type<string[]>(),
+  warmupSetWeights: text("warmup_set_weights")
+    .notNull()
+    .default("[]")
+    .$type<string[]>(),
   warmupSets: integer("warmup_sets").notNull().default(0),
   warmupReps: integer("warmup_reps"),
   workingSets: integer("working_sets").notNull().default(0),
@@ -117,7 +123,7 @@ export const workoutData = sqliteTable(
       .notNull()
       .references(() => exercises.id),
     notes: text("notes"),
-    sets: text("sets"),
+    restTime: integer("rest_time").notNull().default(0),
     updatedAt: integer("updated_at")
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),

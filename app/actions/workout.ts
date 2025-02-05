@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { and, desc, eq, is, lt } from "drizzle-orm";
+import { and, desc, eq, inArray, is, lt, not, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -15,7 +15,8 @@ import {
   workoutData,
   workoutSessions,
 } from "@/lib/db/schema";
-import type { DBSet } from "@/types/types";
+import type { DBSet, ExerciseData, ExerciseWithRoutine } from "@/types/types";
+import type { SessionStatus } from "@/types/types";
 
 // ---------------------------
 // GET WORKOUT SESSION FUNCTION
@@ -26,99 +27,96 @@ export async function startWorkoutSession(routineId: string) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    // First verify the routine exists and belongs to this user
-    const routine = await db
-      .select()
-      .from(routines)
-      .where(eq(routines.id, routineId))
-      .limit(1);
-
-    if (!routine.length || routine[0].userId !== userId) {
-      throw new Error("Routine not found or unauthorized");
-    }
-
-    const sessionId = nanoid();
-    const timestamp = Math.floor(Date.now() / 1000);
-
-    // Get the routine exercises with their data
-    const routineExerciseList = await db
-      .select({
-        exercise: exercises,
-        routineExercise: routineExercises,
-      })
-      .from(routineExercises)
-      .where(eq(routineExercises.routineId, routineId))
-      .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
-      .orderBy(routineExercises.order);
-
-    // Start a transaction to create everything at once
-    await db.transaction(async (tx) => {
-      // Create new workout session
-      await tx.insert(workoutSessions).values({
-        id: sessionId,
+    const [session] = await db
+      .insert(workoutSessions)
+      .values({
+        id: nanoid(),
         userId,
         routineId,
         status: "active",
-        startedAt: timestamp,
+        startedAt: Math.floor(Date.now() / 1000),
         completedAt: null,
-      });
+      })
+      .returning();
 
-      // For each exercise, create workout_data and sets
-      for (const { exercise, routineExercise } of routineExerciseList) {
-        if (!exercise) continue;
+    // Get routine exercises
+    const exercisesList = await db
+      .select()
+      .from(routineExercises)
+      .where(eq(routineExercises.routineId, routineId))
+      .orderBy(routineExercises.order);
 
-        // Create workout_data entry
-        await tx.insert(workoutData).values({
+    // Create initial sets for each exercise
+    for (const routineExercise of exercisesList) {
+      // Parse weights arrays from JSON strings - they're stored as stringified arrays of numbers
+      const warmupWeights = routineExercise.warmupSetWeights
+        ? (
+            JSON.parse(
+              String(routineExercise.warmupSetWeights), // Add String() conversion
+            ) as number[]
+          ).filter(Number.isFinite) // Filter out invalid values
+        : [];
+
+      const workingWeights = routineExercise.workingSetWeights
+        ? (
+            JSON.parse(
+              String(routineExercise.workingSetWeights), // Add String() conversion
+            ) as number[]
+          ).filter(Number.isFinite) // Filter out invalid values
+        : [];
+
+      const timestamp = Math.floor(Date.now() / 1000);
+
+      // Create warmup sets
+      const warmupSets = Array(routineExercise.warmupSets || 0)
+        .fill(null)
+        .map((_, i) => ({
           id: nanoid(),
-          sessionId,
-          exerciseId: exercise.id,
-          notes: routineExercise.notes ?? "",
-          updatedAt: Date.now(),
-        });
+          sessionId: session.id,
+          exerciseId: routineExercise.exerciseId,
+          setNumber: i + 1,
+          weight: Number(warmupWeights[i] || 0),
+          reps:
+            parseInt(routineExercise.warmupReps?.toString() || "0", 10) || 0,
+          isWarmup: 1,
+          completedAt: timestamp,
+        }));
 
-        // Parse weights and create sets
-        const warmupWeights = JSON.parse(routineExercise.warmupSetWeights);
-        const workingWeights = JSON.parse(routineExercise.workingSetWeights);
-        const setsToCreate = [];
+      // Create working sets with similar structure
+      const workingSets = Array(routineExercise.workingSets || 0)
+        .fill(null)
+        .map((_, i) => ({
+          id: nanoid(),
+          sessionId: session.id,
+          exerciseId: routineExercise.exerciseId,
+          setNumber: warmupSets.length + i + 1,
+          weight: Number(workingWeights[i] || 0),
+          reps:
+            parseInt(routineExercise.workingReps?.toString() || "0", 10) || 0,
+          isWarmup: 0,
+          completedAt: timestamp,
+        }));
 
-        // Add warmup sets
-        for (let i = 0; i < routineExercise.warmupSets; i++) {
-          setsToCreate.push({
-            id: nanoid(),
-            sessionId,
-            exerciseId: exercise.id,
-            setNumber: setsToCreate.length + 1,
-            weight: warmupWeights[i] ?? 0,
-            reps: routineExercise.warmupReps ?? 0,
-            isWarmup: 1,
-            completedAt: 0,
-          });
-        }
-
-        // Add working sets
-        for (let i = 0; i < routineExercise.workingSets; i++) {
-          setsToCreate.push({
-            id: nanoid(),
-            sessionId,
-            exerciseId: exercise.id,
-            setNumber: setsToCreate.length + 1,
-            weight: workingWeights[i] ?? 0,
-            reps: routineExercise.workingReps ?? 0,
-            isWarmup: 0,
-            completedAt: 0,
-          });
-        }
-
-        // Insert all sets if we have any
-        if (setsToCreate.length > 0) {
-          await tx.insert(sets).values(setsToCreate);
-        }
+      const allSets = [...warmupSets, ...workingSets];
+      if (allSets.length > 0) {
+        await db.insert(sets).values(allSets);
       }
-    });
 
-    redirect(`/session/${sessionId}`);
+      // Create initial workout data
+      await db.insert(workoutData).values({
+        id: nanoid(),
+        sessionId: session.id,
+        exerciseId: routineExercise.exerciseId,
+        notes: routineExercise.notes || "",
+        updatedAt: Date.now(),
+      });
+    }
+
+    redirect(`/session/${session.id}`);
+
+    return session;
   } catch (error) {
-    console.error("Detailed error in startWorkoutSession:", error);
+    console.error("Error starting workout session:", error);
     throw error;
   }
 }
@@ -127,95 +125,155 @@ export async function startWorkoutSession(routineId: string) {
 // GET WORKOUT SESSION FUNCTION
 // ---------------------------
 
+type QueryResult = {
+  exercise: typeof exercises.$inferSelect;
+  routineExercise: typeof routineExercises.$inferSelect;
+  previousData: {
+    notes: string | null;
+    sets: {
+      weight: number;
+      reps: number;
+      isWarmup: number;
+      setNumber: number;
+    } | null;
+  };
+};
+
 export async function getWorkoutSession(sessionId: string) {
-  try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
 
-    const session = await db
-      .select()
-      .from(workoutSessions)
-      .where(eq(workoutSessions.id, sessionId))
-      .limit(1);
+  const session = await db
+    .select()
+    .from(workoutSessions)
+    .where(eq(workoutSessions.id, sessionId))
+    .get();
 
-    if (!session.length) throw new Error("Session not found");
-    if (session[0].userId.toLowerCase() !== userId.toLowerCase()) {
-      throw new Error("Unauthorized session access");
-    }
+  if (!session) throw new Error("Session not found");
 
-    // Get exercises for this routine
-    const exercisesList = await db
-      .select({
-        exercise: exercises,
-        routineExercise: routineExercises,
-      })
-      .from(routineExercises)
-      .where(eq(routineExercises.routineId, session[0].routineId))
-      .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
-      .orderBy(routineExercises.order);
+  const previousSession = await db
+    .select()
+    .from(workoutSessions)
+    .where(
+      and(
+        eq(workoutSessions.userId, userId),
+        eq(workoutSessions.routineId, session.routineId),
+        eq(workoutSessions.status, "completed"),
+        lt(workoutSessions.startedAt, session.startedAt),
+      ),
+    )
+    .orderBy(desc(workoutSessions.startedAt))
+    .limit(1)
+    .get();
 
-    // Get the most recent completed session for this user/routine before this session
-    const previousSession = await db
-      .select()
-      .from(workoutSessions)
-      .where(
-        and(
-          eq(workoutSessions.userId, userId),
-          eq(workoutSessions.routineId, session[0].routineId),
-          eq(workoutSessions.status, "completed"),
-          lt(workoutSessions.startedAt, session[0].startedAt),
-        ),
-      )
-      .orderBy(desc(workoutSessions.startedAt))
-      .limit(1);
+  const exercisesQuery = await db
+    .select({
+      exercise: exercises,
+      routineExercise: routineExercises,
+      previousData: {
+        notes: workoutData.notes,
+        sets: sql<string>`json_group_array(
+          json_object(
+            'weight', CAST(${sets.weight} AS TEXT),
+            'reps', CAST(${sets.reps} AS TEXT),
+            'isWarmup', CAST(${sets.isWarmup} AS TEXT),
+            'setNumber', CAST(${sets.setNumber} AS TEXT)
+          )
+        )`,
+      },
+    })
+    .from(routineExercises)
+    .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+    .leftJoin(
+      workoutData,
+      and(
+        eq(workoutData.exerciseId, routineExercises.exerciseId),
+        eq(workoutData.sessionId, previousSession?.id ?? "no-session"),
+      ),
+    )
+    .leftJoin(
+      sets,
+      and(
+        eq(sets.exerciseId, routineExercises.exerciseId),
+        eq(sets.sessionId, previousSession?.id ?? "no-session"),
+      ),
+    )
+    .groupBy(routineExercises.id)
+    .orderBy(routineExercises.order);
+  console.log("Raw query results from sets and workout_data:", exercisesQuery);
+  const exerciseResults = exercisesQuery as unknown as QueryResult[];
 
-    // If we found a previous session, get its sets
-    let previousSets: DBSet[] = [];
-    []; // Initialize with empty array
-    if (previousSession.length > 0) {
-      previousSets = await db
-        .select({
-          exerciseId: sets.exerciseId,
-          weight: sets.weight,
-          reps: sets.reps,
-          isWarmup: sets.isWarmup,
-        })
-        .from(sets)
-        .where(eq(sets.sessionId, previousSession[0].id))
-        .orderBy(sets.exerciseId, sets.setNumber);
-    }
-
-    // Get previous workout notes
-    const previousWorkoutData = await db
-      .select()
-      .from(workoutData)
-      .where(eq(workoutData.sessionId, previousSession[0]?.id ?? ""));
-
-    return {
-      session: session[0],
-      exercises: exercisesList.map((exercise) => ({
-        ...exercise,
-        previousData: {
-          notes:
-            previousWorkoutData.find(
-              (w) => w.exerciseId === exercise.exercise?.id,
-            )?.notes || "",
-          sets: JSON.stringify(
-            previousSets
-              .filter((set) => set.exerciseId === exercise.exercise?.id)
-              .map((set) => ({
-                weight: set.weight.toString(),
-                reps: set.reps.toString(),
-                isWarmup: set.isWarmup === 1,
-              })),
-          ),
+  const exercisesMap = exerciseResults.reduce<
+    Record<string, ExerciseWithRoutine>
+  >((acc, row) => {
+    const exerciseId = row.routineExercise.exerciseId;
+    if (!acc[exerciseId]) {
+      acc[exerciseId] = {
+        exercise: row.exercise,
+        routineExercise: {
+          ...row.routineExercise,
+          workingSetWeights: Array.isArray(
+            row.routineExercise.workingSetWeights,
+          )
+            ? JSON.stringify(row.routineExercise.workingSetWeights)
+            : row.routineExercise.workingSetWeights || "",
+          warmupSetWeights: Array.isArray(row.routineExercise.warmupSetWeights)
+            ? JSON.stringify(row.routineExercise.warmupSetWeights)
+            : row.routineExercise.warmupSetWeights || "",
         },
-      })),
-    };
-  } catch (error) {
-    console.error("Error fetching workout session:", error);
-    throw error;
-  }
+        previousData: {
+          notes: row.previousData?.notes ?? "",
+          sets: [],
+        },
+      };
+    }
+
+    // If the aggregated sets string exists, parse it into an array and push each one
+    const setsValue = row.previousData?.sets;
+    let setsArray: Array<{
+      weight: number;
+      reps: number;
+      isWarmup: number;
+      setNumber: number;
+    }> = [];
+
+    if (setsValue) {
+      if (typeof setsValue === "string") {
+        try {
+          const parsed = JSON.parse(setsValue);
+          setsArray = Array.isArray(parsed) ? parsed : [parsed];
+        } catch (error) {
+          console.error("Error parsing sets JSON:", error);
+          setsArray = [];
+        }
+      } else if (typeof setsValue === "object") {
+        setsArray = Array.isArray(setsValue) ? setsValue : [setsValue];
+      }
+    } else {
+      setsArray = [];
+    }
+
+    setsArray.forEach((setObj) => {
+      acc[exerciseId].previousData!.sets.push({
+        id: setObj.setNumber,
+        weight: setObj.weight.toString(),
+        reps: setObj.reps.toString(),
+        isWarmup: Boolean(setObj.isWarmup),
+      });
+    });
+
+    return acc;
+  }, {});
+
+  return {
+    sessionId,
+    userId,
+    routineId: session.routineId,
+    status: session.status,
+    startedAt: session.startedAt,
+    completedAt: session.completedAt,
+    exercises: Object.values(exercisesMap) as ExerciseWithRoutine[],
+  };
 }
 
 // ---------------------------
@@ -281,8 +339,8 @@ export async function updateWorkoutData(
 
     // Validate input
     function safeParseInt(value: string): number {
-      const parsed = parseInt(value);
-      return Number.isFinite(parsed) ? parsed : 0;
+      const parsed = parseInt(value, 10);
+      return Number.isNaN(parsed) ? 0 : parsed;
     }
 
     await db.transaction(async (tx) => {
@@ -327,20 +385,41 @@ export async function updateWorkoutData(
         sessionId,
         exerciseId,
         setNumber: index + 1,
-        weight: safeParseInt(set.weight),
-        reps: safeParseInt(set.reps),
+        weight: Number(set.weight),
+        reps: Number(set.reps),
         isWarmup: set.isWarmup ? 1 : 0,
         completedAt: Date.now(),
       }));
 
       // Delete existing sets and insert new snapshot
-      await tx
+      const existingSets = await tx
         .delete(sets)
         .where(
           and(eq(sets.sessionId, sessionId), eq(sets.exerciseId, exerciseId)),
         );
+
+      const preservedIds = newSets.map((s) => s.id);
+      await tx
+        .delete(sets)
+        .where(
+          and(
+            eq(sets.sessionId, sessionId),
+            eq(sets.exerciseId, exerciseId),
+            not(inArray(sets.id, preservedIds)),
+          ),
+        );
       if (newSets.length > 0) {
-        await tx.insert(sets).values(newSets);
+        await tx
+          .insert(sets)
+          .values(newSets)
+          .onConflictDoUpdate({
+            target: [sets.id],
+            set: {
+              weight: sql`excluded.weight`,
+              reps: sql`excluded.reps`,
+              completedAt: sql`excluded.completed_at`,
+            },
+          });
       }
     });
   } catch (error) {
@@ -356,11 +435,99 @@ export async function cancelWorkoutSession(sessionId: string) {
   try {
     await db
       .update(workoutSessions)
-      .set({ status: "cancelled", completedAt: Date.now() })
+      .set({
+        status: "cancelled",
+        completedAt: Math.floor(Date.now() / 1000),
+      })
       .where(eq(workoutSessions.id, sessionId));
     return { success: true };
   } catch (error) {
     console.error("Error cancelling workout session:", error);
     return { success: false, error: "Failed to cancel workout session" };
+  }
+}
+
+// ---------------------------
+// BULK UPDATE WORKOUT DATA
+// ---------------------------
+export async function bulkUpdateWorkoutData(
+  sessionId: string,
+  exerciseUpdates: Record<string, ExerciseData>,
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    // Debug logging
+    console.log("=== bulkUpdateWorkoutData Debug ===");
+    console.log("sessionId:", sessionId);
+    console.log("exerciseUpdates:", {
+      type: typeof exerciseUpdates,
+      isNull: exerciseUpdates === null,
+      isUndefined: exerciseUpdates === undefined,
+      keys: exerciseUpdates ? Object.keys(exerciseUpdates) : "N/A",
+      raw: exerciseUpdates,
+    });
+
+    // Validation
+    if (!exerciseUpdates) {
+      console.log("No exercise updates - using empty object");
+      exerciseUpdates = {};
+    }
+
+    if (typeof exerciseUpdates !== "object" || Array.isArray(exerciseUpdates)) {
+      console.error("Invalid exercise updates format - using empty object");
+      exerciseUpdates = {};
+    }
+
+    await db.transaction(async (tx) => {
+      for (const [exerciseId, data] of Object.entries(exerciseUpdates)) {
+        if (!data?.sets || !Array.isArray(data.sets)) {
+          console.log(`Skipping exercise ${exerciseId} - invalid data`);
+          continue;
+        }
+
+        // Update workout data
+        await tx
+          .update(workoutData)
+          .set({
+            notes: data.notes || "",
+            updatedAt: Date.now(),
+          })
+          .where(
+            and(
+              eq(workoutData.sessionId, sessionId),
+              eq(workoutData.exerciseId, exerciseId),
+            ),
+          );
+
+        // Delete existing sets
+        await tx
+          .delete(sets)
+          .where(
+            and(eq(sets.sessionId, sessionId), eq(sets.exerciseId, exerciseId)),
+          );
+
+        // Insert new sets
+        if (data.sets.length > 0) {
+          const newSets = data.sets.map((set, index) => ({
+            id: nanoid(),
+            sessionId,
+            exerciseId,
+            setNumber: index + 1,
+            weight: Number(set.weight) || 0,
+            reps: Number(set.reps) || 0,
+            isWarmup: set.isWarmup ? 1 : 0,
+            completedAt: Math.floor(Date.now() / 1000),
+          }));
+
+          await tx.insert(sets).values(newSets);
+        }
+      }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error in bulkUpdateWorkoutData:", error);
+    throw error;
   }
 }

@@ -4,12 +4,12 @@ import { useUser } from "@clerk/nextjs";
 import _, { set } from "lodash";
 import { nanoid } from "nanoid";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState, useRef } from "react";
 import { GiWeightLiftingUp } from "react-icons/gi";
 import { IoAddCircle } from "react-icons/io5";
 
 import { postRoutines } from "@/app/actions/routines";
-import ExerciseRoutineCard from "@/app/components/ExceriseRoutineCard";
+import ExerciseRoutineCard from "@/app/components/ExerciseRoutineCard";
 import SaveHeader from "@/app/components/SaveHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,9 @@ function RoutineContent() {
   >({});
   const [isLoading, setIsLoading] = useState(false);
 
+  // Ref to store routineExercise IDs
+  const routineExerciseMapRef = useRef<{ [exerciseId: string]: string }>({});
+
   // Load exercises from localStorage on mount if they exist
   useEffect(() => {
     try {
@@ -53,11 +56,11 @@ function RoutineContent() {
     if (!selectedExercisesParam) return;
 
     try {
-      const newExercises = JSON.parse(
+      const newExercises: Exercise[] = JSON.parse(
         decodeURIComponent(selectedExercisesParam),
       );
 
-      // Get exisiting exercises from localStorage first
+      // Get existing exercises from localStorage first
       let existingExercises: Exercise[] = [];
       try {
         const storedExercises = localStorage.getItem("routineExercises");
@@ -76,15 +79,22 @@ function RoutineContent() {
         (exercise: Exercise) => !existingIds.has(exercise.id),
       );
 
-      // Comgine existing and new exercises
+      // Combine existing and new exercises
       const combinedExercises = [...existingExercises, ...uniqueNewExercises];
 
-      // Updatda state and localStorage
+      // Update state and localStorage
       setExercises(combinedExercises);
       localStorage.setItem(
         "routineExercises",
         JSON.stringify(combinedExercises),
       );
+
+      // Assign stable routineExercise IDs
+      combinedExercises.forEach((exercise) => {
+        if (!routineExerciseMapRef.current[exercise.id]) {
+          routineExerciseMapRef.current[exercise.id] = nanoid();
+        }
+      });
 
       // Clean up URL after processing
       const currentRoutineName = routineName || routineNameParam;
@@ -114,7 +124,7 @@ function RoutineContent() {
 
   function handleExerciseUpdate(exerciseId: string, data: ExerciseData) {
     setExerciseData((prev) => {
-      // Only update if data has actuall changed
+      // Only update if data has actually changed
       if (JSON.stringify(prev[exerciseId]) === JSON.stringify(data)) {
         return prev;
       }
@@ -132,7 +142,9 @@ function RoutineContent() {
     const currentRoutineName = routineName || routineNameParam;
     if (currentRoutineName) {
       router.push(
-        `/exercise?folderId=${folderId}&routineName=${encodeURIComponent(currentRoutineName)}`,
+        `/exercise?folderId=${folderId}&routineName=${encodeURIComponent(
+          currentRoutineName,
+        )}`,
       );
     } else {
       router.push(`/exercise?folderId=${folderId}`);
@@ -224,31 +236,16 @@ function RoutineContent() {
     router.push(`/dashboard`);
   }
 
-  function handleExerciseRemoved(exerciseId: string): void {
-    // Remove exercise from state
-    setExercises((currentExercises) =>
-      currentExercises.filter((exercise) => exercise.id !== exerciseId),
-    );
-
-    // Remove exercise from exerciseData state
-    setExerciseData((currentData) => {
-      const newData = { ...currentData };
-      delete newData[exerciseId];
-      return newData;
+  function handleExerciseRemoved(exerciseId: string) {
+    setExercises((prev) => prev.filter((ex) => ex.id !== exerciseId));
+    setExerciseData((prev) => {
+      const updated = { ...prev };
+      delete updated[exerciseId];
+      return updated;
     });
-
-    // Update localStorage
-    try {
-      const updatedExercises = exercises.filter(
-        (exercise) => exercise.id !== exerciseId,
-      );
-      localStorage.setItem(
-        "routineExercises",
-        JSON.stringify(updatedExercises),
-      );
-    } catch (error) {
-      console.error("Error updating exercises in local storage:", error);
-    }
+    // Remove from localStorage
+    const updatedExercises = exercises.filter((ex) => ex.id !== exerciseId);
+    localStorage.setItem("routineExercises", JSON.stringify(updatedExercises));
   }
 
   return (
@@ -293,26 +290,27 @@ function RoutineContent() {
           </div>
         ) : (
           <div className="flex flex-col p-4">
-            {exercises.map((exercise) => (
+            {exercises.map((exercise, index) => (
               <div
                 className="flex w-full justify-center pb-2"
                 key={exercise.id}
               >
                 <ExerciseRoutineCard
+                  key={exercise.id}
                   exercise={exercise}
                   routineExercise={{
-                    id: "",
+                    id: routineExerciseMapRef.current[exercise.id],
                     routineId: "",
                     exerciseId: exercise.id,
-                    order: 0,
-                    workingSetWeights: "[]",
-                    warmupSetWeights: "[]",
+                    order: index,
+                    workingSetWeights: JSON.stringify([0]),
+                    warmupSetWeights: JSON.stringify([]),
                     warmupSets: 0,
-                    warmupReps: 0,
+                    warmupReps: null,
                     workingSets: 1,
-                    workingReps: 0,
-                    restTime: 0,
-                    notes: "",
+                    workingReps: null,
+                    restTime: 90,
+                    notes: null,
                   }}
                   onUpdate={(data) => memoizedUpdate(exercise.id, data)}
                   onRestTimeTrigger={() => {}}
