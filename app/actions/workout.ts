@@ -18,6 +18,15 @@ import {
 import type { DBSet, ExerciseData, ExerciseWithRoutine } from "@/types/types";
 import type { SessionStatus } from "@/types/types";
 
+// Add this utility function at the top of the file
+const convertToBoolean = (value: unknown): boolean => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string")
+    return value.toLowerCase() === "true" || value === "1";
+  return false;
+};
+
 // ---------------------------
 // GET WORKOUT SESSION FUNCTION
 // ---------------------------
@@ -67,7 +76,7 @@ export async function startWorkoutSession(routineId: string) {
 
       const timestamp = Math.floor(Date.now() / 1000);
 
-      // Create warmup sets
+      // Create warmup sets with proper boolean conversion
       const warmupSets = Array(routineExercise.warmupSets || 0)
         .fill(null)
         .map((_, i) => ({
@@ -82,7 +91,7 @@ export async function startWorkoutSession(routineId: string) {
           completedAt: timestamp,
         }));
 
-      // Create working sets with similar structure
+      // Create working sets with proper boolean conversion
       const workingSets = Array(routineExercise.workingSets || 0)
         .fill(null)
         .map((_, i) => ({
@@ -233,7 +242,7 @@ export async function getWorkoutSession(sessionId: string) {
     let setsArray: Array<{
       weight: number;
       reps: number;
-      isWarmup: number;
+      isWarmup: boolean;
       setNumber: number;
     }> = [];
 
@@ -241,13 +250,25 @@ export async function getWorkoutSession(sessionId: string) {
       if (typeof setsValue === "string") {
         try {
           const parsed = JSON.parse(setsValue);
-          setsArray = Array.isArray(parsed) ? parsed : [parsed];
+          setsArray = (Array.isArray(parsed) ? parsed : [parsed]).map(
+            (set) => ({
+              weight: Number(set.weight),
+              reps: Number(set.reps),
+              setNumber: Number(set.setNumber),
+              isWarmup: convertToBoolean(set.isWarmup),
+            }),
+          );
         } catch (error) {
           console.error("Error parsing sets JSON:", error);
           setsArray = [];
         }
       } else if (typeof setsValue === "object") {
-        setsArray = Array.isArray(setsValue) ? setsValue : [setsValue];
+        setsArray = (Array.isArray(setsValue) ? setsValue : [setsValue]).map(
+          (set) => ({
+            ...set,
+            isWarmup: convertToBoolean(set.isWarmup),
+          }),
+        );
       }
     } else {
       setsArray = [];

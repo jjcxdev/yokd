@@ -61,6 +61,13 @@ const handleEmptyValue = (value: string): number => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
+// Unified conversion function
+const convertToBoolean = (input: unknown): boolean => {
+  // Handle string representations from server and local state
+  const normalized = String(input).trim().toLowerCase();
+  return normalized === "1" || normalized === "true";
+};
+
 export default function ExerciseRoutineCard({
   exercise,
   routineExercise,
@@ -69,6 +76,15 @@ export default function ExerciseRoutineCard({
   onRestTimeTrigger,
   onExerciseRemoved,
 }: ExerciseRoutineCardProps) {
+  // Move debugDataFlow to the top of the component
+  const debugDataFlow = (stage: string, data: any) => {
+    if (process.env.NODE_ENV === "development") {
+      console.group(`ExerciseRoutineCard - ${exercise.name} - ${stage}`);
+      console.log(JSON.stringify(data, null, 2));
+      console.groupEnd();
+    }
+  };
+
   const [state, setState] = useState({
     isEditMode: false,
     isDrawerOpen: false,
@@ -79,69 +95,38 @@ export default function ExerciseRoutineCard({
 
   // Memoize getInitialSets to prevent recreation on every render
   const getInitialSets = useCallback(() => {
-    console.log("Input routineExercise:", routineExercise);
-
-    // Handle existing previous data
     if (previousData?.sets) {
       const parsedSets =
         typeof previousData.sets === "string"
-          ? JSON.parse(previousData.sets)
-          : previousData.sets;
+          ? JSON.parse(previousData.sets).map((set: any) => ({
+              ...set,
+              isWarmup: convertToBoolean(set.isWarmup),
+            }))
+          : previousData.sets.map((set: any) => ({
+              ...set,
+              isWarmup: convertToBoolean(set.isWarmup),
+            }));
 
       if (parsedSets.length > 0) {
-        return parsedSets.map((set: any) => ({
+        const mappedSets = parsedSets.map((set: any) => ({
           id: Number(set.setNumber) || set.id,
           weight: String(set.weight || ""),
           reps: String(set.reps || ""),
-          isWarmup: Boolean(Number(set.isWarmup)),
+          isWarmup: set.isWarmup,
         }));
+        return mappedSets;
       }
     }
-
-    // Fallback to routine configuration
-    const fallbackSets: ExerciseSet[] = [];
-    let currentId = 1;
-
-    // Helper to parse weight arrays
-    const parseWeights = (weights: any): number[] => {
-      try {
-        const parsed =
-          typeof weights === "string" ? JSON.parse(weights) : weights;
-        return Array.isArray(parsed) ? parsed.filter(Number.isFinite) : [];
-      } catch {
-        return [];
-      }
-    };
-
-    // Warmup sets
-    if (routineExercise.warmupSets > 0) {
-      const warmupWeights = parseWeights(routineExercise.warmupSetWeights);
-      for (let i = 0; i < routineExercise.warmupSets; i++) {
-        fallbackSets.push({
-          id: currentId++,
-          weight: warmupWeights[i]?.toString() || "",
-          reps: routineExercise.warmupReps?.toString() || "",
-          isWarmup: true,
-        });
-      }
-    }
-
-    // Working sets
-    if (routineExercise.workingSets > 0) {
-      const workingWeights = parseWeights(routineExercise.workingSetWeights);
-      for (let i = 0; i < routineExercise.workingSets; i++) {
-        fallbackSets.push({
-          id: currentId++,
-          weight: workingWeights[i]?.toString() || "",
-          reps: routineExercise.workingReps?.toString() || "",
-          isWarmup: false,
-        });
-      }
-    }
-
-    return fallbackSets.length > 0
-      ? fallbackSets
-      : [{ id: 1, weight: "", reps: "", isWarmup: false }];
+    // Default set creation logic
+    return Array.from(
+      { length: routineExercise.warmupSets + routineExercise.workingSets },
+      (_, i) => ({
+        id: i + 1,
+        weight: "",
+        reps: "",
+        isWarmup: i < routineExercise.warmupSets,
+      }),
+    );
   }, [previousData, routineExercise]);
 
   const [sets, setSets] = useState(() => getInitialSets());
@@ -151,9 +136,9 @@ export default function ExerciseRoutineCard({
 
   // Reset state when previousData changes
   useEffect(() => {
-    setSets(getInitialSets());
     setNotes(previousData?.notes || routineExercise.notes || "");
-  }, [previousData]);
+    setSets(getInitialSets());
+  }, [previousData, routineExercise, getInitialSets]);
 
   // Memoize currentData
   const currentData = useMemo(() => {
@@ -162,9 +147,10 @@ export default function ExerciseRoutineCard({
       notes,
       sets: sets.map(({ id, ...rest }: ExerciseSet) => rest),
     };
-    console.log("=== Current Data Transform ===");
-    console.log("Raw Sets:", sets);
-    console.log("Transformed Data:", data);
+    debugDataFlow("Current Data Transform", {
+      rawSets: sets,
+      transformedData: data,
+    });
     return data;
   }, [exercise.id, notes, sets]);
 
@@ -190,43 +176,37 @@ export default function ExerciseRoutineCard({
         ? JSON.parse(previousSets)
         : previousSets;
 
-    console.log("=== Update Check ===");
-    console.log("Previous Sets:", parsedPreviousSets);
-    console.log("Current Sets:", currentData.sets);
+    // Use consistent conversion for comparison
+    const previousSetsNormalized = parsedPreviousSets.map((set: any) => ({
+      weight: String(set.weight || ""),
+      reps: String(set.reps || ""),
+      isWarmup: convertToBoolean(set.isWarmup),
+    }));
 
-    // Compare sets while ignoring IDs
-    const setsChanged = !_.isEqual(
-      currentData.sets.map(
-        ({ isWarmup, weight, reps }: Omit<ExerciseSet, "id">) => ({
-          weight,
-          reps,
-          isWarmup,
-        }),
-      ),
-      parsedPreviousSets.map(
-        ({
-          isWarmup,
-          weight,
-          reps,
-        }: {
-          isWarmup?: number | boolean;
-          weight?: number | string;
-          reps?: number | string;
-        }) => ({
-          weight: String(weight || ""),
-          reps: String(reps || ""),
-          isWarmup: Boolean(Number(isWarmup)),
-        }),
-      ),
+    const currentSetsNormalized = currentData.sets.map(
+      (set: {
+        weight?: number | string;
+        reps?: number | string;
+        isWarmup?: boolean;
+      }) => ({
+        weight: String(set.weight || ""),
+        reps: String(set.reps || ""),
+        isWarmup: convertToBoolean(set.isWarmup),
+      }),
     );
 
+    const setsChanged = !_.isEqual(
+      currentSetsNormalized,
+      previousSetsNormalized,
+    );
     const notesChanged = currentData.notes !== previousData?.notes;
 
     if (setsChanged || notesChanged) {
-      console.log("=== Triggering Update ===");
-      console.log("Sets Changed:", setsChanged);
-      console.log("Notes Changed:", notesChanged);
-      console.log("Update Data:", currentData);
+      debugDataFlow("Triggering Update", {
+        setsChanged,
+        notesChanged,
+        data: currentData,
+      });
       debouncedUpdate(currentData);
     }
 
@@ -237,6 +217,14 @@ export default function ExerciseRoutineCard({
   const handleSetUpdate = useCallback(
     (id: number, field: keyof Omit<ExerciseSet, "id">, value: string) =>
       (prev: ExerciseSet[]) => {
+        debugDataFlow("Set Update", {
+          setId: id,
+          field,
+          value,
+          newSets: prev.map((set: ExerciseSet) =>
+            set.id === id ? { ...set, [field]: value } : set,
+          ),
+        });
         return prev.map((set: ExerciseSet) =>
           set.id === id ? { ...set, [field]: value } : set,
         );
@@ -283,17 +271,19 @@ export default function ExerciseRoutineCard({
     field: keyof Omit<ExerciseSet, "id">,
     value: string,
   ): void {
-    console.log(`Updating set ${id}, field ${field} to ${value}`);
-
     setSets((prevSets: ExerciseSet[]) => {
-      const newSets = prevSets.map((set: ExerciseSet) => {
-        if (set.id === id) {
-          console.log(`Found matching set:`, set);
-          return { ...set, [field]: value };
-        }
-        return set;
+      const newSets = prevSets.map((set: ExerciseSet) =>
+        set.id === id ? { ...set, [field]: value } : set,
+      );
+
+      debugDataFlow("Set Update", {
+        setId: id,
+        field,
+        value,
+        previousSets: prevSets,
+        newSets,
       });
-      console.log("Updated sets:", newSets);
+
       return newSets;
     });
   }
@@ -322,8 +312,10 @@ export default function ExerciseRoutineCard({
   }, [notes]);
 
   const handleCheckboxChange = (setId: number) => {
-    // Trigger rest timer countdown logic
-    console.log(`Set ${setId} completed. Trigger rest timer countdown.`);
+    debugDataFlow("Rest Timer Triggered", {
+      setId,
+      restTime: routineExercise.restTime,
+    });
     onRestTimeTrigger(routineExercise.restTime);
   };
 
@@ -336,10 +328,10 @@ export default function ExerciseRoutineCard({
 
   // Compute the current working and warmup sets from your sets state.
   const currentWorkingSets: ExerciseSet[] = sets.filter(
-    (set: ExerciseSet) => !set.isWarmup,
+    (set: ExerciseSet) => set.isWarmup === false,
   );
   const currentWarmupSets: ExerciseSet[] = sets.filter(
-    (set: ExerciseSet) => set.isWarmup,
+    (set: ExerciseSet) => set.isWarmup === true,
   );
 
   // Build the transformed object using properties from routineExercise and the derived sets.
@@ -363,8 +355,6 @@ export default function ExerciseRoutineCard({
     restTime: 30,
     notes: notes || null,
   };
-
-  console.log("Transformed Data:", transformed);
 
   return (
     <>
