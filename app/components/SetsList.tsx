@@ -8,6 +8,7 @@ import { SetCheckbox } from "./SetCheckbox";
 export function SetsList({
   sets,
   previousSets,
+  routineExercise,
   updateSet,
   handleCheckboxChange,
   deleteSet,
@@ -31,12 +32,31 @@ export function SetsList({
   const warmupSets = sets.filter((set) => set.isWarmup);
   const workingSets = sets.filter((set) => !set.isWarmup);
 
+  // Parse weights from routineExercise
+  const warmupWeights = routineExercise.warmupSetWeights
+    ? routineExercise.warmupSetWeights.split(",").map(Number)
+    : [];
+  const workingWeights = routineExercise.workingSetWeights
+    ? routineExercise.workingSetWeights.split(",").map(Number)
+    : [];
+
   // Fuvntion to render a single set with the correct display number
   const renderSet = (set: ExerciseSet, displayNumber: number) => {
     // Find matching previous set
     const previousSet = previousSets?.find(
       (ps: ExerciseSet) => ps.id === set.id,
     );
+
+    // Get placeholder values based on set type
+    const weightPlaceholder = set.isWarmup
+      ? (warmupWeights[displayNumber - 1] || "-").toString()
+      : (
+          workingWeights[displayNumber - (warmupSets.length + 1)] || "-"
+        ).toString();
+
+    const repsPlaceholder = set.isWarmup
+      ? routineExercise.warmupReps?.toString() || "-"
+      : routineExercise.workingReps?.toString() || "-";
 
     return (
       <div
@@ -51,8 +71,8 @@ export function SetsList({
             <input
               className="w-full bg-transparent text-center text-base"
               type="text"
-              placeholder={previousSet?.weight || "-"}
-              value={set.weight}
+              placeholder={weightPlaceholder || previousSet?.weight || "-"}
+              value={set.weight || ""}
               onChange={(e) => {
                 const value = e.target.value;
                 if (/^\d*(?:\.\d*)?$/.test(value)) {
@@ -68,8 +88,8 @@ export function SetsList({
             <input
               className="w-full bg-transparent text-center text-base"
               type="text"
-              placeholder={previousSet?.reps || "-"}
-              value={set.reps}
+              placeholder={repsPlaceholder || previousSet?.reps || "-"}
+              value={set.reps || ""}
               onChange={(e) => {
                 const value = e.target.value;
                 if (/^\d*(?:\.\d*)?$/.test(value)) {

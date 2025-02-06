@@ -68,6 +68,24 @@ const convertToBoolean = (input: unknown): boolean => {
   return normalized === "1" || normalized === "true";
 };
 
+const parseWeights = (weightsString: string | null): number[] => {
+  if (!weightsString) return [0];
+  try {
+    // If it's a single number
+    if (!weightsString.includes(",")) {
+      const num = Number(weightsString);
+      return isNaN(num) ? [0] : [num];
+    }
+    // If it's a comma-separated string
+    return weightsString
+      .split(",")
+      .map(Number)
+      .filter((n) => !isNaN(n));
+  } catch {
+    return [0];
+  }
+};
+
 export default function ExerciseRoutineCard({
   exercise,
   routineExercise,
@@ -96,36 +114,37 @@ export default function ExerciseRoutineCard({
   // Memoize getInitialSets to prevent recreation on every render
   const getInitialSets = useCallback(() => {
     if (previousData?.sets) {
-      const parsedSets =
-        typeof previousData.sets === "string"
-          ? JSON.parse(previousData.sets).map((set: any) => ({
-              ...set,
-              isWarmup: convertToBoolean(set.isWarmup),
-            }))
-          : previousData.sets.map((set: any) => ({
-              ...set,
-              isWarmup: convertToBoolean(set.isWarmup),
-            }));
+      try {
+        const parsedSets =
+          typeof previousData.sets === "string"
+            ? JSON.parse(previousData.sets)
+            : previousData.sets;
 
-      if (parsedSets.length > 0) {
-        const mappedSets = parsedSets.map((set: any) => ({
-          id: Number(set.setNumber) || set.id,
-          weight: String(set.weight || ""),
-          reps: String(set.reps || ""),
-          isWarmup: set.isWarmup,
-        }));
-        return mappedSets;
+        if (parsedSets.length > 0) {
+          return parsedSets.map((set: any) => ({
+            id: Number(set.setNumber) || set.id,
+            weight: "",
+            reps: "",
+            isWarmup: convertToBoolean(set.isWarmup),
+          }));
+        }
+      } catch (error) {
+        console.error("Error parsing sets:", error);
       }
     }
-    // Default set creation logic
+
+    // Initialize empty sets with just the isWarmup flag
     return Array.from(
       { length: routineExercise.warmupSets + routineExercise.workingSets },
-      (_, i) => ({
-        id: i + 1,
-        weight: "",
-        reps: "",
-        isWarmup: i < routineExercise.warmupSets,
-      }),
+      (_, i) => {
+        const isWarmup = i < routineExercise.warmupSets;
+        return {
+          id: i + 1,
+          weight: "",
+          reps: "",
+          isWarmup,
+        };
+      },
     );
   }, [previousData, routineExercise]);
 
@@ -134,11 +153,15 @@ export default function ExerciseRoutineCard({
     previousData?.notes || routineExercise.notes || "",
   );
 
-  // Reset state when previousData changes
+  // Replace the existing useEffect
   useEffect(() => {
-    setNotes(previousData?.notes || routineExercise.notes || "");
-    setSets(getInitialSets());
-  }, [previousData, routineExercise, getInitialSets]);
+    // Only reset state on initial mount or when exercise changes
+    if (isInitialRender.current || !sets.length) {
+      setNotes(previousData?.notes || routineExercise.notes || "");
+      setSets(getInitialSets());
+      isInitialRender.current = false;
+    }
+  }, [exercise.id]); // Only depend on exercise.id instead of previousData
 
   // Memoize currentData
   const currentData = useMemo(() => {
@@ -238,31 +261,25 @@ export default function ExerciseRoutineCard({
 
   function addWorkingSet() {
     setSets((prevSets: ExerciseSet[]) => {
-      const workingSetCount = prevSets.filter(
-        (set: ExerciseSet) => !set.isWarmup,
-      ).length;
-      return [
-        ...prevSets,
-        {
-          id: 100 + workingSetCount,
-          weight: "",
-          reps: "",
-          isWarmup: false,
-        },
-      ];
+      const newSet = {
+        id: Date.now(), // Use timestamp for unique ID
+        weight: "",
+        reps: "",
+        isWarmup: false,
+      };
+      return [...prevSets, newSet];
     });
   }
+
   function addWarmupSet() {
     setSets((prevSets: ExerciseSet[]) => {
-      return [
-        ...prevSets,
-        {
-          id: Date.now() + Math.floor(Math.random() * 1000),
-          weight: "",
-          reps: "",
-          isWarmup: true,
-        },
-      ];
+      const newSet = {
+        id: Date.now(), // Use timestamp for unique ID
+        weight: "",
+        reps: "",
+        isWarmup: true,
+      };
+      return [...prevSets, newSet];
     });
   }
 
@@ -356,6 +373,9 @@ export default function ExerciseRoutineCard({
     notes: notes || null,
   };
 
+  const warmupWeights = parseWeights(routineExercise.warmupSetWeights);
+  const workingWeights = parseWeights(routineExercise.workingSetWeights);
+
   return (
     <>
       <Card>
@@ -434,6 +454,8 @@ export default function ExerciseRoutineCard({
 
           <SetsList
             sets={sets}
+            previousSets={previousData?.sets}
+            routineExercise={routineExercise}
             updateSet={updateSet}
             handleCheckboxChange={handleCheckboxChange}
             deleteSet={deleteSet}
@@ -465,3 +487,4 @@ export default function ExerciseRoutineCard({
     </>
   );
 }
+

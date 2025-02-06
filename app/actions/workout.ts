@@ -31,6 +31,34 @@ const convertToBoolean = (value: unknown): boolean => {
 // GET WORKOUT SESSION FUNCTION
 // ---------------------------
 
+const parseWeightsArray = (weightsString: string | null): number[] => {
+  if (!weightsString) return [];
+  try {
+// If it's already a number, return it as a single-item array
+    if (!isNaN(Number(weightsString))) {
+      return [Number(weightsString)];
+    }
+
+    // If it's a comma-separated string
+    if (weightsString.includes(",")) {
+      return weightsString
+        .split(",")
+        .map(Number)
+        .filter((n) => !isNaN(n));
+    }
+
+    // Try parsing as JSON
+    const parsed = JSON.parse(weightsString);
+    if (Array.isArray(parsed)) {
+      return parsed.map(Number).filter((n) => !isNaN(n));
+    }
+
+    return [];
+  } catch {
+    return [];
+  }
+};
+
 export async function startWorkoutSession(routineId: string) {
   try {
     const { userId } = await auth();
@@ -47,7 +75,7 @@ export async function startWorkoutSession(routineId: string) {
         completedAt: null,
       })
       .returning();
-
+    
     // Get routine exercises
     const exercisesList = await db
       .select()
@@ -58,21 +86,10 @@ export async function startWorkoutSession(routineId: string) {
     // Create initial sets for each exercise
     for (const routineExercise of exercisesList) {
       // Parse weights arrays from JSON strings - they're stored as stringified arrays of numbers
-      const warmupWeights = routineExercise.warmupSetWeights
-        ? (
-            JSON.parse(
-              String(routineExercise.warmupSetWeights), // Add String() conversion
-            ) as number[]
-          ).filter(Number.isFinite) // Filter out invalid values
-        : [];
-
-      const workingWeights = routineExercise.workingSetWeights
-        ? (
-            JSON.parse(
-              String(routineExercise.workingSetWeights), // Add String() conversion
-            ) as number[]
-          ).filter(Number.isFinite) // Filter out invalid values
-        : [];
+      const warmupWeights = parseWeightsArray(routineExercise.warmupSetWeights);
+      const workingWeights = parseWeightsArray(
+        routineExercise.workingSetWeights,
+      );
 
       const timestamp = Math.floor(Date.now() / 1000);
 
@@ -185,30 +202,32 @@ export async function getWorkoutSession(sessionId: string) {
           json_object(
             'weight', CAST(${sets.weight} AS TEXT),
             'reps', CAST(${sets.reps} AS TEXT),
-            'isWarmup', CAST(${sets.isWarmup} AS TEXT),
-            'setNumber', CAST(${sets.setNumber} AS TEXT)
+            'isWarmup', ${sets.isWarmup}
           )
-        )`,
+        )`.as("sets"),
       },
     })
-    .from(routineExercises)
-    .leftJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+    .from(exercises)
+    .innerJoin(
+      routineExercises,
+      and(
+        eq(routineExercises.exerciseId, exercises.id),
+        eq(routineExercises.routineId, session.routineId),
+      ),
+    )
     .leftJoin(
       workoutData,
       and(
-        eq(workoutData.exerciseId, routineExercises.exerciseId),
-        eq(workoutData.sessionId, previousSession?.id ?? "no-session"),
+        eq(workoutData.exerciseId, exercises.id),
+        eq(workoutData.sessionId, sessionId),
       ),
     )
     .leftJoin(
       sets,
-      and(
-        eq(sets.exerciseId, routineExercises.exerciseId),
-        eq(sets.sessionId, previousSession?.id ?? "no-session"),
-      ),
+      and(eq(sets.exerciseId, exercises.id), eq(sets.sessionId, sessionId)),
     )
-    .groupBy(routineExercises.id)
-    .orderBy(routineExercises.order);
+    .groupBy(exercises.id);
+  
   console.log("Raw query results from sets and workout_data:", exercisesQuery);
   const exerciseResults = exercisesQuery as unknown as QueryResult[];
 
