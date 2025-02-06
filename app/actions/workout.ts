@@ -34,7 +34,7 @@ const convertToBoolean = (value: unknown): boolean => {
 const parseWeightsArray = (weightsString: string | null): number[] => {
   if (!weightsString) return [];
   try {
-    // If it's already a number, return it as a single-item array
+// If it's already a number, return it as a single-item array
     if (!isNaN(Number(weightsString))) {
       return [Number(weightsString)];
     }
@@ -75,7 +75,7 @@ export async function startWorkoutSession(routineId: string) {
         completedAt: null,
       })
       .returning();
-
+    
     // Get routine exercises
     const exercisesList = await db
       .select()
@@ -227,6 +227,7 @@ export async function getWorkoutSession(sessionId: string) {
       and(eq(sets.exerciseId, exercises.id), eq(sets.sessionId, sessionId)),
     )
     .groupBy(exercises.id);
+  
   console.log("Raw query results from sets and workout_data:", exercisesQuery);
   const exerciseResults = exercisesQuery as unknown as QueryResult[];
 

@@ -153,7 +153,7 @@ export default function ExerciseRoutineCard({
     previousData?.notes || routineExercise.notes || "",
   );
 
-  // Replace the existing useEffect
+// Replace the existing useEffect
   useEffect(() => {
     // Only reset state on initial mount or when exercise changes
     if (isInitialRender.current || !sets.length) {
@@ -281,7 +281,7 @@ export default function ExerciseRoutineCard({
       };
       return [...prevSets, newSet];
     });
-  }
+  }}
 
   function updateSet(
     id: number,
