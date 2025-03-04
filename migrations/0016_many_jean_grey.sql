@@ -1,1 +1,0 @@
-ALTER TABLE `routine_exercises` ADD `warmup_set_weights` text DEFAULT '[]' NOT NULL;

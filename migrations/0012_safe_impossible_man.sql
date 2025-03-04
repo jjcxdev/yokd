@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX `unique_session_exercise` ON `workout_data` (`session_id`,`exercise_id`);

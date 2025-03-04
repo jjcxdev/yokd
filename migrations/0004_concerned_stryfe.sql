@@ -1,1 +1,0 @@
-ALTER TABLE `exercises` ALTER COLUMN "type" TO "type" text NOT NULL;

@@ -1,1 +1,0 @@
-ALTER TABLE `plans` ADD `user_id` text NOT NULL;

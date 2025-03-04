@@ -1,1 +1,0 @@
-ALTER TABLE `workout_data` DROP COLUMN `sets`;
